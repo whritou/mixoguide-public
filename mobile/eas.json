@@ -1,0 +1,63 @@
+{
+  "cli": {
+    "version": ">= 18.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SENTRY_DSN": "$EXPO_PUBLIC_SENTRY_DSN",
+        "SENTRY_ORG": "mixoguide",
+        "SENTRY_PROJECT": "react-native",
+        "SENTRY_AUTH_TOKEN": "$SENTRY_AUTH_TOKEN",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "577333216992-2gm6eluc4jj7hla02oqjtmhv8vcfnbus.apps.googleusercontent.com"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_SENTRY_DSN": "$EXPO_PUBLIC_SENTRY_DSN",
+        "SENTRY_ORG": "mixoguide",
+        "SENTRY_PROJECT": "react-native",
+        "SENTRY_AUTH_TOKEN": "$SENTRY_AUTH_TOKEN",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "577333216992-2gm6eluc4jj7hla02oqjtmhv8vcfnbus.apps.googleusercontent.com"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_SENTRY_DSN": "$EXPO_PUBLIC_SENTRY_DSN",
+        "ADMOB_ANDROID_APP_ID": "$ADMOB_ANDROID_APP_ID",
+        "EXPO_PUBLIC_ADMOB_ANDROID_BANNER_UNIT_ID": "$EXPO_PUBLIC_ADMOB_ANDROID_BANNER_UNIT_ID",
+        "EXPO_PUBLIC_ADMOB_USE_TEST_ADS": "false",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "577333216992-2gm6eluc4jj7hla02oqjtmhv8vcfnbus.apps.googleusercontent.com",
+        "SENTRY_ORG": "mixoguide",
+        "SENTRY_PROJECT": "react-native",
+        "SENTRY_AUTH_TOKEN": "$SENTRY_AUTH_TOKEN"
+      },
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-play-service-account.json",
+        "track": "internal",
+        "releaseStatus": "completed",
+        "changesNotSentForReview": false
+      }
+    }
+  }
+}

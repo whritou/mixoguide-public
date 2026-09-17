@@ -1,0 +1,107 @@
+{
+  "expo": {
+    "name": "MixoGuide",
+    "slug": "mixoguide",
+    "version": "1.1.2",
+    "orientation": "portrait",
+    "icon": "./assets/mixoguide-icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/mixoguide-splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#fbf9f6"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e1c3f45b-6a73-4870-82fa-8d0dfa609a87",
+      "enabled": true,
+      "fallbackToCacheTimeout": 0,
+      "checkAutomatically": "ON_LOAD"
+    },
+    "android": {
+      "versionCode": 15,
+      "permissions": [
+        "com.google.android.gms.permission.AD_ID"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/mixoguide-adaptive-icon.png",
+        "backgroundColor": "#fbf9f6"
+      },
+      "edgeToEdgeEnabled": true,
+      "allowBackup": false,
+      "package": "com.mixoguide.app",
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "mixoguide.com",
+              "pathPrefix": "/reset-password"
+            },
+            {
+              "scheme": "https",
+              "host": "mixoguide.com",
+              "pathPrefix": "/auth/google"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "scheme": "mixoguide",
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "./plugins/withAdiRegistration",
+      "@sentry/react-native",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow MixoGuide to use your camera to scan barcodes when adding ingredients to your pantry."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow MixoGuide to use Face ID to unlock the app."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": false
+          },
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
+        }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "react-native",
+          "organization": "mixoguide"
+        }
+      ]
+    ],
+    "extra": {
+      "apiBaseUrl": "https://mixoguide.com",
+      "eas": {
+        "projectId": "e1c3f45b-6a73-4870-82fa-8d0dfa609a87"
+      }
+    }
+  }
+}

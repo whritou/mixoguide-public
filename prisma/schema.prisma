@@ -1,0 +1,648 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum BarToolType {
+  bar
+  kitchen
+  glassware
+  other
+}
+
+enum CocktailSource {
+  custom
+  cocktaildb
+  ninjas
+}
+
+enum Difficulty {
+  easy
+  medium
+  hard
+}
+
+enum Technique {
+  shaken
+  stirred
+  built
+  layered
+  blended
+  flamed
+  infused
+  clarified
+  muddled
+  smoked
+}
+
+enum Flavor {
+  sweet
+  sour
+  bitter
+  spicy
+  savory
+  fruity
+  herbal
+  smoky
+  floral
+  refreshing
+  creamy
+  citrus
+  nutty
+  earthy
+  bubbly
+  tropical
+  dry
+  rich
+  strong
+  warm
+  coffee
+  light
+}
+
+enum Occasion {
+  party
+  romantic
+  casual
+  formal
+  holiday
+  summer
+  winter
+  spring
+  fall
+  celebration
+  everyday
+  brunch
+  happy_hour
+  after_dinner
+  dinner
+  before_dinner
+  cocktail_hour
+  picnic
+  barbecue
+  beach
+  pool_party
+  game_night
+  movie_night
+  date_night
+  family_gathering
+  friends_gathering
+  wedding
+  birthday
+  anniversary
+  graduation
+  baby_shower
+  bridal_shower
+  housewarming
+  new_years_eve
+  valentines_day
+  halloween
+  thanksgiving
+  digestif
+  aperitif
+  date
+  mocktail_friendly
+  after_work
+  luxury
+  retro
+}
+
+enum MeasureUnit {
+  cl
+  ml
+  oz
+  g
+  pcs
+  zest
+  slice
+  twist
+}
+
+enum PlannedStatus {
+  planned
+  done
+}
+
+enum RsvpStatus {
+  going
+  maybe
+  not_going
+}
+
+enum SuggestionType {
+  NEW_COCKTAIL
+  NEW_INGREDIENT
+  MODIFY_COCKTAIL
+  MODIFY_INGREDIENT
+}
+
+enum SuggestionStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+// ─── AUTH (NextAuth) ──────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String?
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  accounts           Account[]
+  sessions           Session[]
+  pantryItems        UserPantryItem[]
+  favoriteCocktails  UserFavoriteCocktail[]
+  plannedCocktails   PlannedCocktail[]
+  madeLogs           CocktailMadeLog[]
+  ratings            Rating[]
+  plannedCollections PlannedCollection[]
+  suggestions        Suggestion[]
+  rsvps              CollectionRsvp[]
+  refreshTokens      RefreshToken[]
+  mobileOAuthCodes   MobileOAuthExchangeCode[]
+  devices            Device[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @id
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─── INGREDIENTS ──────────────────────────────────────────────────────────────
+
+model IngredientType {
+  id   String @id @default(cuid())
+  name String @unique
+
+  subTypes    IngredientSubType[]
+  ingredients Ingredient[]
+
+  @@map("ingredient_types")
+}
+
+model IngredientSubType {
+  id     String @id @default(cuid())
+  name   String
+  typeId String @map("type_id")
+
+  type        IngredientType @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  ingredients Ingredient[]
+
+  @@unique([typeId, name])
+  @@map("ingredient_sub_types")
+}
+
+model Ingredient {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  typeId      String      @map("type_id")
+  subTypeId   String?     @map("sub_type_id")
+  description String?     @db.Text
+  unit        MeasureUnit @default(oz)
+  isAlcoholic Boolean?    @map("is_alcoholic")
+  abv         Float?
+  brand       String?
+  imageUrl    String?     @map("image_url")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  type    IngredientType     @relation(fields: [typeId], references: [id])
+  subType IngredientSubType? @relation(fields: [subTypeId], references: [id])
+
+  cocktailIngredients  CocktailIngredient[]
+  mainAlcoholCocktails Cocktail[]             @relation("MainAlcohol")
+  pantryItems          UserPantryItem[]
+  derivativesAsBase    IngredientDerivative[] @relation("BaseIngredient")
+  derivativesAsDerived IngredientDerivative[] @relation("DerivedIngredient")
+  barcodes             IngredientBarcode[]
+
+  @@index([typeId])
+  @@index([subTypeId])
+  @@index([typeId, subTypeId])
+  @@index([createdAt])
+  @@map("ingredients")
+}
+
+model IngredientBarcode {
+  barcode      String   @id
+  ingredientId String?  @map("ingredient_id")
+  productName  String?  @map("product_name")
+  brand        String?
+  lookedUpAt   DateTime @default(now()) @map("looked_up_at")
+
+  ingredient Ingredient? @relation(fields: [ingredientId], references: [id], onDelete: SetNull)
+
+  @@index([ingredientId])
+  @@map("ingredient_barcodes")
+}
+
+model IngredientDerivative {
+  id               String @id @default(cuid())
+  baseIngredientId String @map("base_ingredient_id")
+  derivedId        String @map("derived_id")
+
+  yieldAmount Float       @map("yield_amount")
+  yieldUnit   MeasureUnit @map("yield_unit")
+
+  requiresTool String? @map("requires_tool")
+
+  baseIngredient Ingredient @relation("BaseIngredient", fields: [baseIngredientId], references: [id], onDelete: Cascade)
+  derived        Ingredient @relation("DerivedIngredient", fields: [derivedId], references: [id], onDelete: Cascade)
+
+  @@unique([baseIngredientId, derivedId])
+  @@index([derivedId])
+  @@map("ingredient_derivatives")
+}
+
+// ─── COCKTAILS ────────────────────────────────────────────────────────────────
+
+model Glass {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String? @db.Text
+  imageUrl    String? @map("image_url")
+
+  cocktails Cocktail[]
+
+  @@map("glasses")
+}
+
+model BarTool {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String?     @db.Text
+  imageUrl    String?     @map("image_url")
+  type        BarToolType @default(other)
+  isEssential Boolean?    @map("is_essential")
+
+  cocktails CocktailBarTool[]
+
+  @@map("bar_tools")
+}
+
+model Cocktail {
+  id              String         @id @default(cuid())
+  name            String         @unique
+  description     String?        @db.Text
+  fullDescription String?        @map("full_description") @db.Text
+  instructions    String[]
+  imageUrl        String?        @map("image_url")
+  isAlcoholic     Boolean?       @map("is_alcoholic")
+  mainAlcoholId   String?        @map("main_alcohol_id")
+  source          CocktailSource @default(custom)
+  externalId      String?        @map("external_id")
+  difficulty      Difficulty     @default(easy)
+  preparationTime Int?           @map("preparation_time")
+  technique       Technique[]
+  flavors         Flavor[]
+  occasions       Occasion[]
+  origin          String?
+  glassId         String?        @map("glass_id")
+
+  avgRating   Float?   @map("avg_rating")
+  ratingCount Int      @default(0) @map("rating_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  glass       Glass?      @relation(fields: [glassId], references: [id])
+  mainAlcohol Ingredient? @relation("MainAlcohol", fields: [mainAlcoholId], references: [id])
+
+  ingredients                CocktailIngredient[]
+  barTools                   CocktailBarTool[]
+  favoritedBy                UserFavoriteCocktail[]
+  plannedCocktails           PlannedCocktail[]
+  madeLogs                   CocktailMadeLog[]
+  ratings                    Rating[]
+  plannedCollectionCocktails PlannedCollectionCocktail[]
+
+  @@index([source])
+  @@index([difficulty])
+  @@index([isAlcoholic])
+  @@index([glassId])
+  @@index([mainAlcoholId])
+  @@index([createdAt])
+  @@map("cocktails")
+}
+
+model CocktailIngredient {
+  id           String        @id @default(cuid())
+  cocktailId   String        @map("cocktail_id")
+  ingredientId String        @map("ingredient_id")
+  amount       Float?
+  unit         MeasureUnit   @default(oz)
+  optional     Boolean       @default(false)
+  substitutes  String[]
+  subUnit      MeasureUnit[] @default([oz])
+  subAmount    Float[]
+  subShow      Boolean[]
+
+  cocktail   Cocktail   @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@unique([cocktailId, ingredientId])
+  @@index([ingredientId])
+  @@map("cocktail_ingredients")
+}
+
+model CocktailBarTool {
+  cocktailId String @map("cocktail_id")
+  barToolId  String @map("bar_tool_id")
+
+  cocktail Cocktail @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
+  barTool  BarTool  @relation(fields: [barToolId], references: [id], onDelete: Cascade)
+
+  @@id([cocktailId, barToolId])
+  @@map("cocktail_bar_tools")
+}
+
+// ─── USER FEATURES ────────────────────────────────────────────────────────────
+
+model UserFavoriteCocktail {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  cocktailId String   @map("cocktail_id")
+  addedAt    DateTime @default(now()) @map("added_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cocktail Cocktail @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cocktailId])
+  @@map("user_favorite_cocktails")
+}
+
+model UserPantryItem {
+  id               String      @id @default(cuid())
+  userId           String      @map("user_id")
+  ingredientId     String      @map("ingredient_id")
+  quantity         Float
+  unitLeft         MeasureUnit @default(cl) @map("unit_left")
+  favorite         Boolean     @default(false)
+  expirationDate   DateTime?   @map("expiration_date")
+  isEssential      Boolean     @default(false) @map("is_essential")
+  isInfinite       Boolean     @default(false) @map("is_infinite")
+  isInPantry       Boolean     @default(true) @map("is_in_pantry")
+  isInShoppingList Boolean     @default(false) @map("is_in_shopping_list")
+  shoppingQuantity Float       @default(0) @map("shopping_quantity")
+  addedAt          DateTime    @default(now()) @map("added_at")
+  note             String?     @db.Text
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ingredientId])
+  @@index([userId])
+  @@index([userId, isInPantry])
+  @@index([userId, isInShoppingList])
+  @@index([userId, expirationDate])
+  // Composite for the "expiring soon" filter: WHERE userId = ? AND isInPantry
+  // AND expirationDate BETWEEN now AND now+30d. Lets the planner index away
+  // both predicates without scanning all pantry rows for the user.
+  @@index([userId, isInPantry, expirationDate])
+  @@map("user_pantry_items")
+}
+
+model PlannedCocktail {
+  id          String        @id @default(cuid())
+  userId      String        @map("user_id")
+  cocktailId  String        @map("cocktail_id")
+  status      PlannedStatus @default(planned)
+  quantity    Int           @default(1)
+  plannedFor  DateTime      @map("planned_for")
+  completedAt DateTime?     @map("completed_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cocktail Cocktail @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cocktailId])
+  @@index([userId])
+  @@index([status])
+  @@index([userId, plannedFor, status])
+  @@map("planned_cocktails")
+}
+
+model CocktailMadeLog {
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  cocktailId       String?  @map("cocktail_id")
+  quantity         Int      @default(1)
+  madeAt           DateTime @default(now()) @map("made_at")
+  note             String?
+  archived         Boolean  @default(false)
+  archivedCocktail Json?    @map("archived_cocktail")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cocktail Cocktail? @relation(fields: [cocktailId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([cocktailId])
+  @@index([madeAt])
+  @@index([userId, madeAt])
+  @@index([userId, archived, madeAt])
+  @@map("cocktail_made_logs")
+}
+
+model Rating {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  cocktailId String   @map("cocktail_id")
+  rating     Int
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cocktail Cocktail @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cocktailId])
+  @@index([cocktailId])
+  @@index([cocktailId, createdAt])
+  @@map("ratings")
+}
+
+model Suggestion {
+  id         String           @id @default(cuid())
+  userId     String           @map("user_id")
+  type       SuggestionType
+  status     SuggestionStatus @default(PENDING)
+  targetId   String?          @map("target_id")
+  targetName String?          @map("target_name")
+  title      String
+  content    String           @db.Text
+  adminNote  String?          @map("admin_note") @db.Text
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([status, createdAt])
+  @@index([type])
+  @@map("suggestions")
+}
+
+// ─── MOBILE ───────────────────────────────────────────────────────────────────
+
+model RefreshToken {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  hashedToken String    @unique @map("hashed_token")
+  deviceId    String    @map("device_id")
+  expiresAt   DateTime  @map("expires_at")
+  revokedAt   DateTime? @map("revoked_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([hashedToken])
+  @@map("refresh_tokens")
+}
+
+model MobileOAuthExchangeCode {
+  id            String    @id @default(cuid())
+  userId        String    @map("user_id")
+  hashedCode    String    @unique @map("hashed_code")
+  deviceId      String    @map("device_id")
+  codeChallenge String    @map("code_challenge")
+  expiresAt     DateTime  @map("expires_at")
+  consumedAt    DateTime? @map("consumed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([hashedCode])
+  @@index([deviceId])
+  @@index([expiresAt])
+  @@map("mobile_oauth_exchange_codes")
+}
+
+model Device {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  platform   String
+  fcmToken   String   @unique @map("fcm_token")
+  expoToken  String?  @map("expo_token")
+  appVersion String?  @map("app_version")
+  lastSeenAt DateTime @default(now()) @map("last_seen_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("devices")
+}
+
+model PlannedCollection {
+  id           String        @id @default(cuid())
+  userId       String        @map("user_id")
+  title        String
+  location     String?       @db.VarChar(200)
+  guestNote    String?       @map("guest_note") @db.VarChar(280)
+  plannedFor   DateTime      @map("planned_for")
+  servings     Int           @default(1)
+  occasions    Occasion[]
+  status       PlannedStatus @default(planned)
+  completedAt  DateTime?     @map("completed_at")
+  shareToken   String?       @unique @map("share_token")
+  shareEnabled Boolean       @default(false) @map("share_enabled")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  user      User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cocktails PlannedCollectionCocktail[]
+  rsvps     CollectionRsvp[]
+
+  @@index([shareToken])
+  @@map("planned_collections")
+}
+
+model CollectionRsvp {
+  id           String     @id @default(cuid())
+  collectionId String     @map("collection_id")
+  userId       String?    @map("user_id")
+  name         String
+  email        String?    @db.VarChar(255)
+  status       RsvpStatus
+  guestCount   Int        @default(1) @map("guest_count")
+  note         String?    @db.Text
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  collection PlannedCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  user       User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([collectionId])
+  @@index([userId])
+  @@map("collection_rsvps")
+}
+
+model PlannedCollectionCocktail {
+  id                  String        @id @default(cuid())
+  plannedCollectionId String        @map("planned_collection_id")
+  cocktailId          String        @map("cocktail_id")
+  status              PlannedStatus @default(planned)
+  completedAt         DateTime?     @map("completed_at")
+
+  plannedCollection PlannedCollection @relation(fields: [plannedCollectionId], references: [id], onDelete: Cascade)
+  cocktail          Cocktail          @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
+
+  @@unique([plannedCollectionId, cocktailId])
+  @@map("planned_collection_cocktails")
+}
