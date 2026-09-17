@@ -203,7 +203,6 @@ Resend sends transactional emails (password reset, verification, etc.).
 
 1. Go to [API Keys](https://resend.com/api-keys)
 2. Click **Create API Key** (or copy the default one if it exists)
-3. Prefix: `re_` (e.g., `re_5bhmEvBL_G6Tkum1EirLSwR8tH51H9pPY`)
 
 ### 3. Verify Email Domain (Production)
 
