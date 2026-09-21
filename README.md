@@ -4,13 +4,18 @@ MixoGuide is a cocktail management and discovery application. Users can browse c
 
 Built with **Next.js (App Router)**, **React Native (Expo)**, **Prisma**, **PostgreSQL**, **TanStack React Query**, **NextAuth**, and **Tailwind CSS**.
 
+
+
 **Documentation:**
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — full technical architecture, data flows, and design decisions
 - [SETUP_CREDENTIALS.md](./SETUP_CREDENTIALS.md) — detailed step-by-step guide to obtain all credentials (Google OAuth, Cloudinary, Resend, etc.)
 - [OAUTH_SETUP.md](./OAUTH_SETUP.md) — mobile Google OAuth setup guide
-- [CLAUDE.md](./CLAUDE.md) — AI agent context (key paths, conventions, common tasks)
 
 ---
+
+## Public Link
+- [mixoguide.com](https://mixoguide.com/)
+- [https://play.google.com/store/apps/details?id=com.mixoguide.app](https://play.google.com/store/apps/details?id=com.mixoguide.app)
 
 ## Features
 
