@@ -17,6 +17,8 @@ Built with **Next.js (App Router)**, **React Native (Expo)**, **Prisma**, **Post
 - [mixoguide.com](https://mixoguide.com/)
 - [https://play.google.com/store/apps/details?id=com.mixoguide.app](https://play.google.com/store/apps/details?id=com.mixoguide.app)
 
+---
+
 ## Features
 
 | Feature | Description |
