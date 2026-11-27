@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="min-h-screen flex bg-mg-cream">
+        <div className="min-h-screen flex bg-canvas">
             {/* Left decorative panel */}
             <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden items-end p-12">
                 <div
@@ -24,11 +24,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <div className="relative z-10 max-w-md">
                     <Link
                         href="/"
-                        className="font-headline text-3xl italic text-white/90 mb-6 block"
+                        className="font-headline text-3xl italic text-fg-on-image/90 mb-6 block"
                     >
                         Mixoguide
                     </Link>
-                    <p className="text-white/70 text-lg font-body leading-relaxed">
+                    <p className="text-fg-on-image/70 text-lg font-body leading-relaxed">
                         Elevate your home bar into a professional atelier. Curate your
                         collection, master techniques, and discover recipes tailored to
                         your pantry.
@@ -42,7 +42,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <div className="lg:hidden px-6 pt-8">
                     <Link
                         href="/"
-                        className="font-headline text-2xl italic text-mg-brown"
+                        className="font-headline text-2xl italic text-brand"
                     >
                         Mixoguide
                     </Link>

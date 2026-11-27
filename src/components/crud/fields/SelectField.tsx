@@ -30,9 +30,9 @@ export function SelectField({ field, control, disabled }: Props) {
             name={field.name}
             render={({ field: f }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel className="text-xs font-label uppercase tracking-widest text-mg-muted">
+                  <FormLabel className="text-xs font-label uppercase tracking-widest text-fg-muted">
                     {field.label}
-                    {field.required && <span className="text-mg-caramel ml-1">*</span>}
+                    {field.required && <span className="text-brand-soft-strong ml-1">*</span>}
                   </FormLabel>
                   <FormControl>
                     <RadioGroup
@@ -42,14 +42,14 @@ export function SelectField({ field, control, disabled }: Props) {
                         disabled={disabled || field.readOnly}
                     >
                       {field.options.map((o) => (
-                          <div key={o.value.toString()} className="flex items-center space-x-2 rounded-xl border border-mg-sand bg-white px-4 py-2.5">
-                            <RadioGroupItem value={o.value.toString()} id={`${field.name}-${o.value}`} className="border-mg-caramel text-mg-brown" />
-                            <Label htmlFor={`${field.name}-${o.value}`} className="text-sm font-body text-mg-ink cursor-pointer">{o.label}</Label>
+                          <div key={o.value.toString()} className="flex items-center space-x-2 rounded-xl border border-line bg-surface px-4 py-2.5">
+                            <RadioGroupItem value={o.value.toString()} id={`${field.name}-${o.value}`} className="border-line-control text-brand" />
+                            <Label htmlFor={`${field.name}-${o.value}`} className="text-sm font-body text-fg cursor-pointer">{o.label}</Label>
                           </div>
                       ))}
                     </RadioGroup>
                   </FormControl>
-                  {field.description && <FormDescription className="text-xs text-mg-muted/70 font-body">{field.description}</FormDescription>}
+                  {field.description && <FormDescription className="text-xs text-fg-muted/70 font-body">{field.description}</FormDescription>}
                   <FormMessage className="text-xs" />
                 </FormItem>
             )}
@@ -64,9 +64,9 @@ export function SelectField({ field, control, disabled }: Props) {
           name={field.name}
           render={({ field: f }) => (
               <FormItem>
-                <FormLabel className="text-xs font-label uppercase tracking-widest text-mg-muted">
+                <FormLabel className="text-xs font-label uppercase tracking-widest text-fg-muted">
                   {field.label}
-                  {field.required && <span className="text-mg-caramel ml-1">*</span>}
+                  {field.required && <span className="text-brand-soft-strong ml-1">*</span>}
                 </FormLabel>
 
                 <Select
@@ -75,16 +75,16 @@ export function SelectField({ field, control, disabled }: Props) {
                     disabled={disabled || field.readOnly}
                 >
                   <FormControl>
-                    <SelectTrigger className="rounded-xl bg-white border-mg-sand text-sm font-body text-mg-ink focus:ring-mg-caramel/40 focus:border-mg-caramel data-[placeholder]:text-mg-muted">
+                    <SelectTrigger className="rounded-xl bg-surface border-line-control text-sm font-body text-fg focus:ring-ring/40 focus:border-brand-soft data-[placeholder]:text-fg-muted">
                       <SelectValue placeholder={field.placeholder || `Select ${field.label.toLowerCase()}`} />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="rounded-xl border-mg-sand bg-mg-cream">
+                  <SelectContent className="rounded-xl border-line bg-canvas">
                     {field.options.map((o) => (
                         <SelectItem
                             key={o.value.toString()}
                             value={o.value.toString()}
-                            className="text-sm font-body text-mg-ink focus:bg-mg-caramel/10 focus:text-mg-brown"
+                            className="text-sm font-body text-fg focus:bg-brand-soft/10 focus:text-brand"
                         >
                           {o.label}
                         </SelectItem>
@@ -92,7 +92,7 @@ export function SelectField({ field, control, disabled }: Props) {
                   </SelectContent>
                 </Select>
 
-                {field.description && <FormDescription className="text-xs text-mg-muted/70 font-body">{field.description}</FormDescription>}
+                {field.description && <FormDescription className="text-xs text-fg-muted/70 font-body">{field.description}</FormDescription>}
                 <FormMessage className="text-xs" />
               </FormItem>
           )}

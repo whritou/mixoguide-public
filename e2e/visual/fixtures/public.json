@@ -1,0 +1,1820 @@
+{
+ "cocktails": {
+  "success": true,
+  "data": [
+   {
+    "id": "cmnmsikky0007fndwt4ny7hhv",
+    "name": "A1",
+    "description": "A1 is a sour, citrus, and sweet, built on a base of gin cocktail that delivers character in every sip. It is served in a cocktail glass. It is a delightful brunch companion.",
+    "fullDescription": null,
+    "instructions": [
+     "Pour all ingredients into a cocktail shaker, mix and serve over ice into a chilled glass."
+    ],
+    "imageUrl": "https://www.thecocktaildb.com/images/media/drink/2x8thr1504816928.jpg",
+    "isAlcoholic": true,
+    "mainAlcoholId": "cmnmsij150001fndw6iea5q33",
+    "source": "cocktaildb",
+    "externalId": "17222",
+    "difficulty": "easy",
+    "preparationTime": 4,
+    "technique": [],
+    "flavors": [
+     "citrus",
+     "sour",
+     "sweet",
+     "strong",
+     "refreshing"
+    ],
+    "occasions": [
+     "summer",
+     "brunch",
+     "happy_hour",
+     "party",
+     "casual"
+    ],
+    "origin": null,
+    "glassId": "cmnmrdy0s0046godaoxrg510f",
+    "avgRating": 5,
+    "ratingCount": 2,
+    "createdAt": "2026-04-06T06:09:15.443Z",
+    "updatedAt": "2026-05-25T11:22:15.323Z"
+   },
+   {
+    "id": "cmnmsirou001bfndwce2nnt9v",
+    "name": "AT&T",
+    "description": "A spicy, warm, and refreshing drink built on a base of absolut vodka, AT&T is a crowd-pleasing classic. It is stirred until perfectly chilled and served in a highball glass. It is ideal for cosy winter evenings.",
+    "fullDescription": null,
+    "instructions": [
+     "Pour Vodka and Gin over ice, add Tonic and Stir"
+    ],
+    "imageUrl": "https://www.thecocktaildb.com/images/media/drink/rhhwmp1493067619.jpg",
+    "isAlcoholic": true,
+    "mainAlcoholId": "cmnmsiqvi0017fndwmowtp479",
+    "source": "cocktaildb",
+    "externalId": "13938",
+    "difficulty": "easy",
+    "preparationTime": 4,
+    "technique": [
+     "stirred"
+    ],
+    "flavors": [
+     "strong",
+     "refreshing",
+     "warm",
+     "light",
+     "spicy"
+    ],
+    "occasions": [
+     "winter",
+     "party",
+     "casual",
+     "formal",
+     "holiday"
+    ],
+    "origin": null,
+    "glassId": "cmnmrdxw50045goda4i2ws47r",
+    "avgRating": 5,
+    "ratingCount": 1,
+    "createdAt": "2026-04-06T06:09:24.654Z",
+    "updatedAt": "2026-05-25T11:22:15.468Z"
+   },
+   {
+    "id": "cmnmsj2yz003afndw7b1mv7m4",
+    "name": "Addison",
+    "description": "A spicy and refreshing drink built on a base of gin, Addison is a crowd-pleasing classic. It is shaken with ice and served in a martini glass. It is perfect for warm summer days.",
+    "fullDescription": null,
+    "instructions": [
+     "Shake together all the ingredients and strain into a cold glass."
+    ],
+    "imageUrl": "https://www.thecocktaildb.com/images/media/drink/yzva7x1504820300.jpg",
+    "isAlcoholic": true,
+    "mainAlcoholId": "cmnmsij150001fndw6iea5q33",
+    "source": "cocktaildb",
+    "externalId": "17228",
+    "difficulty": "easy",
+    "preparationTime": 5,
+    "technique": [
+     "shaken"
+    ],
+    "flavors": [
+     "strong",
+     "refreshing",
+     "dry",
+     "spicy"
+    ],
+    "occasions": [
+     "formal",
+     "party",
+     "casual",
+     "summer",
+     "happy_hour"
+    ],
+    "origin": null,
+    "glassId": "cmnmrdy0s0046godaoxrg510f",
+    "avgRating": 5,
+    "ratingCount": 1,
+    "createdAt": "2026-04-06T06:09:39.276Z",
+    "updatedAt": "2026-05-25T11:22:15.921Z"
+   },
+   {
+    "id": "cmnmsjaqa004mfndwt40fgm3w",
+    "name": "Alexander",
+    "description": "Alexander is a creamy, floral, and warm cocktail built on a base of gin. It is shaken with ice and served in a cocktail glass. It is a satisfying after-dinner treat.",
+    "fullDescription": null,
+    "instructions": [
+     "Shake all ingredients with ice and strain contents into a cocktail glass",
+     "Sprinkle nutmeg on top and serve."
+    ],
+    "imageUrl": "https://www.thecocktaildb.com/images/media/drink/0clus51606772388.jpg",
+    "isAlcoholic": true,
+    "mainAlcoholId": "cmnmsij150001fndw6iea5q33",
+    "source": "cocktaildb",
+    "externalId": "11014",
+    "difficulty": "easy",
+    "preparationTime": 7,
+    "technique": [
+     "shaken"
+    ],
+    "flavors": [
+     "creamy",
+     "strong",
+     "floral",
+     "refreshing",
+     "warm"
+    ],
+    "occasions": [
+     "winter",
+     "after_dinner",
+     "casual",
+     "formal",
+     "holiday"
+    ],
+    "origin": null,
+    "glassId": "cmnmrdy0s0046godaoxrg510f",
+    "avgRating": 5,
+    "ratingCount": 1,
+    "createdAt": "2026-04-06T06:09:49.331Z",
+    "updatedAt": "2026-05-25T11:22:16.148Z"
+   },
+   {
+    "id": "cmnmsist4001ifndw3pnpw1mj",
+    "name": "Adam",
+    "description": "A sour, citrus, and sweet drink built on a base of dark rum, Adam is a crowd-pleasing classic. It is shaken with ice and served in a cocktail glass. It is a satisfying after-dinner treat.",
+    "fullDescription": null,
+    "instructions": [
+     "In a shaker half-filled with ice cubes, combine all of the ingredients",
+     "Shake well",
+     "Strain into a cocktail glass."
+    ],
+    "imageUrl": "https://www.thecocktaildb.com/images/media/drink/v0at4i1582478473.jpg",
+    "isAlcoholic": true,
+    "mainAlcoholId": "cmnmsisja001gfndwir0ymnmf",
+    "source": "cocktaildb",
+    "externalId": "17837",
+    "difficulty": "medium",
+    "preparationTime": 7,
+    "technique": [
+     "shaken"
+    ],
+    "flavors": [
+     "citrus",
+     "sour",
+     "sweet",
+     "strong",
+     "rich"
+    ],
+    "occasions": [
+     "brunch",
+     "after_dinner",
+     "party",
+     "formal",
+     "summer"
+    ],
+    "origin": null,
+    "glassId": "cmnmrdy0s0046godaoxrg510f",
+    "avgRating": 4.5,
+    "ratingCount": 2,
+    "createdAt": "2026-04-06T06:09:26.104Z",
+    "updatedAt": "2026-05-25T11:22:15.777Z"
+   },
+   {
+    "id": "cmnmsjgwc005ofndwcnoql2sb",
+    "name": "Algonquin",
+    "description": "Algonquin is a sour, citrus, and fruity cocktail built on a base of blended whiskey. It is shaken with ice and served in a cocktail glass. It is a delightful brunch companion.",
+    "fullDescription": null,
+    "instructions": [
+     "Combine and shake all ingredients with ice, strain contents into a cocktail glass, and serve."
+    ],
+    "imageUrl": "https://www.thecocktaildb.com/images/media/drink/uwryxx1483387873.jpg",
+    "isAlcoholic": true,
+    "mainAlcoholId": "cmnmsjg3r005kfndw4g5q8lzc",
+    "source": "cocktaildb",
+    "externalId": "11020",
+    "difficulty": "easy",
+    "preparationTime": 5,
+    "technique": [
+     "shaken"
+    ],
+    "flavors": [
+     "dry",
+     "citrus",
+     "strong",
+     "sour",
+     "fruity"
+    ],
+    "occasions": [
+     "summer",
+     "brunch",
+     "formal",
+     "casual",
+     "happy_hour"
+    ],
+    "origin": null,
+    "glassId": "cmnmrdy0s0046godaoxrg510f",
+    "avgRating": 4,
+    "ratingCount": 1,
+    "createdAt": "2026-04-06T06:09:57.324Z",
+    "updatedAt": "2026-05-25T11:22:16.220Z"
+   },
+   {
+    "id": "cmnmsiubo001rfndwpbebduf3",
+    "name": "A. J.",
+    "description": "A. J. is a bitter, sour, and citrus, built on a base of applejack cocktail that delivers character in every sip. It is shaken with ice and served in a cocktail glass. It is a refined aperitif.",
+    "fullDescription": null,
+    "instructions": [
+     "Shake ingredients with ice, strain into a cocktail glass, and serve."
+    ],
+    "imageUrl": "https://www.thecocktaildb.com/images/media/drink/l74qo91582480316.jpg",
+    "isAlcoholic": true,
+    "mainAlcoholId": "cmnmsitki001nfndwiqj5e2a2",
+    "source": "cocktaildb",
+    "externalId": "17833",
+    "difficulty": "easy",
+    "preparationTime": 5,
+    "technique": [
+     "shaken"
+    ],
+    "flavors": [
+     "citrus",
+     "sour",
+     "fruity",
+     "bitter"
+    ],
+    "occasions": [
+     "brunch",
+     "summer",
+     "casual",
+     "happy_hour",
+     "aperitif"
+    ],
+    "origin": null,
+    "glassId": "cmnmrdy0s0046godaoxrg510f",
+    "avgRating": null,
+    "ratingCount": 0,
+    "createdAt": "2026-04-06T06:09:28.068Z",
+    "updatedAt": "2026-05-25T11:22:15.231Z"
+   },
+   {
+    "id": "cmnmsimmj000jfndwdsz8icqc",
+    "name": "ABC",
+    "description": "ABC is a creamy, sweet, and nutty cocktail built on a base of amaretto. It is carefully layered for a striking visual effect and served in a shot glass. It is a satisfying after-dinner treat.",
+    "fullDescription": null,
+    "instructions": [
+     "Layered in a shot glass."
+    ],
+    "imageUrl": "https://www.thecocktaildb.com/images/media/drink/tqpvqp1472668328.jpg",
+    "isAlcoholic": true,
+    "mainAlcoholId": "cmnmsila3000dfndwsk9tzpl5",
+    "source": "cocktaildb",
+    "externalId": "13501",
+    "difficulty": "medium",
+    "preparationTime": 7,
+    "technique": [
+     "layered"
+    ],
+    "flavors": [
+     "creamy",
+     "strong",
+     "sweet",
+     "nutty"
+    ],
+    "occasions": [
+     "after_dinner",
+     "party",
+     "formal"
+    ],
+    "origin": null,
+    "glassId": "cmnmrdz4c004ggoda613jzppp",
+    "avgRating": null,
+    "ratingCount": 0,
+    "createdAt": "2026-04-06T06:09:18.091Z",
+    "updatedAt": "2026-05-25T11:22:15.395Z"
+   },
+   {
+    "id": "cmnmsiq8n0013fndwhtopkhuq",
+    "name": "ACID",
+    "description": "A tropical drink built on a base of 151 proof rum, ACID is a crowd-pleasing classic. It is served in a shot glass. It is a satisfying after-dinner treat.",
+    "fullDescription": null,
+    "instructions": [
+     "Poor in the 151 first followed by the 101 served with a Coke or Dr Pepper chaser."
+    ],
+    "imageUrl": "https://www.thecocktaildb.com/images/media/drink/xuxpxt1479209317.jpg",
+    "isAlcoholic": true,
+    "mainAlcoholId": "cmnmsipbn000zfndwve1qx50q",
+    "source": "cocktaildb",
+    "externalId": "14610",
+    "difficulty": "easy",
+    "preparationTime": 3,
+    "technique": [],
+    "flavors": [
+     "strong",
+     "tropical",
+     "rich"
+    ],
+    "occasions": [
+     "summer",
+     "after_dinner",
+     "beach",
+     "party",
+     "formal"
+    ],
+    "origin": null,
+    "glassId": "cmnmrdz4c004ggoda613jzppp",
+    "avgRating": null,
+    "ratingCount": 0,
+    "createdAt": "2026-04-06T06:09:22.775Z",
+    "updatedAt": "2026-04-10T02:02:11.417Z"
+   },
+   {
+    "id": "cmnmsj22z0033fndwy1kxkaad",
+    "name": "Abilene",
+    "description": "A sour, citrus, and fruity drink built on a base of dark rum, Abilene is a crowd-pleasing classic. It is stirred until perfectly chilled and served in a highball glass. It is a satisfying after-dinner treat.",
+    "fullDescription": null,
+    "instructions": [
+     "Pour all of the ingredients into a highball glass almost filled with ice cubes",
+     "Stir well."
+    ],
+    "imageUrl": "https://www.thecocktaildb.com/images/media/drink/smb2oe1582479072.jpg",
+    "isAlcoholic": true,
+    "mainAlcoholId": "cmnmsisja001gfndwir0ymnmf",
+    "source": "cocktaildb",
+    "externalId": "17835",
+    "difficulty": "easy",
+    "preparationTime": 5,
+    "technique": [
+     "stirred"
+    ],
+    "flavors": [
+     "citrus",
+     "strong",
+     "sour",
+     "rich",
+     "fruity"
+    ],
+    "occasions": [
+     "brunch",
+     "summer",
+     "after_dinner",
+     "casual",
+     "formal"
+    ],
+    "origin": null,
+    "glassId": "cmnmrdxw50045goda4i2ws47r",
+    "avgRating": null,
+    "ratingCount": 0,
+    "createdAt": "2026-04-06T06:09:38.123Z",
+    "updatedAt": "2026-05-25T11:22:15.548Z"
+   },
+   {
+    "id": "cmnmsj8lt0048fndwthc0mdkt",
+    "name": "Acapulco",
+    "description": "Acapulco is a sour, citrus, and herbal, built on a base of light rum cocktail that delivers character in every sip. It is shaken with ice and served in a old-fashioned glass. It is a satisfying after-dinner treat and straightforward to prepare.",
+    "fullDescription": null,
+    "instructions": [
+     "Combine and shake all ingredients (except mint) with ice and strain into an old-fashioned glass over ice cubes",
+     "Add the sprig of mint and serve."
+    ],
+    "imageUrl": "https://www.thecocktaildb.com/images/media/drink/il9e0r1582478841.jpg",
+    "isAlcoholic": true,
+    "mainAlcoholId": "cmnmsj7mt0044fndw7pp5jxow",
+    "source": "cocktaildb",
+    "externalId": "17836",
+    "difficulty": "medium",
+    "preparationTime": 8,
+    "technique": [
+     "shaken"
+    ],
+    "flavors": [
+     "citrus",
+     "sour",
+     "rich",
+     "herbal",
+     "sweet"
+    ],
+    "occasions": [
+     "brunch",
+     "party",
+     "summer",
+     "happy_hour",
+     "after_dinner"
+    ],
+    "origin": null,
+    "glassId": "cmnmrdy3n0047godak80zss21",
+    "avgRating": null,
+    "ratingCount": 0,
+    "createdAt": "2026-04-06T06:09:46.577Z",
+    "updatedAt": "2026-05-25T11:22:15.625Z"
+   },
+   {
+    "id": "cmnmsiohz000sfndwe3tesk3k",
+    "name": "Ace",
+    "description": "Ace is a spicy, creamy, and sweet cocktail built on a base of gin. It is shaken with ice and served in a martini glass. It is a satisfying after-dinner treat and straightforward to prepare.",
+    "fullDescription": null,
+    "instructions": [
+     "Shake all the ingredients in a cocktail shaker and ice then strain in a cold glass."
+    ],
+    "imageUrl": "https://www.thecocktaildb.com/images/media/drink/l3cd7f1504818306.jpg",
+    "isAlcoholic": true,
+    "mainAlcoholId": "cmnmsij150001fndw6iea5q33",
+    "source": "cocktaildb",
+    "externalId": "17225",
+    "difficulty": "medium",
+    "preparationTime": 6,
+    "technique": [
+     "shaken"
+    ],
+    "flavors": [
+     "creamy",
+     "sweet",
+     "refreshing",
+     "strong",
+     "spicy"
+    ],
+    "occasions": [
+     "party",
+     "after_dinner",
+     "casual",
+     "formal",
+     "summer"
+    ],
+    "origin": null,
+    "glassId": "cmnmrdy0s0046godaoxrg510f",
+    "avgRating": null,
+    "ratingCount": 0,
+    "createdAt": "2026-04-06T06:09:20.520Z",
+    "updatedAt": "2026-05-25T11:22:15.699Z"
+   }
+  ],
+  "meta": {
+   "total": 12,
+   "page": 1,
+   "limit": 12,
+   "totalPages": 1,
+   "hasNextPage": false,
+   "hasPreviousPage": false
+  }
+ },
+ "ingredients": {
+  "success": true,
+  "data": [
+   {
+    "id": "cmnmsij150001fndw6iea5q33",
+    "name": "Gin",
+    "typeId": "cmnmrdxd00000godajw7e2nf9",
+    "subTypeId": "cmnmrdxmr000fgodam2fhqhjr",
+    "description": "Gin is a distilled alcoholic drink that derives its predominant flavour from juniper berries (Juniperus communis). Gin is one of the broadest categories of spirits, all of various origins, styles, and flavour profiles, that revolve around juniper as a common ingredient.\r\n\r\nFrom its earliest origins in the Middle Ages, the drink has evolved from a herbal medicine to an object of commerce in the spirits industry. Gin emerged in England after the introduction of the jenever, a Dutch liquor which originally had been a medicine. Although this development had been taking place since early 17th century, gin became widespread after the William of Orange-led 1688 Glorious Revolution and subsequent import restrictions on French brandy.\r\n\r\nGin today is produced in subtly different ways, from a wide range of herbal ingredients, giving rise to a number of distinct styles and brands. After juniper, gin tends to be flavoured with botanical/herbal, spice, floral or fruit-flavours or often a combination. It is most commonly consumed mixed with tonic water. Gin is also often used as a base spirit to produce flavoured gin-based liqueurs such as, for example, Sloe gin, traditionally by the addition of fruit, flavourings and sugar.",
+    "unit": "cl",
+    "isAlcoholic": true,
+    "abv": 40,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Gin-Medium.png",
+    "createdAt": "2026-04-06T06:09:13.434Z",
+    "updatedAt": "2026-04-09T16:53:21.504Z",
+    "_count": {
+     "cocktailIngredients": 83
+    }
+   },
+   {
+    "id": "cmnmsix2k0027fndw4mcxdb2i",
+    "name": "Vodka",
+    "typeId": "cmnmrdxd00000godajw7e2nf9",
+    "subTypeId": "cmnmrdxmr000dgodah9xpe53b",
+    "description": "Vodka is a distilled beverage composed primarily of water and ethanol, sometimes with traces of impurities and flavorings. Traditionally, vodka is made by the distillation of fermented cereal grains or potatoes, though some modern brands use other substances, such as fruits or sugar.\r\n\r\nSince the 1890s, the standard Polish, Russian, Belarusian, Ukrainian, Estonian, Latvian, Lithuanian and Czech vodkas are 40% alcohol by volume ABV (80 US proof), a percentage that is widely misattributed to Dmitri Mendeleev. The European Union has established a minimum of 37.5% ABV for any \"European vodka\" to be named as such. Products sold as \"vodka\" in the United States must have a minimum alcohol content of 40%. Even with these loose restrictions, most vodka sold contains 40% ABV. For homemade vodkas and distilled beverages referred to as \"moonshine\", see moonshine by country.\r\n\r\nVodka is traditionally drunk neat (not mixed with any water, ice, or other mixer), though it is often served chilled in the vodka belt countries (Belarus, Estonia, Finland, Iceland, Latvia, Lithuania, Norway, Poland, Russia, Sweden, Ukraine). It is also commonly used in cocktails and mixed drinks, such as the vodka martini, Cosmopolitan, vodka tonic, Screwdriver, Greyhound, Black or White Russian, Moscow Mule, and Bloody Mary.\r\n\r\nScholars debate the beginnings of vodka. It is a contentious issue because very little historical material is available. For many centuries, beverages differed significantly compared to the vodka of today, as the spirit at that time had a different flavor, color and smell, and was originally used as medicine. It contained little alcohol, an estimated maximum of about 14%, as only this amount can be attained by natural fermentation. The still, allowing for distillation (\"burning of wine\"), increased purity, and increased alcohol content, was invented in the 8th century.\r\n\r\nA common property of the vodkas produced in the United States and Europe is the extensive use of filtration prior to any additional processing including the addition of flavorants. Filtering is sometimes done in the still during distillation, as well as afterwards, where the distilled vodka is filtered through activated charcoal and other media to absorb trace amounts of substances that alter or impart off-flavors to the vodka. However, this is not the case in the traditional vodka-producing nations, so many distillers from these countries prefer to use very accurate distillation but minimal filtering, thus preserving the unique flavors and characteristics of their products.\r\n\r\nThe master distiller is in charge of distilling the vodka and directing its filtration, which includes the removal of the \"fore-shots\", \"heads\" and \"tails\". These components of the distillate contain flavor compounds such as ethyl acetate and ethyl lactate (heads) as well as the fusel oils (tails) that impact the usually desired clean taste of vodka. Through numerous rounds of distillation, or the use of a fractioning still, the taste is modified and clarity is increased. In contrast, distillery process for liquors such as whiskey, rum, and baijiu allow portions of the \"heads\" and \"tails\" to remain, giving them their unique flavors.\r\n\r\nRepeated distillation of vodka will make its ethanol level much higher than is acceptable to most end users, whether legislation determines strength limits or not. Depending on the distillation method and the technique of the stillmaster, the final filtered and distilled vodka may have as much as 95–96% ethanol. As such, most vodka is diluted with water prior to bottling.\r\n\r\nPolish distilleries make a very pure (96%, 192 proof, formerly also 98%) rectified spirit (Polish language: spirytus rektyfikowany). Technically a form of vodka, it is sold in liquor stores rather than pharmacies. Similarly, the German market often carries German, Hungarian, Polish, and Ukrainian-made varieties of vodka of 90 to 95% ABV. A Bulgarian vodka, Balkan 176°, has an 88% alcohol content. Everclear, an American brand, is also sold at 95% ABV.",
+    "unit": "cl",
+    "isAlcoholic": true,
+    "abv": 40,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Vodka-Medium.png",
+    "createdAt": "2026-04-06T06:09:31.628Z",
+    "updatedAt": "2026-04-09T16:53:23.404Z",
+    "_count": {
+     "cocktailIngredients": 62
+    }
+   },
+   {
+    "id": "cmnmsj8d10046fndwib00ud2z",
+    "name": "Sugar",
+    "typeId": "cmnmrdxd00007godayku1nfb6",
+    "subTypeId": "cmnmrdxmr002ogoda6fllzgtx",
+    "description": "Sugar is the generic name for sweet-tasting, soluble carbohydrates, many of which are used in food.",
+    "unit": "ml",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Sugar-Medium.png",
+    "createdAt": "2026-04-06T06:09:46.261Z",
+    "updatedAt": "2026-04-09T16:53:24.333Z",
+    "_count": {
+     "cocktailIngredients": 50
+    }
+   },
+   {
+    "id": "cmnmre2qu005ngodagk4q2d21",
+    "name": "Lemon Juice",
+    "typeId": "cmnmrdxd00005goda2abqjy0p",
+    "subTypeId": "cmnmrdxmr0027goda40b8jmok",
+    "description": null,
+    "unit": "ml",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": null,
+    "createdAt": "2026-04-06T05:37:46.087Z",
+    "updatedAt": "2026-04-09T16:53:20.322Z",
+    "_count": {
+     "cocktailIngredients": 49
+    }
+   },
+   {
+    "id": "cmnmre2zn005rgodazaj5frq9",
+    "name": "Orange Juice",
+    "typeId": "cmnmrdxd00005goda2abqjy0p",
+    "subTypeId": "cmnmrdxmr0027goda40b8jmok",
+    "description": null,
+    "unit": "ml",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": null,
+    "createdAt": "2026-04-06T05:37:46.403Z",
+    "updatedAt": "2026-04-09T16:53:20.468Z",
+    "_count": {
+     "cocktailIngredients": 43
+    }
+   },
+   {
+    "id": "cmnmsk0g1009nfndwlojmzc0d",
+    "name": "Ice",
+    "typeId": "cmnmrdxd0000cgoday5vche4i",
+    "subTypeId": "cmnmrdxms0040godagrmbawjz",
+    "description": null,
+    "unit": "ml",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Ice-Medium.png",
+    "createdAt": "2026-04-06T06:10:22.657Z",
+    "updatedAt": "2026-04-09T16:53:27.308Z",
+    "_count": {
+     "cocktailIngredients": 36
+    }
+   },
+   {
+    "id": "cmnmre1q00055godanpb003hj",
+    "name": "Lemon",
+    "typeId": "cmnmrdxd00009goda6t33lx34",
+    "subTypeId": "cmnmrdxms003cgodalyz9s002",
+    "description": null,
+    "unit": "pcs",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": null,
+    "createdAt": "2026-04-06T05:37:44.760Z",
+    "updatedAt": "2026-04-09T16:53:19.553Z",
+    "_count": {
+     "cocktailIngredients": 35
+    }
+   },
+   {
+    "id": "cmnmre2x1005pgodaav4waz3e",
+    "name": "Lime Juice",
+    "typeId": "cmnmrdxd00005goda2abqjy0p",
+    "subTypeId": "cmnmrdxmr0027goda40b8jmok",
+    "description": null,
+    "unit": "ml",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": null,
+    "createdAt": "2026-04-06T05:37:46.309Z",
+    "updatedAt": "2026-04-09T16:53:20.398Z",
+    "_count": {
+     "cocktailIngredients": 32
+    }
+   },
+   {
+    "id": "cmnmsikbo0005fndwpkdr0mpg",
+    "name": "Grenadine",
+    "typeId": "cmnmrdxd00007godayku1nfb6",
+    "subTypeId": "cmnmrdxms002tgodavxcoa6ok",
+    "description": "Grenadine is a commonly used, non-alcoholic bar syrup, characterized by a flavour that is both tart and sweet, and by a deep red colour. It is popular as an ingredient in cocktails, both for its flavour and to give a reddish/pink tint to mixed drinks.\r\n\r\nThe name grenadine originated from the French word grenade which means pomegranate, with pomme meaning apple and granate derived from the Italian word for seeds.\r\n\r\nGrenadine was originally prepared from pomegranate juice, sugar, and water.\r\n\r\nAs grenadine is subject to minimal regulation, its basic flavour profile can alternatively be obtained from a mixture of blackcurrant juice and other fruit juices with the blackcurrant flavour dominating.\r\n\r\nTo reduce production costs, manufacturers have widely replaced fruit bases with artificial ingredients. The Mott's brand \"Rose's\" is by far the most common brand of grenadine sold in the United States,[3] and is formulated from (in order of concentration): high fructose corn syrup, water, citric acid, sodium citrate, sodium benzoate, FD&C Red #40, natural and artificial flavours and FD&C Blue #1. In Europe, Bols still manufactures grenadine with pomegranate.",
+    "unit": "ml",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Grenadine-Medium.png",
+    "createdAt": "2026-04-06T06:09:15.108Z",
+    "updatedAt": "2026-04-09T16:53:21.666Z",
+    "_count": {
+     "cocktailIngredients": 31
+    }
+   },
+   {
+    "id": "cmnmre1vr0057godac3xih2n4",
+    "name": "Lime",
+    "typeId": "cmnmrdxd00009goda6t33lx34",
+    "subTypeId": "cmnmrdxms003cgodalyz9s002",
+    "description": null,
+    "unit": "pcs",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": null,
+    "createdAt": "2026-04-06T05:37:44.967Z",
+    "updatedAt": "2026-04-09T16:53:19.639Z",
+    "_count": {
+     "cocktailIngredients": 29
+    }
+   },
+   {
+    "id": "cmnmsj7mt0044fndw7pp5jxow",
+    "name": "Light rum",
+    "typeId": "cmnmrdxd00000godajw7e2nf9",
+    "subTypeId": "cmnmrdxmr000igoda95uzo434",
+    "description": "Light rums, also referred to as \"silver\" or \"white\" rums, in general, have very little flavor aside from a general sweetness. Light rums are sometimes filtered after aging to remove any colour. The majority of light rums come from Puerto Rico. Their milder flavors make them popular for use in mixed drinks, as opposed to drinking them straight. Light rums are included in some of the most popular cocktails including the Mojito and the Daiquiri.",
+    "unit": "cl",
+    "isAlcoholic": true,
+    "abv": null,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Light%20rum-Medium.png",
+    "createdAt": "2026-04-06T06:09:45.318Z",
+    "updatedAt": "2026-04-09T16:53:24.253Z",
+    "_count": {
+     "cocktailIngredients": 28
+    }
+   },
+   {
+    "id": "cmnmsl51x00fpfndwnd30iw24",
+    "name": "Water",
+    "typeId": "cmnmrdxd0000cgoday5vche4i",
+    "subTypeId": null,
+    "description": "Water is a transparent and nearly colorless chemical substance that is the main constituent of Earth's streams, lakes, and oceans, and the fluids of most living organisms. Its chemical formula is H2O, meaning that its molecule contains one oxygen and two hydrogen atoms that are connected by covalent bonds. Strictly speaking, water refers to the liquid state of a substance that prevails at standard ambient temperature and pressure; but it often refers also to its solid state (ice) or its gaseous state (steam or water vapor). It also occurs in nature as snow, glaciers, ice packs and icebergs, clouds, fog, dew, aquifers, and atmospheric humidity.\r\n\r\nWater covers 71% of the Earth's surface.[1] It is vital for all known forms of life. On Earth, 96.5% of the planet's crust water is found in seas and oceans, 1.7% in groundwater, 1.7% in glaciers and the ice caps of Antarctica and Greenland, a small fraction in other large water bodies, 0.001% in the air as vapor, clouds (formed of ice and liquid water suspended in air), and precipitation. Only 2.5% of this water is freshwater, and 98.8% of that water is in ice (excepting ice in clouds) and groundwater. Less than 0.3% of all freshwater is in rivers, lakes, and the atmosphere, and an even smaller amount of the Earth's freshwater (0.003%) is contained within biological bodies and manufactured products. A greater quantity of water is found in the earth's interior.\r\n\r\nWater on Earth moves continually through the water cycle of evaporation and transpiration (evapotranspiration), condensation, precipitation, and runoff, usually reaching the sea. Evaporation and transpiration contribute to the precipitation over land. Large amounts of water are also chemically combined or adsorbed in hydrated minerals.\r\n\r\nSafe drinking water is essential to humans and other lifeforms even though it provides no calories or organic nutrients. Access to safe drinking water has improved over the last decades in almost every part of the world, but approximately one billion people still lack access to safe water and over 2.5 billion lack access to adequate sanitation. There is a clear correlation between access to safe water and gross domestic product per capita. However, some observers have estimated that by 2025 more than half of the world population will be facing water-based vulnerability. A report, issued in November 2009, suggests that by 2030, in some developing regions of the world, water demand will exceed supply by 50%.\r\n\r\nWater plays an important role in the world economy. Approximately 70% of the freshwater used by humans goes to agriculture. Fishing in salt and fresh water bodies is a major source of food for many parts of the world. Much of long-distance trade of commodities (such as oil and natural gas) and manufactured products is transported by boats through seas, rivers, lakes, and canals. Large quantities of water, ice, and steam are used for cooling and heating, in industry and homes. Water is an excellent solvent for a wide variety of chemical substances; as such it is widely used in industrial processes, and in cooking and washing. Water is also central to many sports and other forms of entertainment, such as swimming, pleasure boating, boat racing, surfing, sport fishing, and diving.",
+    "unit": "ml",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Water-Medium.png",
+    "createdAt": "2026-04-06T06:11:15.285Z",
+    "updatedAt": "2026-04-09T16:53:29.662Z",
+    "_count": {
+     "cocktailIngredients": 28
+    }
+   },
+   {
+    "id": "cmnmskdgv00bsfndwfevyonow",
+    "name": "Powdered sugar",
+    "typeId": "cmnmrdxd00007godayku1nfb6",
+    "subTypeId": "cmnmrdxmr002ogoda6fllzgtx",
+    "description": null,
+    "unit": "ml",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Powdered%20sugar-Medium.png",
+    "createdAt": "2026-04-06T06:10:39.535Z",
+    "updatedAt": "2026-04-09T16:53:28.082Z",
+    "_count": {
+     "cocktailIngredients": 26
+    }
+   },
+   {
+    "id": "cmnmre3au005xgoda1ghdvlv3",
+    "name": "Lemon Peel",
+    "typeId": "cmnmrdxd0000bgodas65wrnbp",
+    "subTypeId": "cmnmrdxms003qgodapd4u4i7y",
+    "description": null,
+    "unit": "zest",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": null,
+    "createdAt": "2026-04-06T05:37:46.806Z",
+    "updatedAt": "2026-04-09T16:53:20.719Z",
+    "_count": {
+     "cocktailIngredients": 23
+    }
+   },
+   {
+    "id": "cmnmre2fh005hgoda6h9gnlzr",
+    "name": "Triple Sec",
+    "typeId": "cmnmrdxd00001godaphupik4g",
+    "subTypeId": "cmnmrdxmr0014goda50y2k2n9",
+    "description": null,
+    "unit": "cl",
+    "isAlcoholic": true,
+    "abv": 30,
+    "brand": null,
+    "imageUrl": null,
+    "createdAt": "2026-04-06T05:37:45.678Z",
+    "updatedAt": "2026-04-09T16:53:20.052Z",
+    "_count": {
+     "cocktailIngredients": 23
+    }
+   },
+   {
+    "id": "cmnmski9m00cmfndw4ely618d",
+    "name": "Coffee",
+    "typeId": "cmnmrdxd0000cgoday5vche4i",
+    "subTypeId": "cmnmrdxms0042godagyp9bc42",
+    "description": "Coffee is a brewed drink prepared from roasted coffee beans, which are the seeds of berries from the Coffea plant. The genus Coffea is native to tropical Africa (specifically having its origin in Ethiopia and Sudan) and Madagascar, the Comoros, Mauritius, and Réunion in the Indian Ocean. The plant was exported from Africa to countries around the world and coffee plants are now cultivated in over 70 countries, primarily in the equatorial regions of the Americas, Southeast Asia, India, and Africa. The two most commonly grown are the highly regarded arabica, and the less sophisticated but stronger and more hardy robusta. Once ripe, coffee berries are picked, processed, and dried. Dried coffee seeds (referred to as beans) are roasted to varying degrees, depending on the desired flavor. Roasted beans are ground and brewed with near-boiling water to produce coffee as a beverage.\r\n\r\nCoffee is slightly acidic and can have a stimulating effect on humans because of its caffeine content. Coffee is one of the most popular drinks in the world. It can be prepared and presented in a variety of ways (e.g., espresso, French press, cafe latte, etc.). It is usually served hot, although iced coffee is also served. Clinical studies indicate that moderate coffee consumption is benign or mildly beneficial in healthy adults, with continuing research on whether long-term consumption inhibits cognitive decline during aging or lowers the risk of some forms of cancer.\r\n\r\nThe earliest credible evidence of coffee-drinking appears in the middle of the 15th century in the Sufi shrines of Yemen. It was here in Arabia that coffee seeds were first roasted and brewed in a similar way to how it is now prepared. Coffee seeds were first exported from East Africa to Yemen, as the coffea arabica plant is thought to have been indigenous to the former. Yemeni traders took coffee back to their homeland and began to cultivate the seed. By the 16th century, it had reached Persia, Turkey, and North Africa. From there, it spread to Europe and the rest of the world.\r\n\r\nCoffee is a major export commodity: it is the top agricultural export for numerous countries and is among the world's largest legal agricultural exports. It is one of the most valuable commodities exported by developing countries. Green (unroasted) coffee is one of the most traded agricultural commodities in the world. Some controversy is associated with coffee cultivation and the way developed countries trade with developing nations and the impact of its cultivation on the environment, in regards to clearing of land for coffee-growing and water use. Consequently, the markets for fair trade coffee and organic coffee are expanding.",
+    "unit": "ml",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Coffee-Medium.png",
+    "createdAt": "2026-04-06T06:10:45.755Z",
+    "updatedAt": "2026-04-09T16:53:28.358Z",
+    "_count": {
+     "cocktailIngredients": 22
+    }
+   },
+   {
+    "id": "cmnmsio35000qfndwx63q6k4f",
+    "name": "Milk",
+    "typeId": "cmnmrdxd0000agodavng0ryfx",
+    "subTypeId": "cmnmrdxms003lgodaosenfsgj",
+    "description": "Milk is a white liquid produced by the mammary glands of mammals. It is the primary source of nutrition for infant mammals (including humans who breastfeed) before they are able to digest other types of food. Early-lactation milk contains colostrum, which carries the mother's antibodies to its young and can reduce the risk of many diseases. It contains many other nutrients including protein and lactose.\r\n\r\nAs an agricultural product, milk is extracted from non-human mammals during or soon after pregnancy. Dairy farms produced about 730 million tonnes of milk in 2011, from 260 million dairy cows. India is the world's largest producer of milk, and is the leading exporter of skimmed milk powder, yet it exports few other milk products. The ever increasing rise in domestic demand for dairy products and a large demand-supply gap could lead to India being a net importer of dairy products in the future. The United States, India, China and Brazil are the world's largest exporters of milk and milk products. China and Russia were the world's largest importers of milk and milk products until 2016 when both countries became self-sufficient, contributing to a worldwide glut of milk.\r\n\r\nThroughout the world, there are more than six billion consumers of milk and milk products. Over 750 million people live in dairy farming households.",
+    "unit": "ml",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Milk-Medium.png",
+    "createdAt": "2026-04-06T06:09:19.985Z",
+    "updatedAt": "2026-04-09T16:53:22.239Z",
+    "_count": {
+     "cocktailIngredients": 22
+    }
+   },
+   {
+    "id": "cmnmsj63x003ufndwiy8e2e5d",
+    "name": "Dry Vermouth",
+    "typeId": "cmnmrdxd00002godawdgh1vt2",
+    "subTypeId": "cmnmrdxmr001lgodame9s1qp5",
+    "description": "Vermouth (/vərˈmuːθ/ ver-MOOTH; also UK: /ˈvɜːrməθ/;) is an aromatized, fortified wine flavored with various botanicals (roots, barks, flowers, seeds, herbs, and spices).\r\n\r\nThe modern versions of the beverage were first produced in the mid to late 18th century in Turin, Italy. While vermouth was traditionally used for medicinal purposes, its true claim to fame is as an aperitif, with fashionable cafes in Turin serving it to guests around the clock. However, in the late 19th century it became popular with bartenders as a key ingredient in many classic cocktails that have survived to date, such as the Martini, the Manhattan, the Rob Roy, and the Negroni. In addition to being consumed as an aperitif or cocktail ingredient, vermouth is sometimes used as an alternative white wine in cooking.\r\n\r\nHistorically, there have been two main types of vermouth: sweet and dry. Responding to demand and competition, vermouth manufacturers have created additional styles, including extra-dry white, sweet white (bianco), red, amber (ambre or rosso), and rosé. Vermouth is produced by starting with a base of a neutral grape wine or unfermented wine must. Each manufacturer adds additional alcohol and a proprietary mixture of dry ingredients, consisting of aromatic herbs, roots, and barks, to the base wine, base wine plus spirit or spirit only – which may be redistilled before adding to the wine or unfermented wine must. After the wine is aromatized and fortified, the vermouth is sweetened with either cane sugar or caramelized sugar, depending on the style. Italian and French companies produce most of the vermouth consumed throughout the world, although the United States and the United Kingdom are also producers.",
+    "unit": "cl",
+    "isAlcoholic": true,
+    "abv": null,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Dry%20Vermouth-Medium.png",
+    "createdAt": "2026-04-06T06:09:43.342Z",
+    "updatedAt": "2026-04-09T16:53:24.990Z",
+    "_count": {
+     "cocktailIngredients": 21
+    }
+   },
+   {
+    "id": "cmnmsjgp3005mfndwl4szufi3",
+    "name": "Pineapple juice",
+    "typeId": "cmnmrdxd00005goda2abqjy0p",
+    "subTypeId": "cmnmrdxmr0028godavskaafse",
+    "description": null,
+    "unit": "ml",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Pineapple%20juice-Medium.png",
+    "createdAt": "2026-04-06T06:09:57.063Z",
+    "updatedAt": "2026-04-09T16:53:25.221Z",
+    "_count": {
+     "cocktailIngredients": 21
+    }
+   },
+   {
+    "id": "cmnmsila3000dfndwsk9tzpl5",
+    "name": "Amaretto",
+    "typeId": "cmnmrdxd00001godaphupik4g",
+    "subTypeId": "cmnmrdxmr0016goda65ixqf4r",
+    "description": "Amaretto (Italian for \"a little bitter\") is a sweet, almond-flavoured, Italian liqueur associated with Saronno, Italy. Various commercial brands are made from a base of apricot pits, almonds, or both.\r\n\r\nWhen served as a beverage, amaretto can be drunk by itself, used as an ingredient to create several popular mixed drinks, or added to coffee. Amaretto is also commonly used in culinary applications.\r\n\r\nThe name amaretto originated as a diminutive of the Italian word amaro, meaning \"bitter\", which references the distinctive flavour lent by the mandorla amara (the bitter almond) or by the drupe kernel. However, the bitterness of amaretto tends to be mild, and sweeteners—and sometimes sweet almonds—enhance the flavour in the final products. Thus one can interpret the liqueur's name as a description of the taste as \"a little bitter\". Cyanide is processed out of the almond preparation prior to its use.\r\n\r\nConflation of amaro (\"bitter\") and amore (\"love\") has led to associations with romance.\r\n\r\nOne should not confuse amaretto with amaro, a different family of Italian liqueurs that, while also sweetened, have a stronger bitter flavour derived from herbs.",
+    "unit": "cl",
+    "isAlcoholic": true,
+    "abv": 28,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Amaretto-Medium.png",
+    "createdAt": "2026-04-06T06:09:16.347Z",
+    "updatedAt": "2026-04-09T16:53:21.937Z",
+    "_count": {
+     "cocktailIngredients": 19
+    }
+   },
+   {
+    "id": "cmnmsjvyd008zfndwf63ksinc",
+    "name": "Rum",
+    "typeId": "cmnmrdxd00000godajw7e2nf9",
+    "subTypeId": "cmnmrdxmr000igoda95uzo434",
+    "description": "Rum is a distilled alcoholic beverage made from sugarcane byproducts, such as molasses, or directly from sugarcane juice, by a process of fermentation and distillation. The distillate, a clear liquid, is then usually aged in oak barrels.\r\n\r\nThe majority of the world's rum production occurs in the Caribbean and Latin America. Rum is also produced in Scotland, Austria, Spain, Australia, New Zealand, Fiji, the Philippines, India, Reunion Island, Mauritius, South Africa, Taiwan, Thailand, Japan, the United States, and Canada.\r\n\r\nRums are produced in various grades. Light rums are commonly used in cocktails, whereas \"golden\" and \"dark\" rums were typically consumed straight or neat, on the rocks, or used for cooking, but are now commonly consumed with mixers. Premium rums are also available, made to be consumed either straight or iced.\r\n\r\nRum plays a part in the culture of most islands of the West Indies as well as in The Maritimes and Newfoundland. This beverage has famous associations with the Royal Navy (where it was mixed with water or beer to make grog) and piracy (where it was consumed as bumbo). Rum has also served as a popular medium of economic exchange, used to help fund enterprises such as slavery (see Triangular trade), organized crime, and military insurgencies (e.g., the American Revolution and Australia's Rum Rebellion).\r\n\r\nThe precursors to rum date back to antiquity. Development of fermented drinks produced from sugarcane juice is believed to have first occurred either in ancient India or in China, and to have spread from there. An example of such an early drink is brum. Produced by the Malay people, brum dates back thousands of years. Marco Polo also recorded a 14th-century account of a \"very good wine of sugar\" that was offered to him in the area that became modern-day Iran.\r\n\r\nThe first distillation of rum took place on the sugarcane plantations of the Caribbean in the 17th century. Plantation slaves first discovered molasses, a byproduct of the sugar refining process, could be fermented into alcohol. Later, distillation of these alcoholic byproducts concentrated the alcohol and removed impurities, producing the first true rums. Tradition suggests rum first originated on the island of Barbados. However, in the decade of the 1620s, rum production was recorded in Brazil. A liquid identified as rum has been found in a tin bottle found on the Swedish warship Vasa, which sank in 1628.\r\n\r\nA 1651 document from Barbados stated, \"The chief fuddling they make in the island is Rumbullion, alias Kill-Divil, and thi is made of sugar canes distilled, a hot, hellish, and terrible liquor.\"",
+    "unit": "cl",
+    "isAlcoholic": true,
+    "abv": 40,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Rum-Medium.png",
+    "createdAt": "2026-04-06T06:10:16.838Z",
+    "updatedAt": "2026-04-09T16:53:26.882Z",
+    "_count": {
+     "cocktailIngredients": 19
+    }
+   },
+   {
+    "id": "cmnmsjiux0065fndwyvlcv4an",
+    "name": "Soda Water",
+    "typeId": "cmnmrdxd00006godaf4k3hm1a",
+    "subTypeId": "cmnmrdxmr002egodalwmiw2ul",
+    "description": null,
+    "unit": "ml",
+    "isAlcoholic": false,
+    "abv": 0,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Soda%20Water-Medium.png",
+    "createdAt": "2026-04-06T06:09:59.866Z",
+    "updatedAt": "2026-04-09T16:53:25.516Z",
+    "_count": {
+     "cocktailIngredients": 19
+    }
+   },
+   {
+    "id": "cmnmsj5jl003sfndwn1ypsqro",
+    "name": "Sweet Vermouth",
+    "typeId": "cmnmrdxd00002godawdgh1vt2",
+    "subTypeId": "cmnmrdxmr001kgodavh35tbsr",
+    "description": "Vermouth (/vərˈmuːθ/ ver-MOOTH; also UK: /ˈvɜːrməθ/;) is an aromatized, fortified wine flavored with various botanicals (roots, barks, flowers, seeds, herbs, and spices).\r\n\r\nThe modern versions of the beverage were first produced in the mid to late 18th century in Turin, Italy. While vermouth was traditionally used for medicinal purposes, its true claim to fame is as an aperitif, with fashionable cafes in Turin serving it to guests around the clock. However, in the late 19th century it became popular with bartenders as a key ingredient in many classic cocktails that have survived to date, such as the Martini, the Manhattan, the Rob Roy, and the Negroni. In addition to being consumed as an aperitif or cocktail ingredient, vermouth is sometimes used as an alternative white wine in cooking.\r\n\r\nHistorically, there have been two main types of vermouth: sweet and dry. Responding to demand and competition, vermouth manufacturers have created additional styles, including extra-dry white, sweet white (bianco), red, amber (ambre or rosso), and rosé. Vermouth is produced by starting with a base of a neutral grape wine or unfermented wine must. Each manufacturer adds additional alcohol and a proprietary mixture of dry ingredients, consisting of aromatic herbs, roots, and barks, to the base wine, base wine plus spirit or spirit only – which may be redistilled before adding to the wine or unfermented wine must. After the wine is aromatized and fortified, the vermouth is sweetened with either cane sugar or caramelized sugar, depending on the style. Italian and French companies produce most of the vermouth consumed throughout the world, although the United States and the United Kingdom are also producers.",
+    "unit": "cl",
+    "isAlcoholic": true,
+    "abv": null,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Sweet%20Vermouth-Medium.png",
+    "createdAt": "2026-04-06T06:09:42.610Z",
+    "updatedAt": "2026-04-09T16:53:24.914Z",
+    "_count": {
+     "cocktailIngredients": 19
+    }
+   },
+   {
+    "id": "cmnmsj10m002ufndw3xq9saoa",
+    "name": "Kahlua",
+    "typeId": "cmnmrdxd00001godaphupik4g",
+    "subTypeId": "cmnmrdxmr0015godapqrnaill",
+    "description": "Kahlúa is a coffee-flavored liqueur from Mexico. The drink contains rum, sugar, vanilla bean, and Arabica coffee.\r\n\r\nPedro Domecq began producing Kahlúa in 1936. It was named Kahlúa, meaning \"House of the Acolhua people\" in the Veracruz Nahuatl language spoken before the Spanish Conquest. Kahlúa was Hispanicized as Ulúa, forming the name of the modern San Juan de Ulúa fortress.\r\n\r\nThe company merged in 1994 with Allied Lyons to become Allied Domecq. In turn, that company was partially acquired in 2005 by Pernod Ricard, the largest spirits distributor in the world since its merger with the Swedish Vin & Sprit in March 2008.\r\n\r\nSince 2004, the alcohol content of Kahlúa is 20.0%; earlier versions had 26.5%. In 2002, a more expensive, high-end product called \"Kahlúa Especial\" became available in the United States, Canada and Australia after previously being offered only in duty-free markets. Made with premium Arabica coffee beans grown in Veracruz, Mexico, Kahlúa Especial has an alcohol content of 36%, has a lower viscosity, and is less sweet than the regular version.",
+    "unit": "cl",
+    "isAlcoholic": true,
+    "abv": null,
+    "brand": null,
+    "imageUrl": "https://www.thecocktaildb.com/images/ingredients/Kahlua-Medium.png",
+    "createdAt": "2026-04-06T06:09:36.742Z",
+    "updatedAt": "2026-04-09T16:53:23.947Z",
+    "_count": {
+     "cocktailIngredients": 18
+    }
+   }
+  ],
+  "meta": {
+   "total": 24,
+   "page": 1,
+   "limit": 24,
+   "totalPages": 1,
+   "hasNextPage": false,
+   "hasPreviousPage": false
+  }
+ },
+ "types": {
+  "success": true,
+  "data": [
+   {
+    "id": "cmnmrdxd00004godapsi4hd2y",
+    "name": "Beer & Cider"
+   },
+   {
+    "id": "cmnmrdxd00008goda400bx7bu",
+    "name": "Bitters"
+   },
+   {
+    "id": "cmnmrdxd00006godaf4k3hm1a",
+    "name": "Carbonated Mixer"
+   },
+   {
+    "id": "cmnmrdxd0000agodavng0ryfx",
+    "name": "Dairy & Egg"
+   },
+   {
+    "id": "cmnmrdxd00002godawdgh1vt2",
+    "name": "Fortified Wine"
+   },
+   {
+    "id": "cmnmrdxd00009goda6t33lx34",
+    "name": "Fresh Produce"
+   },
+   {
+    "id": "cmnmrdxd0000bgodas65wrnbp",
+    "name": "Garnish"
+   },
+   {
+    "id": "cmnmrdxd00005goda2abqjy0p",
+    "name": "Juice"
+   },
+   {
+    "id": "cmnmrdxd00001godaphupik4g",
+    "name": "Liqueur"
+   },
+   {
+    "id": "cmnmrdxd0000cgoday5vche4i",
+    "name": "Other"
+   },
+   {
+    "id": "cmnmrdxd00000godajw7e2nf9",
+    "name": "Spirit"
+   },
+   {
+    "id": "cmnmrdxd00007godayku1nfb6",
+    "name": "Sweetener"
+   },
+   {
+    "id": "cmnmrdxd00003goda9f7kg9tv",
+    "name": "Wine"
+   },
+   {
+    "id": "cmo2az7ja0004gwf3zw5kbggh",
+    "name": "test"
+   }
+  ],
+  "meta": {
+   "total": 14,
+   "page": 1,
+   "limit": 200,
+   "totalPages": 1,
+   "hasNextPage": false,
+   "hasPreviousPage": false
+  }
+ },
+ "subtypes": {
+  "success": true,
+  "data": [
+   {
+    "id": "cmnmrdxmr0010goda6vmd0tqr",
+    "name": "Absinthe / Pastis",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr002rgodavot1ux40",
+    "name": "Agave Syrup",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxmr001dgodarkzz8vtx",
+    "name": "Amaro",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxmr001qgodaxfw0ql2a",
+    "name": "Amontillado Sherry",
+    "typeId": "cmnmrdxd00002godawdgh1vt2"
+   },
+   {
+    "id": "cmnmrdxmr001igodabcg9gtnk",
+    "name": "Anise & Sambuca",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxmr001cgodafyel97uq",
+    "name": "Aperitivo (Bitter)",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxmr002cgoda4nba04o7",
+    "name": "Apple & Pear Juice",
+    "typeId": "cmnmrdxd00005goda2abqjy0p"
+   },
+   {
+    "id": "cmnmrdxmr000zgodawm2n4szj",
+    "name": "Aquavit",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr000wgoda3ngksvwn",
+    "name": "Armagnac",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxms0033godamegy31i7",
+    "name": "Aromatic Bitters",
+    "typeId": "cmnmrdxd00008goda400bx7bu"
+   },
+   {
+    "id": "cmnmrdxmr000ogodau378i4uo",
+    "name": "Añejo Tequila",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr0012goda2ujqh120",
+    "name": "Baijiu",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxms003fgoda64lbgbv0",
+    "name": "Berry",
+    "typeId": "cmnmrdxd00009goda6t33lx34"
+   },
+   {
+    "id": "cmnmrdxmr0019goda4rpd9x4w",
+    "name": "Berry & Fruit Liqueur",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxmr0029godamlrrfzg1",
+    "name": "Berry Juice",
+    "typeId": "cmnmrdxd00005goda2abqjy0p"
+   },
+   {
+    "id": "cmnmrdxmr001mgodak9o1y92k",
+    "name": "Bianco / Blanc Vermouth",
+    "typeId": "cmnmrdxd00002godawdgh1vt2"
+   },
+   {
+    "id": "cmnmrdxmr000mgoda27y2dl3o",
+    "name": "Blanco Tequila",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr000rgoda9mfqoo13",
+    "name": "Bourbon Whiskey",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr000vgodar9k94e6z",
+    "name": "Brandy / Cognac",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr001ugodanhp79in2",
+    "name": "Brut Champagne",
+    "typeId": "cmnmrdxd00003goda9f7kg9tv"
+   },
+   {
+    "id": "cmnmrdxmr000ygodao2kzhenc",
+    "name": "Cachaça",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxms0037godainv3rrjt",
+    "name": "Celery Bitters",
+    "typeId": "cmnmrdxd00008goda400bx7bu"
+   },
+   {
+    "id": "cmnmrdxmr001egoda36pvxpbh",
+    "name": "Cherry Liqueur",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxmr001hgodae3tre6dq",
+    "name": "Chocolate & Mocha Liqueur",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxms002ygodacmxsj694",
+    "name": "Cinnamon Syrup",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxms003cgodalyz9s002",
+    "name": "Citrus Fruit",
+    "typeId": "cmnmrdxd00009goda6t33lx34"
+   },
+   {
+    "id": "cmnmrdxmr0027goda40b8jmok",
+    "name": "Citrus Juice",
+    "typeId": "cmnmrdxd00005goda2abqjy0p"
+   },
+   {
+    "id": "cmnmrdxms003qgodapd4u4i7y",
+    "name": "Citrus Twist / Peel",
+    "typeId": "cmnmrdxd0000bgodas65wrnbp"
+   },
+   {
+    "id": "cmnmrdxms003sgodacfkufr7k",
+    "name": "Citrus Wedge",
+    "typeId": "cmnmrdxd0000bgodas65wrnbp"
+   },
+   {
+    "id": "cmnmrdxms003rgodawef3duer",
+    "name": "Citrus Wheel / Slice",
+    "typeId": "cmnmrdxd0000bgodas65wrnbp"
+   },
+   {
+    "id": "cmnmrdxmr002egodalwmiw2ul",
+    "name": "Club Soda / Sparkling Water",
+    "typeId": "cmnmrdxd00006godaf4k3hm1a"
+   },
+   {
+    "id": "cmnmrdxms003tgoda7backa72",
+    "name": "Cocktail Cherry",
+    "typeId": "cmnmrdxd0000bgodas65wrnbp"
+   },
+   {
+    "id": "cmnmrdxms0041godab8r2vyah",
+    "name": "Coconut Milk / Cream",
+    "typeId": "cmnmrdxd0000cgoday5vche4i"
+   },
+   {
+    "id": "cmnmrdxms0032godaxwfo0fht",
+    "name": "Coconut Syrup",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxmr002dgodasd9j7loc",
+    "name": "Coconut Water",
+    "typeId": "cmnmrdxd00005goda2abqjy0p"
+   },
+   {
+    "id": "cmnmrdxmr0015godapqrnaill",
+    "name": "Coffee Liqueur",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxmr002hgodan3kxeos4",
+    "name": "Cola",
+    "typeId": "cmnmrdxd00006godaf4k3hm1a"
+   },
+   {
+    "id": "cmnmrdxms003kgoda6ewamxxs",
+    "name": "Cream",
+    "typeId": "cmnmrdxd0000agodavng0ryfx"
+   },
+   {
+    "id": "cmnmrdxmr0018godaa1piaa0n",
+    "name": "Cream Liqueur",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxmr001rgodachcqqp5n",
+    "name": "Cream Sherry",
+    "typeId": "cmnmrdxd00002godawdgh1vt2"
+   },
+   {
+    "id": "cmnmrdxmr002mgoda6p52qm91",
+    "name": "Cream Soda",
+    "typeId": "cmnmrdxd00006godaf4k3hm1a"
+   },
+   {
+    "id": "cmnmrdxms0035goda8x8b2wps",
+    "name": "Creole / Peychaud's Bitters",
+    "typeId": "cmnmrdxd00008goda400bx7bu"
+   },
+   {
+    "id": "cmnmrdxmr000jgodai8jdq1za",
+    "name": "Dark / Aged Rum",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr002sgoda5edrqe7k",
+    "name": "Demerara / Brown Sugar Syrup",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxmr0020godamh3x9rbw",
+    "name": "Dessert Wine",
+    "typeId": "cmnmrdxd00003goda9f7kg9tv"
+   },
+   {
+    "id": "cmnmrdxmr002igoda28g85z3w",
+    "name": "Diet Cola",
+    "typeId": "cmnmrdxd00006godaf4k3hm1a"
+   },
+   {
+    "id": "cmnmrdxmr002ggoda8uh1fkaf",
+    "name": "Diet Tonic Water",
+    "typeId": "cmnmrdxd00006godaf4k3hm1a"
+   },
+   {
+    "id": "cmnmrdxmr001lgodame9s1qp5",
+    "name": "Dry Vermouth",
+    "typeId": "cmnmrdxd00002godawdgh1vt2"
+   },
+   {
+    "id": "cmnmrdxmr001xgodazcopqvvc",
+    "name": "Dry White Wine",
+    "typeId": "cmnmrdxd00003goda9f7kg9tv"
+   },
+   {
+    "id": "cmnmrdxms003ygoda8qerwiv9",
+    "name": "Edible Flower",
+    "typeId": "cmnmrdxd0000bgodas65wrnbp"
+   },
+   {
+    "id": "cmnmrdxms0043goda6l1mp0r3",
+    "name": "Egg Replacer / Foam",
+    "typeId": "cmnmrdxd0000cgoday5vche4i"
+   },
+   {
+    "id": "cmnmrdxms003mgodadv4smhh3",
+    "name": "Egg White",
+    "typeId": "cmnmrdxd0000agodavng0ryfx"
+   },
+   {
+    "id": "cmnmrdxms003ngodalhnyavte",
+    "name": "Egg Yolk",
+    "typeId": "cmnmrdxd0000agodavng0ryfx"
+   },
+   {
+    "id": "cmnmrdxmr001bgodakrvurg1a",
+    "name": "Elderflower Liqueur",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxmr001jgodafvo7e0g8",
+    "name": "Falernum",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxms0030godar823etnh",
+    "name": "Falernum Syrup",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxmr001pgodakkv8p615",
+    "name": "Fino / Manzanilla Sherry",
+    "typeId": "cmnmrdxd00002godawdgh1vt2"
+   },
+   {
+    "id": "cmnmrdxmr000egodadp2vhoc9",
+    "name": "Flavoured Vodka",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr002kgodajorrq8sw",
+    "name": "Ginger Ale",
+    "typeId": "cmnmrdxd00006godaf4k3hm1a"
+   },
+   {
+    "id": "cmnmrdxmr0025godaldmhpdcx",
+    "name": "Ginger Beer",
+    "typeId": "cmnmrdxd00004godapsi4hd2y"
+   },
+   {
+    "id": "cmnmrdxmr002jgodaz9x0a2lr",
+    "name": "Ginger Beer (Non-Alcoholic)",
+    "typeId": "cmnmrdxd00006godaf4k3hm1a"
+   },
+   {
+    "id": "cmnmrdxms0031godar5joj2ee",
+    "name": "Gomme Syrup",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxms003agodal2880zax",
+    "name": "Grapefruit Bitters",
+    "typeId": "cmnmrdxd00008goda400bx7bu"
+   },
+   {
+    "id": "cmnmrdxmr0011goda88u0o65w",
+    "name": "Grappa",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxms002tgodavxcoa6ok",
+    "name": "Grenadine",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxmr0026godafztcenxb",
+    "name": "Hard Cider",
+    "typeId": "cmnmrdxd00004godapsi4hd2y"
+   },
+   {
+    "id": "cmnmrdxms003ggodaowzn6xt6",
+    "name": "Herb",
+    "typeId": "cmnmrdxd00009goda6t33lx34"
+   },
+   {
+    "id": "cmnmrdxms003vgodapeeh0bza",
+    "name": "Herb Sprig",
+    "typeId": "cmnmrdxd0000bgodas65wrnbp"
+   },
+   {
+    "id": "cmnmrdxmr0017godas7s2r1qb",
+    "name": "Herbal & Botanical Liqueur",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxmr002qgodawcnmkfb8",
+    "name": "Honey Syrup",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxms0042godagyp9bc42",
+    "name": "Hot Water / Tea",
+    "typeId": "cmnmrdxd0000cgoday5vche4i"
+   },
+   {
+    "id": "cmnmrdxmr0024godal2uhpem2",
+    "name": "IPA",
+    "typeId": "cmnmrdxd00004godapsi4hd2y"
+   },
+   {
+    "id": "cmnmrdxms0040godagrmbawjz",
+    "name": "Ice",
+    "typeId": "cmnmrdxd0000cgoday5vche4i"
+   },
+   {
+    "id": "cmnmrdxmr000tgodafpe69pka",
+    "name": "Irish Whiskey",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr000ugoda9k8wqd0s",
+    "name": "Japanese Whisky",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr0021goday2615pjx",
+    "name": "Lager / Pilsner",
+    "typeId": "cmnmrdxd00004godapsi4hd2y"
+   },
+   {
+    "id": "cmnmrdxms0039godak4m3jdfj",
+    "name": "Lavender Bitters",
+    "typeId": "cmnmrdxd00008goda400bx7bu"
+   },
+   {
+    "id": "cmnmrdxmr002lgodao3qzjnzf",
+    "name": "Lemon-Lime Soda",
+    "typeId": "cmnmrdxd00006godaf4k3hm1a"
+   },
+   {
+    "id": "cmnmrdxmr001zgoda79b0r36w",
+    "name": "Light Red Wine",
+    "typeId": "cmnmrdxd00003goda9f7kg9tv"
+   },
+   {
+    "id": "cmnmrdxmr000fgodam2fhqhjr",
+    "name": "London Dry Gin",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr001sgodaz814zd92",
+    "name": "Madeira",
+    "typeId": "cmnmrdxd00002godawdgh1vt2"
+   },
+   {
+    "id": "cmnmrdxms002zgodaj9i1q76b",
+    "name": "Maple Syrup",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxms003jgoda64k7ptyg",
+    "name": "Melon",
+    "typeId": "cmnmrdxd00009goda6t33lx34"
+   },
+   {
+    "id": "cmnmrdxmr001ggodat7n4bee4",
+    "name": "Melon Liqueur",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxmr000pgodap7dzuqdr",
+    "name": "Mezcal",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxms003lgodaosenfsgj",
+    "name": "Milk",
+    "typeId": "cmnmrdxd0000agodavng0ryfx"
+   },
+   {
+    "id": "cmnmrdxms0036godai5a50px1",
+    "name": "Mole & Chocolate Bitters",
+    "typeId": "cmnmrdxd00008goda400bx7bu"
+   },
+   {
+    "id": "cmnmrdxmr000ggoda2tn5997q",
+    "name": "New Western / Contemporary Gin",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr0016goda65ixqf4r",
+    "name": "Nut & Almond Liqueur",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxms003ugodak31jy9um",
+    "name": "Olive & Onion",
+    "typeId": "cmnmrdxd0000bgodas65wrnbp"
+   },
+   {
+    "id": "cmnmrdxmr0014goda50y2k2n9",
+    "name": "Orange / Citrus Liqueur",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxms0034godat9q04m99",
+    "name": "Orange Bitters",
+    "typeId": "cmnmrdxd00008goda400bx7bu"
+   },
+   {
+    "id": "cmnmrdxms002ugodavw1iixyg",
+    "name": "Orgeat (Almond Syrup)",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxmr000lgodaeh8d0tak",
+    "name": "Overproof Rum",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxms002vgodaw6wqemk8",
+    "name": "Passion Fruit Syrup",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxmr001fgoda8mq0ho2l",
+    "name": "Peach & Apricot Liqueur",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxms0038godauz8x0tsb",
+    "name": "Peach Bitters",
+    "typeId": "cmnmrdxd00008goda400bx7bu"
+   },
+   {
+    "id": "cmnmrdxmr000xgodaz757fds2",
+    "name": "Pisco",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxms003pgodat1hu4sqs",
+    "name": "Plant-Based Cream",
+    "typeId": "cmnmrdxd0000agodavng0ryfx"
+   },
+   {
+    "id": "cmnmrdxmr001vgoda6hxhv36d",
+    "name": "Prosecco / Cava",
+    "typeId": "cmnmrdxd00003goda9f7kg9tv"
+   },
+   {
+    "id": "cmnmrdxmr001wgodasudm5mr9",
+    "name": "Pétillant Naturel",
+    "typeId": "cmnmrdxd00003goda9f7kg9tv"
+   },
+   {
+    "id": "cmnmrdxms002wgoda0wy271pq",
+    "name": "Raspberry Syrup",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxmr000ngoda6zhs86fj",
+    "name": "Reposado Tequila",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr002pgoda09rcby9u",
+    "name": "Rich Simple Syrup (2:1)",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxms003xgodaaenz4ftk",
+    "name": "Rim Salt / Sugar",
+    "typeId": "cmnmrdxd0000bgodas65wrnbp"
+   },
+   {
+    "id": "cmnmrdxmr002ngodau9010iao",
+    "name": "Root Beer",
+    "typeId": "cmnmrdxd00006godaf4k3hm1a"
+   },
+   {
+    "id": "cmnmrdxmr001ygodannvvbk44",
+    "name": "Rosé Wine",
+    "typeId": "cmnmrdxd00003goda9f7kg9tv"
+   },
+   {
+    "id": "cmnmrdxmr001ngoda0m2dgrn2",
+    "name": "Ruby Port",
+    "typeId": "cmnmrdxd00002godawdgh1vt2"
+   },
+   {
+    "id": "cmnmrdxmr000sgoda381icay1",
+    "name": "Rye Whiskey",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr001tgodahn4cqlaz",
+    "name": "Sake",
+    "typeId": "cmnmrdxd00002godawdgh1vt2"
+   },
+   {
+    "id": "cmnmrdxms0044godaanhsk6wu",
+    "name": "Salt / Saline Solution",
+    "typeId": "cmnmrdxd0000cgoday5vche4i"
+   },
+   {
+    "id": "cmnmrdxmr000qgodanrb5l0wp",
+    "name": "Scotch Whisky",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr002ogoda6fllzgtx",
+    "name": "Simple Syrup (1:1)",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxms003zgoda5bvptfzm",
+    "name": "Skewer / Pick",
+    "typeId": "cmnmrdxd0000bgodas65wrnbp"
+   },
+   {
+    "id": "cmnmrdxmr000hgoda8yatfs8g",
+    "name": "Sloe Gin",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxmr0013godakb8giwwa",
+    "name": "Soju",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxms003igodau0p0mxk2",
+    "name": "Spice / Root",
+    "typeId": "cmnmrdxd00009goda6t33lx34"
+   },
+   {
+    "id": "cmnmrdxms003wgodaihsev6xb",
+    "name": "Spice Dust",
+    "typeId": "cmnmrdxd0000bgodas65wrnbp"
+   },
+   {
+    "id": "cmnmrdxmr000kgoda8k0841i1",
+    "name": "Spiced Rum",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxms003egoda6c8i5zk7",
+    "name": "Stone Fruit",
+    "typeId": "cmnmrdxd00009goda6t33lx34"
+   },
+   {
+    "id": "cmnmrdxmr002agoda7k39nfwp",
+    "name": "Stone Fruit Juice",
+    "typeId": "cmnmrdxd00005goda2abqjy0p"
+   },
+   {
+    "id": "cmnmrdxmr0023godaaiasijau",
+    "name": "Stout & Porter",
+    "typeId": "cmnmrdxd00004godapsi4hd2y"
+   },
+   {
+    "id": "cmnmrdxmr001kgodavh35tbsr",
+    "name": "Sweet Vermouth",
+    "typeId": "cmnmrdxd00002godawdgh1vt2"
+   },
+   {
+    "id": "cmnmrdxmr001ogoda7jp9bqew",
+    "name": "Tawny Port",
+    "typeId": "cmnmrdxd00002godawdgh1vt2"
+   },
+   {
+    "id": "cmnmrdxmr002fgoda3rkrixnf",
+    "name": "Tonic Water",
+    "typeId": "cmnmrdxd00006godaf4k3hm1a"
+   },
+   {
+    "id": "cmnmrdxms003dgodau7bnnic3",
+    "name": "Tropical Fruit",
+    "typeId": "cmnmrdxd00009goda6t33lx34"
+   },
+   {
+    "id": "cmnmrdxmr001agodak4w2lile",
+    "name": "Tropical Fruit Liqueur",
+    "typeId": "cmnmrdxd00001godaphupik4g"
+   },
+   {
+    "id": "cmnmrdxmr0028godavskaafse",
+    "name": "Tropical Juice",
+    "typeId": "cmnmrdxd00005goda2abqjy0p"
+   },
+   {
+    "id": "cmnmrdxmr000dgodah9xpe53b",
+    "name": "Unflavoured Vodka",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxms002xgodah3ismmqv",
+    "name": "Vanilla Syrup",
+    "typeId": "cmnmrdxd00007godayku1nfb6"
+   },
+   {
+    "id": "cmnmrdxms003hgodayq24j4fe",
+    "name": "Vegetable",
+    "typeId": "cmnmrdxd00009goda6t33lx34"
+   },
+   {
+    "id": "cmnmrdxmr002bgoda9zlruyl5",
+    "name": "Vegetable Juice",
+    "typeId": "cmnmrdxd00005goda2abqjy0p"
+   },
+   {
+    "id": "cmnmrdxms003bgoda2hepxe6h",
+    "name": "Walnut Bitters",
+    "typeId": "cmnmrdxd00008goda400bx7bu"
+   },
+   {
+    "id": "cmnmrdxmr0022godaph5kfm6f",
+    "name": "Wheat Beer",
+    "typeId": "cmnmrdxd00004godapsi4hd2y"
+   },
+   {
+    "id": "cmnmrdxmr000igoda95uzo434",
+    "name": "White / Silver Rum",
+    "typeId": "cmnmrdxd00000godajw7e2nf9"
+   },
+   {
+    "id": "cmnmrdxms003ogodapkx750gl",
+    "name": "Whole Egg",
+    "typeId": "cmnmrdxd0000agodavng0ryfx"
+   }
+  ],
+  "meta": {
+   "total": 136,
+   "page": 1,
+   "limit": 200,
+   "totalPages": 1,
+   "hasNextPage": false,
+   "hasPreviousPage": false
+  }
+ },
+ "detailId": "cmnmsikky0007fndwt4ny7hhv",
+ "detail": {
+  "success": true,
+  "data": {
+   "id": "cmnmsikky0007fndwt4ny7hhv",
+   "name": "A1",
+   "description": "A1 is a sour, citrus, and sweet, built on a base of gin cocktail that delivers character in every sip. It is served in a cocktail glass. It is a delightful brunch companion.",
+   "fullDescription": null,
+   "instructions": [
+    "Pour all ingredients into a cocktail shaker, mix and serve over ice into a chilled glass."
+   ],
+   "imageUrl": "https://www.thecocktaildb.com/images/media/drink/2x8thr1504816928.jpg",
+   "isAlcoholic": true,
+   "mainAlcoholId": "cmnmsij150001fndw6iea5q33",
+   "source": "cocktaildb",
+   "externalId": "17222",
+   "difficulty": "easy",
+   "preparationTime": 4,
+   "technique": [],
+   "flavors": [
+    "citrus",
+    "sour",
+    "sweet",
+    "strong",
+    "refreshing"
+   ],
+   "occasions": [
+    "summer",
+    "brunch",
+    "happy_hour",
+    "party",
+    "casual"
+   ],
+   "origin": null,
+   "glassId": "cmnmrdy0s0046godaoxrg510f",
+   "avgRating": 5,
+   "ratingCount": 2,
+   "createdAt": "2026-04-06T06:09:15.443Z",
+   "updatedAt": "2026-05-25T11:22:15.323Z",
+   "glass": {
+    "id": "cmnmrdy0s0046godaoxrg510f",
+    "name": "Martini"
+   },
+   "mainAlcohol": {
+    "id": "cmnmsij150001fndw6iea5q33",
+    "name": "Gin"
+   },
+   "ingredients": [
+    {
+     "id": "cmnmsikoq000afndwb4p3jh18",
+     "cocktailId": "cmnmsikky0007fndwt4ny7hhv",
+     "ingredientId": "cmnmre2qu005ngodagk4q2d21",
+     "amount": 0.375,
+     "unit": "oz",
+     "optional": false,
+     "substitutes": [],
+     "subUnit": [
+      "oz"
+     ],
+     "subAmount": [],
+     "subShow": [],
+     "ingredient": {
+      "id": "cmnmre2qu005ngodagk4q2d21",
+      "name": "Lemon Juice",
+      "isAlcoholic": false,
+      "abv": 0,
+      "type": {
+       "name": "Juice"
+      },
+      "subType": {
+       "name": "Citrus Juice"
+      }
+     }
+    },
+    {
+     "id": "cmnmsikoq0008fndwy9hfnlgq",
+     "cocktailId": "cmnmsikky0007fndwt4ny7hhv",
+     "ingredientId": "cmnmsij150001fndw6iea5q33",
+     "amount": 2.625,
+     "unit": "oz",
+     "optional": false,
+     "substitutes": [],
+     "subUnit": [
+      "oz"
+     ],
+     "subAmount": [],
+     "subShow": [],
+     "ingredient": {
+      "id": "cmnmsij150001fndw6iea5q33",
+      "name": "Gin",
+      "isAlcoholic": true,
+      "abv": 40,
+      "type": {
+       "name": "Spirit"
+      },
+      "subType": {
+       "name": "London Dry Gin"
+      }
+     }
+    },
+    {
+     "id": "cmnmsikoq0009fndwlw4ngthk",
+     "cocktailId": "cmnmsikky0007fndwt4ny7hhv",
+     "ingredientId": "cmnmsijr40003fndw0lm2vrh9",
+     "amount": 1.5,
+     "unit": "oz",
+     "optional": false,
+     "substitutes": [],
+     "subUnit": [
+      "oz"
+     ],
+     "subAmount": [],
+     "subShow": [],
+     "ingredient": {
+      "id": "cmnmsijr40003fndw0lm2vrh9",
+      "name": "Grand Marnier",
+      "isAlcoholic": true,
+      "abv": null,
+      "type": {
+       "name": "Liqueur"
+      },
+      "subType": {
+       "name": "Orange / Citrus Liqueur"
+      }
+     }
+    },
+    {
+     "id": "cmnmsikoq000bfndwnpv6227g",
+     "cocktailId": "cmnmsikky0007fndwt4ny7hhv",
+     "ingredientId": "cmnmsikbo0005fndwpkdr0mpg",
+     "amount": 0.1875,
+     "unit": "oz",
+     "optional": false,
+     "substitutes": [],
+     "subUnit": [
+      "oz"
+     ],
+     "subAmount": [],
+     "subShow": [],
+     "ingredient": {
+      "id": "cmnmsikbo0005fndwpkdr0mpg",
+      "name": "Grenadine",
+      "isAlcoholic": false,
+      "abv": 0,
+      "type": {
+       "name": "Sweetener"
+      },
+      "subType": {
+       "name": "Grenadine"
+      }
+     }
+    }
+   ],
+   "barTools": [],
+   "_count": {
+    "ratings": 2,
+    "favoritedBy": 2
+   }
+  }
+ }
+}

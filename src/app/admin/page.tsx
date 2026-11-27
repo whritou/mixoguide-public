@@ -28,14 +28,14 @@ type KpiCardProps = {
 
 function KpiCard({ title, value, icon }: KpiCardProps) {
     return (
-        <Card className="border-stone-200 shadow-sm transition-all duration-300 hover:shadow-md hover:border-mg-brown/30">
+        <Card className="border-line shadow-sm transition-all duration-300 hover:shadow-md hover:border-brand/30">
             <CardContent className="flex items-center gap-4">
-                <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-mg-brown/10 text-mg-brown">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
                     {icon}
                 </div>
                 <div className="min-w-0">
-                    <p className="text-sm font-medium text-stone-500 uppercase tracking-wider">{title}</p>
-                    <p className="text-2xl font-bold tracking-tight text-stone-900 tabular-nums">{value}</p>
+                    <p className="text-sm font-medium text-fg-muted uppercase tracking-wider">{title}</p>
+                    <p className="text-2xl font-bold tracking-tight text-fg tabular-nums">{value}</p>
                 </div>
             </CardContent>
         </Card>
@@ -44,12 +44,12 @@ function KpiCard({ title, value, icon }: KpiCardProps) {
 
 function KpiSkeleton() {
     return (
-        <Card className="border-stone-200">
+        <Card className="border-line">
             <CardContent className="flex items-center gap-4 pt-6">
-                <Skeleton className="size-12 rounded-xl bg-stone-100" />
+                <Skeleton className="size-12 rounded-xl bg-surface-hover" />
                 <div className="space-y-2">
-                    <Skeleton className="h-3 w-20 bg-stone-100" />
-                    <Skeleton className="h-7 w-12 bg-stone-100" />
+                    <Skeleton className="h-3 w-20 bg-surface-hover" />
+                    <Skeleton className="h-7 w-12 bg-surface-hover" />
                 </div>
             </CardContent>
         </Card>
@@ -58,13 +58,13 @@ function KpiSkeleton() {
 
 function ChartSkeleton() {
     return (
-        <Card className="border-stone-200">
+        <Card className="border-line">
             <CardHeader>
-                <Skeleton className="h-6 w-40 bg-stone-100" />
-                <Skeleton className="h-4 w-56 bg-stone-100 mt-2" />
+                <Skeleton className="h-6 w-40 bg-surface-hover" />
+                <Skeleton className="h-4 w-56 bg-surface-hover mt-2" />
             </CardHeader>
             <CardContent>
-                <Skeleton className="h-[280px] w-full rounded-xl bg-stone-50" />
+                <Skeleton className="h-[280px] w-full rounded-xl bg-surface-hover-alt" />
             </CardContent>
         </Card>
     )
@@ -85,18 +85,18 @@ export default function AdminDashboard() {
 
     if (error) {
         return (
-            <div className="flex min-h-[50vh] items-center justify-center bg-stone-50 rounded-2xl">
-                <p className="text-red-700 font-medium bg-red-50 px-4 py-2 rounded-lg">Failed to load dashboard data</p>
+            <div className="flex min-h-[50vh] items-center justify-center bg-surface-hover-alt rounded-2xl">
+                <p className="text-danger font-medium bg-danger-bg px-4 py-2 rounded-lg">Failed to load dashboard data</p>
             </div>
         )
     }
 
     if (loading || !stats) {
         return (
-            <div className="space-y-8 bg-[#faf9f8] min-h-screen p-6 rounded-2xl">
+            <div className="space-y-8 bg-canvas min-h-screen p-6 rounded-2xl">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-stone-900">Dashboard</h1>
-                    <p className="text-stone-500 text-sm mt-1">Overview of your MixoGuide data</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-fg">Dashboard</h1>
+                    <p className="text-fg-muted text-sm mt-1">Overview of your MixoGuide data</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                     {Array.from({ length: 8 }).map((_, i) => (
@@ -119,8 +119,8 @@ export default function AdminDashboard() {
         <div className="space-y-8 min-h-screen p-6 rounded-2xl">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold tracking-tight text-stone-900">Dashboard</h1>
-                <p className="text-stone-500 text-sm mt-1">Overview of your MixoGuide data</p>
+                <h1 className="text-3xl font-bold tracking-tight text-fg">Dashboard</h1>
+                <p className="text-fg-muted text-sm mt-1">Overview of your MixoGuide data</p>
             </div>
 
             {/* KPI Cards */}
@@ -141,24 +141,24 @@ export default function AdminDashboard() {
 
                 {/* Recent Completions */}
                 {stats.recentCompletions.length > 0 && (
-                    <Card className="lg:col-span-2 border-stone-200 shadow-sm">
+                    <Card className="lg:col-span-2 border-line shadow-sm">
                         <CardHeader>
-                            <CardTitle className="text-stone-900">Recent Completions</CardTitle>
-                            <CardDescription className="text-stone-500">Latest cocktails marked as done</CardDescription>
+                            <CardTitle className="text-fg">Recent Completions</CardTitle>
+                            <CardDescription className="text-fg-muted">Latest cocktails marked as done</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="divide-y divide-stone-100">
+                            <div className="divide-y divide-line/50">
                                 {stats.recentCompletions.map((c, i) => (
-                                    <div key={i} className="flex items-center justify-between py-4 first:pt-0 last:pb-0 transition-colors hover:bg-stone-50/50 rounded-lg px-2 -mx-2">
+                                    <div key={i} className="flex items-center justify-between py-4 first:pt-0 last:pb-0 transition-colors hover:bg-surface-hover-alt rounded-lg px-2 -mx-2">
                                         <div className="min-w-0">
-                                            <p className="truncate text-sm font-semibold text-stone-900">{c.cocktailName}</p>
-                                            <p className="text-xs text-stone-500 mt-0.5">by {c.userName}</p>
+                                            <p className="truncate text-sm font-semibold text-fg">{c.cocktailName}</p>
+                                            <p className="text-xs text-fg-muted mt-0.5">by {c.userName}</p>
                                         </div>
                                         <div className="flex flex-col items-end">
-                                            <span className="inline-flex items-center rounded-full bg-mg-brown/10 px-2.5 py-0.5 text-xs font-medium text-mg-brown">
+                                            <span className="inline-flex items-center rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-medium text-brand">
                                                 Completed
                                             </span>
-                                            <p className="text-xs text-stone-400 mt-1">
+                                            <p className="text-xs text-fg-muted mt-1">
                                                 {new Date(c.completedAt).toLocaleDateString(undefined, {
                                                     month: 'short',
                                                     day: 'numeric',

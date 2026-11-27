@@ -53,11 +53,11 @@ export function PantryTable({
 
     return (
         <>
-            <div className="rounded-2xl overflow-hidden border border-mg-sand/80">
+            <div className="rounded-2xl overflow-hidden border border-line/80">
                 {/* Table header — desktop */}
-                <div className="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr_minmax(100px,1fr)_40px] gap-4 px-6 py-3 bg-[#f5f2ee]">
+                <div className="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr_minmax(100px,1fr)_40px] gap-4 px-6 py-3 bg-surface-subtle">
                     {['Ingredient', 'Type', 'Stock', qtyHeader].map(col => (
-                        <div key={col} className={`text-[10px] font-label uppercase tracking-widest text-mg-muted ${col === qtyHeader ? 'text-right' : ''}`}>
+                        <div key={col} className={`text-[10px] font-label uppercase tracking-widest text-fg-muted ${col === qtyHeader ? 'text-right' : ''}`}>
                             {col}
                         </div>
                     ))}
@@ -65,13 +65,13 @@ export function PantryTable({
                 </div>
 
                 {/* Table header — mobile */}
-                <div className="sm:hidden grid grid-cols-[1fr_auto_32px] gap-3 px-4 py-2.5 bg-[#f5f2ee]">
-                    <div className="text-[10px] font-label uppercase tracking-widest text-mg-muted">Ingredient</div>
-                    <div className="text-[10px] font-label uppercase tracking-widest text-mg-muted text-right">{qtyHeader}</div>
+                <div className="sm:hidden grid grid-cols-[1fr_auto_32px] gap-3 px-4 py-2.5 bg-surface-subtle">
+                    <div className="text-[10px] font-label uppercase tracking-widest text-fg-muted">Ingredient</div>
+                    <div className="text-[10px] font-label uppercase tracking-widest text-fg-muted text-right">{qtyHeader}</div>
                     <div />
                 </div>
 
-                <div className="divide-y divide-[#f0ece8]">
+                <div className="divide-y divide-line">
                     {items.map(item => (
                         <PantryTableRow
                             key={item.id}
@@ -86,10 +86,10 @@ export function PantryTable({
             </div>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-xs text-mg-muted">
-                    Total items: <span className="font-medium text-mg-charcoal">{totalItems}</span>
+                <div className="text-xs text-fg-muted">
+                    Total items: <span className="font-medium text-fg-secondary">{totalItems}</span>
                     {' · '}
-                    Page <span className="font-medium text-mg-charcoal">{currentPage}</span> of <span className="font-medium text-mg-charcoal">{totalPages}</span>
+                    Page <span className="font-medium text-fg-secondary">{currentPage}</span> of <span className="font-medium text-fg-secondary">{totalPages}</span>
                     {' · '}
                     {pageSize} per page
                 </div>
@@ -97,28 +97,28 @@ export function PantryTable({
                     <button
                         onClick={onFirst}
                         disabled={!canPrev || isFetching}
-                        className="px-3 py-2 rounded-full border border-mg-bone text-xs text-mg-charcoal hover:bg-mg-dusk transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-2 rounded-full border border-line-strong text-xs text-fg-secondary hover:bg-canvas-hover-alt transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         First
                     </button>
                     <button
                         onClick={onPrev}
                         disabled={!canPrev || isFetching}
-                        className="px-3 py-2 rounded-full border border-mg-bone text-xs text-mg-charcoal hover:bg-mg-dusk transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-2 rounded-full border border-line-strong text-xs text-fg-secondary hover:bg-canvas-hover-alt transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Previous
                     </button>
                     <button
                         onClick={onNext}
                         disabled={!canNext || isFetching}
-                        className="px-3 py-2 rounded-full border border-mg-bone text-xs text-mg-charcoal hover:bg-mg-dusk transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-2 rounded-full border border-line-strong text-xs text-fg-secondary hover:bg-canvas-hover-alt transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Next
                     </button>
                     <button
                         onClick={onLast}
                         disabled={!canNext || isFetching}
-                        className="px-3 py-2 rounded-full border border-mg-bone text-xs text-mg-charcoal hover:bg-mg-dusk transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-2 rounded-full border border-line-strong text-xs text-fg-secondary hover:bg-canvas-hover-alt transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Last
                     </button>
@@ -153,7 +153,7 @@ function PantryEmptyState({
             : 'Your pantry is empty';
 
     const body = hasSearch
-        ? <>No ingredients match <span className="font-medium text-mg-charcoal">{search.trim()}</span>.</>
+        ? <>No ingredients match <span className="font-medium text-fg-secondary">{search.trim()}</span>.</>
         : hasActiveFilter
             ? 'Try changing or clearing the current filters.'
             : isShopping

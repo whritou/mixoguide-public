@@ -32,6 +32,30 @@ function prismaNotFound() {
     })
 }
 
+describe('IngredientService.findIdsByNames', () => {
+    beforeEach(() => { vi.clearAllMocks() })
+
+    it('maps requested names to ids case-insensitively and omits unknown names', async () => {
+        mockPrisma.ingredient.findMany.mockResolvedValue([
+            { id: 'ing-rye', name: 'Rye Whiskey' },
+            { id: 'ing-gin', name: 'Gin' },
+        ])
+
+        const result = await ingredientService.findIdsByNames(['Rye whiskey', 'Gin', 'Unobtainium'])
+
+        expect(result).toEqual({ 'Rye whiskey': 'ing-rye', Gin: 'ing-gin' })
+        expect(mockPrisma.ingredient.findMany).toHaveBeenCalledWith({
+            where: { name: { in: ['Rye whiskey', 'Gin', 'Unobtainium'], mode: 'insensitive' } },
+            select: { id: true, name: true },
+        })
+    })
+
+    it('skips the query for an empty list', async () => {
+        await expect(ingredientService.findIdsByNames([])).resolves.toEqual({})
+        expect(mockPrisma.ingredient.findMany).not.toHaveBeenCalled()
+    })
+})
+
 describe('IngredientService.getAll', () => {
     beforeEach(() => { vi.clearAllMocks() })
 

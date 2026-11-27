@@ -30,7 +30,7 @@ export default function IngredientPage() {
 
 function PageSkeleton() {
     return (
-        <div className="min-h-screen bg-mg-cream flex items-center justify-center">
+        <div className="min-h-screen bg-canvas flex items-center justify-center">
             <Loader />
         </div>
     )
@@ -105,7 +105,7 @@ function IngredientPageContent() {
     })
 
     return (
-        <div className="min-h-screen bg-mg-cream pb-16">
+        <div className="min-h-screen bg-canvas pb-16">
             <SuggestionDialog
                 open={suggestionDialogOpen}
                 onOpenChange={setSuggestionDialogOpen}
@@ -123,8 +123,8 @@ function IngredientPageContent() {
             <div className="max-w-screen-2xl mx-auto px-4 md:px-12 pt-8 pb-20">
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="font-headline text-3xl text-mg-ink">Ingredients</h1>
-                        <p className="text-sm text-mg-muted mt-0.5">
+                        <h1 className="font-headline text-3xl text-fg">Ingredients</h1>
+                        <p className="text-sm text-fg-muted mt-0.5">
                             Explore all the ingredients in our library.
                         </p>
                     </div>
@@ -132,7 +132,7 @@ function IngredientPageContent() {
                         {hasActiveFilters && (
                             <button
                                 onClick={handleReset}
-                                className="text-xs text-mg-muted hover:text-mg-ink underline underline-offset-2 transition-colors"
+                                className="text-xs text-fg-muted hover:text-fg underline underline-offset-2 transition-colors"
                             >
                                 Clear filters
                             </button>
@@ -145,7 +145,7 @@ function IngredientPageContent() {
                                 }
                                 setSuggestionDialogOpen(true)
                             }}
-                            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full border border-mg-caramel/40 text-mg-brown text-sm hover:bg-[#f5ece0] transition-colors"
+                            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-soft/40 text-brand text-sm hover:bg-surface-muted transition-colors"
                         >
                             <MessageSquarePlus size={14} />
                             Suggest
@@ -198,7 +198,7 @@ function IngredientsEmptyState({
         : 'No ingredients yet'
 
     const body = hasSearch
-        ? <>No ingredients match <span className="font-medium text-mg-charcoal">{search.trim()}</span>.</>
+        ? <>No ingredients match <span className="font-medium text-fg-secondary">{search.trim()}</span>.</>
         : hasActiveFilters
             ? 'Try changing or clearing the current filters.'
             : 'Ingredients will appear here once they are available.'

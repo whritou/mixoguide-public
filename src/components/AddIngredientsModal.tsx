@@ -31,10 +31,10 @@ function statusOf(g: GroceryItem): Status {
 }
 
 const STATUS_META: Record<Status, { label: string; pill: string; dot: string }> = {
-    'in-stock': { label: 'In stock',  pill: 'bg-mg-brown/10 text-mg-brown',  dot: 'bg-mg-brown' },
-    'in-list':  { label: 'In shopping list',   pill: 'bg-mg-caramel/20 text-mg-brown',  dot: 'bg-mg-caramel' },
-    'partial':  { label: 'Partial',   pill: 'bg-amber-100 text-amber-800',      dot: 'bg-amber-400' },
-    'missing':  { label: 'Missing',   pill: 'bg-mg-danger-light/80 text-mg-danger',  dot: 'bg-mg-danger' },
+    'in-stock': { label: 'In stock',  pill: 'bg-brand/10 text-brand',  dot: 'bg-brand' },
+    'in-list':  { label: 'In shopping list',   pill: 'bg-brand-soft/20 text-brand',  dot: 'bg-brand-soft' },
+    'partial':  { label: 'Partial',   pill: 'bg-warning-bg text-warning',      dot: 'bg-status-partial-dot' },
+    'missing':  { label: 'Missing',   pill: 'bg-danger-bg/80 text-danger',  dot: 'bg-danger' },
 }
 
 interface IngredientRow extends GroceryItem {
@@ -115,11 +115,11 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
         <Dialog open={open} onOpenChange={v => !v && onClose()}>
             <DialogContent className="max-w-lg flex flex-col p-0 gap-0 overflow-hidden max-h-[85vh]">
 
-                <DialogHeader className="px-6 pt-6 pb-4 border-b border-mg-sand shrink-0">
-                    <DialogTitle className="font-headline text-mg-ink text-left">
+                <DialogHeader className="px-6 pt-6 pb-4 border-b border-line shrink-0">
+                    <DialogTitle className="font-headline text-fg text-left">
                         Stock up ingredients
                     </DialogTitle>
-                    <p className="text-xs text-mg-muted text-left">
+                    <p className="text-xs text-fg-muted text-left">
                         Select which ingredients to add and choose a destination.
                     </p>
                 </DialogHeader>
@@ -129,7 +129,7 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
 
                     {/* In-stock summary */}
                     {inStockCount > 0 && (
-                        <div className="flex items-center gap-1.5 text-xs text-mg-brown pb-1">
+                        <div className="flex items-center gap-1.5 text-xs text-brand pb-1">
                             <Check size={12} />
                             <span>
                                 {inStockCount} ingredient{inStockCount !== 1 ? 's' : ''} already in stock
@@ -138,7 +138,7 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                     )}
 
                     {needAction.length === 0 && (
-                        <p className="text-sm text-mg-muted text-center py-8">
+                        <p className="text-sm text-fg-muted text-center py-8">
                             All ingredients are already in stock!
                         </p>
                     )}
@@ -146,12 +146,12 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                     {needAction.length > 0 && (
                         <>
                             <div className="flex items-center justify-between pb-1">
-                                <span className="text-[10px] font-label uppercase tracking-widest text-mg-muted">
+                                <span className="text-[10px] font-label uppercase tracking-widest text-fg-muted">
                                     {needAction.length} need{needAction.length === 1 ? 's' : ''} attention
                                 </span>
                                 <button
                                     onClick={selectAll}
-                                    className="text-xs text-mg-brown hover:underline"
+                                    className="text-xs text-brand hover:underline"
                                 >
                                     Select all
                                 </button>
@@ -167,8 +167,8 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                                         key={g.ingredientId}
                                         className={`rounded-lg border p-3 transition-colors ${
                                             row.selected
-                                                ? 'border-mg-caramel/50 bg-mg-caramel/5'
-                                                : 'border-mg-sand bg-white'
+                                                ? 'border-brand-soft/50 bg-brand-soft/5'
+                                                : 'border-line bg-surface'
                                         }`}
                                     >
                                         {/* Top row: checkbox + name + badge */}
@@ -177,23 +177,23 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                                                 onClick={() => toggle(g.ingredientId)}
                                                 className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
                                                     row.selected
-                                                        ? 'bg-mg-brown border-mg-brown'
-                                                        : 'border-mg-muted bg-white'
+                                                        ? 'bg-brand border-brand'
+                                                        : 'border-line-control bg-surface'
                                                 }`}
                                             >
-                                                {row.selected && <Check size={10} className="text-white" />}
+                                                {row.selected && <Check size={10} className="text-fg-on-brand" />}
                                             </button>
 
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <span className="text-sm text-mg-ink font-medium">
+                                                    <span className="text-sm text-fg font-medium">
                                                         {g.ingredientName}
                                                     </span>
                                                     <span className={`text-[10px] font-label uppercase tracking-widest px-1.5 py-0.5 rounded-full shrink-0 ${meta.pill}`}>
                                                         {meta.label}
                                                     </span>
                                                 </div>
-                                                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-mg-muted">
+                                                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-fg-muted">
                                                     <span>Need {g.missing}{g.unit}</span>
                                                     {g.inPantry > 0 && (
                                                         <span>· Have {g.inPantry}{g.unit}</span>
@@ -212,7 +212,7 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                                             <div className="mt-3 ml-6 flex items-center gap-3 flex-wrap">
                                                 {/* Quantity */}
                                                 <div className="flex items-center gap-1.5">
-                                                    <label className="text-[10px] font-label uppercase tracking-widest text-mg-muted">
+                                                    <label className="text-[10px] font-label uppercase tracking-widest text-fg-muted">
                                                         Qty
                                                     </label>
                                                     <input
@@ -221,19 +221,19 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                                                         step={0.01}
                                                         value={row.quantity}
                                                         onChange={e => setQty(g.ingredientId, parseFloat(e.target.value) || 0)}
-                                                        className="w-16 text-xs text-center border border-mg-sand rounded px-1.5 py-1 focus:outline-none focus:border-mg-caramel"
+                                                        className="w-16 text-xs text-center border border-line-control rounded px-1.5 py-1 focus:outline-none focus:border-brand-soft"
                                                     />
-                                                    <span className="text-[11px] text-mg-muted">{g.unit}</span>
+                                                    <span className="text-[11px] text-fg-muted">{g.unit}</span>
                                                 </div>
 
                                                 {/* Destination toggle */}
-                                                <div className="flex rounded-full border border-mg-sand overflow-hidden text-[10px] font-label uppercase tracking-widest">
+                                                <div className="flex rounded-full border border-line overflow-hidden text-[10px] font-label uppercase tracking-widest">
                                                     <button
                                                         onClick={() => setDest(g.ingredientId, 'shopping')}
                                                         className={`flex items-center gap-1 px-2.5 py-1 transition-colors ${
                                                             row.destination === 'shopping'
-                                                                ? 'bg-mg-brown text-white'
-                                                                : 'text-mg-muted hover:bg-mg-sand/60'
+                                                                ? 'bg-brand text-fg-on-brand'
+                                                                : 'text-fg-muted hover:bg-line/60'
                                                         }`}
                                                     >
                                                         <ShoppingCart size={9} /> Shopping
@@ -242,8 +242,8 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                                                         onClick={() => setDest(g.ingredientId, 'pantry')}
                                                         className={`flex items-center gap-1 px-2.5 py-1 transition-colors ${
                                                             row.destination === 'pantry'
-                                                                ? 'bg-mg-brown text-white'
-                                                                : 'text-mg-muted hover:bg-mg-sand/60'
+                                                                ? 'bg-brand text-fg-on-brand'
+                                                                : 'text-fg-muted hover:bg-line/60'
                                                         }`}
                                                     >
                                                         <Package size={9} /> Pantry
@@ -251,7 +251,7 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                                                 </div>
 
                                                 {/* Hint */}
-                                                <span className="text-[10px] text-mg-muted italic">
+                                                <span className="text-[10px] text-fg-muted italic">
                                                     {row.destination === 'shopping'
                                                         ? 'Sets shopping qty to needed amount'
                                                         : 'Adds to your current pantry stock'}
@@ -266,17 +266,17 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                 </div>
 
                 {/* Footer */}
-                <DialogFooter className="px-6 py-4 border-t border-mg-sand bg-white shrink-0 sm:justify-between">
+                <DialogFooter className="px-6 py-4 border-t border-line bg-surface shrink-0 sm:justify-between">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-xs font-label uppercase tracking-widest text-mg-muted hover:text-mg-ink transition-colors"
+                        className="px-4 py-2 text-xs font-label uppercase tracking-widest text-fg-muted hover:text-fg transition-colors"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={selectedRows.length === 0 || submitting}
-                        className="px-5 py-2 text-xs font-label uppercase tracking-widest rounded-full bg-mg-brown text-white hover:bg-[#5c4023] disabled:opacity-40 transition-colors"
+                        className="px-5 py-2 text-xs font-label uppercase tracking-widest rounded-full bg-brand text-fg-on-brand hover:bg-brand/90 disabled:opacity-40 transition-colors"
                     >
                         {submitting
                             ? 'Adding…'

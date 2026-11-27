@@ -177,10 +177,10 @@ export function DataTable<TData, TValue>({
             </div>
 
             {/* table + loading overlay */}
-            <div className="relative border rounded-md bg-white">
+            <div className="relative border rounded-md bg-surface">
 
                 {showInitialLoader && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10">
+                    <div className="absolute inset-0 flex items-center justify-center bg-surface/70 z-10">
                         <span className="text-sm">Loading...</span>
                     </div>
                 )}

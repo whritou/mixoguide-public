@@ -98,11 +98,11 @@ export function GenericForm<T extends FieldValues>({
 
   /* ───────────────────────────── render ────────────────────────────────── */
   return (
-      <Card className="bg-mg-cream border-mg-sand shadow-sm">
+      <Card className="bg-canvas border-line shadow-sm">
         {(title || description) && (
-            <CardHeader className="border-b border-mg-sand pb-5">
-              {title       && <CardTitle className="font-headline text-mg-ink text-lg">{title}</CardTitle>}
-              {description && <CardDescription className="text-mg-muted font-body text-sm">{description}</CardDescription>}
+            <CardHeader className="border-b border-line pb-5">
+              {title       && <CardTitle className="font-headline text-fg text-lg">{title}</CardTitle>}
+              {description && <CardDescription className="text-fg-muted font-body text-sm">{description}</CardDescription>}
             </CardHeader>
         )}
 
@@ -118,14 +118,14 @@ export function GenericForm<T extends FieldValues>({
                   ))}
             </CardContent>
 
-            <CardFooter className="flex justify-between gap-3 mt-2 border-t border-mg-sand bg-mg-cream pt-5 rounded-b-xl">
+            <CardFooter className="flex justify-between gap-3 mt-2 border-t border-line bg-canvas pt-5 rounded-b-xl">
               {onCancel && (
                   <Button
                       type="button"
                       variant="outline"
                       onClick={onCancel}
                       disabled={isLoading || submitting}
-                      className="flex-1 rounded-full text-xs font-label uppercase tracking-widest text-mg-charcoal border-mg-sand bg-mg-sand/60 hover:bg-mg-sand hover:text-mg-ink transition-colors"
+                      className="flex-1 rounded-full text-xs font-label uppercase tracking-widest text-fg-secondary border-line bg-line/60 hover:bg-line hover:text-fg transition-colors"
                   >
                     {cancelButtonLabel}
                   </Button>
@@ -134,7 +134,7 @@ export function GenericForm<T extends FieldValues>({
               <Button
                   type="submit"
                   disabled={isLoading || submitting}
-                  className={`${onCancel ? "flex-1" : "ml-auto"} rounded-full text-xs font-label uppercase tracking-widest bg-gradient-to-br from-mg-brown to-mg-caramel text-white hover:scale-[0.98] transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 border-0`}
+                  className={`${onCancel ? "flex-1" : "ml-auto"} rounded-full text-xs font-label uppercase tracking-widest bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand hover:scale-[0.98] transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 border-0`}
               >
                 {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {submitButtonLabel}

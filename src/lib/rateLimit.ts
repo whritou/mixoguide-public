@@ -28,6 +28,7 @@ export const RATE_LIMIT_CONFIGS = {
     "invite-email":        { maxRequests: 10,  windowSeconds: 60 * 60 },
     "pdf-export":          { maxRequests: 30,  windowSeconds: 60 * 60 },
     makeable:              { maxRequests: 30,  windowSeconds: 60 },
+    "makeable-preview":    { maxRequests: 120, windowSeconds: 10 * 60 },
     recommendation:        { maxRequests: 10,  windowSeconds: 60 },
     "bulk-add":            { maxRequests: 10,  windowSeconds: 60 },
     "public-read":         { maxRequests: 60,  windowSeconds: 60 },

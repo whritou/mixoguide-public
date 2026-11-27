@@ -32,6 +32,17 @@ describe('checkRateLimit', () => {
         await expect(checkRateLimit('resend-verification', identifier)).rejects.toBeInstanceOf(TooManyRequestsError)
     })
 
+    it('caps the public makeable preview at 120 requests per 10 minutes', async () => {
+        expect(RATE_LIMIT_CONFIGS['makeable-preview']).toEqual({ maxRequests: 120, windowSeconds: 600 })
+
+        const identifier = `preview-${Date.now()}`
+        for (let i = 0; i < 120; i++) {
+            await expect(checkRateLimit('makeable-preview', identifier)).resolves.toBeUndefined()
+        }
+
+        await expect(checkRateLimit('makeable-preview', identifier)).rejects.toBeInstanceOf(TooManyRequestsError)
+    })
+
     it('allows requests again after the window resets', async () => {
         vi.useFakeTimers()
         vi.setSystemTime(new Date('2026-04-26T00:00:00.000Z'))

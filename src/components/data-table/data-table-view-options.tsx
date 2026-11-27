@@ -19,13 +19,13 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
   return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="ml-auto h-8 flex rounded-full text-xs font-label uppercase tracking-widest border-mg-sand text-mg-muted hover:bg-mg-linen hover:text-mg-charcoal hover:border-mg-caramel/40">
+          <Button variant="outline" size="sm" className="ml-auto h-8 flex rounded-full text-xs font-label uppercase tracking-widest border-line text-fg-muted hover:bg-surface-subtle hover:text-fg-secondary hover:border-brand-soft/40">
             <SlidersHorizontal className="mr-2 h-3.5 w-3.5" />
             Columns
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[160px] rounded-xl border-mg-sand bg-mg-cream">
-          <DropdownMenuLabel className="text-xs font-label uppercase tracking-widest text-mg-muted">Display columns</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-[160px] rounded-xl border-line bg-canvas">
+          <DropdownMenuLabel className="text-xs font-label uppercase tracking-widest text-fg-muted">Display columns</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {table
               .getAllColumns()

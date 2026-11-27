@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const {
     mockCocktail,
@@ -190,5 +190,53 @@ describe('CocktailRepository.findMakeable', () => {
                 },
             }),
         }))
+    })
+})
+
+describe('CocktailRepository.findMakeableTarget', () => {
+    beforeEach(async () => {
+        vi.clearAllMocks()
+        const actual = await vi.importActual<typeof import('@/lib/derivations/derivation-cache')>('@/lib/derivations/derivation-cache')
+        mockFindFulfillingIngredient.mockImplementation(actual.findFulfillingIngredient as never)
+    })
+
+    afterEach(() => {
+        mockFindFulfillingIngredient.mockImplementation(() => null)
+    })
+
+    const daiquiri = cocktailRow('daiquiri', [
+        ingredientRow('rum', 'White Rum', 6, 'cl', 'Spirit'),
+        ingredientRow('lime-juice', 'Lime Juice', 3, 'cl', 'Juice'),
+        ingredientRow('syrup', 'Simple Syrup', 2, 'cl', 'Sweetener'),
+        ingredientRow('lime-wheel', 'Lime Wheel', null, 'pcs', 'Garnish'),
+    ])
+    const derivations = new Map([
+        ['lime-juice', [{ baseIngredientId: 'lime', yieldAmount: 3, yieldUnit: 'cl' as never, requiresTool: null }]],
+    ])
+
+    it('counts Lime as covering Lime Juice through the derivation map', async () => {
+        mockCocktail.findUnique.mockResolvedValue(daiquiri)
+
+        const result = await cocktailRepository.findMakeableTarget('daiquiri', ['rum', 'lime', 'syrup'], derivations as never)
+
+        expect(result).toEqual({ requiredCount: 3, missing: [] })
+        expect(mockCocktail.findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 'daiquiri' } }))
+    })
+
+    it('lists required ingredients that nothing covers', async () => {
+        mockCocktail.findUnique.mockResolvedValue(daiquiri)
+
+        const result = await cocktailRepository.findMakeableTarget('daiquiri', ['rum'], derivations as never)
+
+        expect(result).toEqual({
+            requiredCount: 3,
+            missing: [{ id: 'lime-juice', name: 'Lime Juice' }, { id: 'syrup', name: 'Simple Syrup' }],
+        })
+    })
+
+    it('returns null for an unknown cocktail', async () => {
+        mockCocktail.findUnique.mockResolvedValue(null)
+
+        expect(await cocktailRepository.findMakeableTarget('nope', ['rum'], new Map())).toBeNull()
     })
 })

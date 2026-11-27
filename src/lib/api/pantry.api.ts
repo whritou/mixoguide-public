@@ -82,6 +82,13 @@ export const pantryApi = {
         )
         return res.data
     },
+    importDemoBar: async (ingredientIds: string[]) => {
+        const res = await api.post<{ imported: number }, { ingredientIds: string[] }>(
+            'user-pantry-items/import-demo-bar',
+            { ingredientIds },
+        )
+        return res.data
+    },
     remove: (id: string) => api.delete(`user-pantry-items/${id}`),
     stats: async (): Promise<PantryStats> => {
         const res = await fetch('/api/user-pantry-items/stats')

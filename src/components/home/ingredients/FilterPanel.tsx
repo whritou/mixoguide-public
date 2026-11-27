@@ -21,8 +21,8 @@ export function FilterPanel({ openKey, filters, typeOpts = [], subTypeOpts = [] 
       className={clsx(
         'rounded-full px-3 py-1.5 text-xs font-label cursor-pointer transition-colors border',
         active
-          ? 'border-mg-brown bg-mg-linen text-mg-brown'
-          : 'bg-white text-mg-charcoal border-mg-bone hover:bg-mg-frost'
+          ? 'border-brand bg-surface-subtle text-brand'
+          : 'bg-surface text-fg-secondary border-line-strong hover:bg-surface-hover-alt'
       )}
       onClick={onClick}
     >
@@ -31,7 +31,7 @@ export function FilterPanel({ openKey, filters, typeOpts = [], subTypeOpts = [] 
   );
 
   return (
-    <div className="animate-fade-in px-4 md:px-12 py-4 bg-mg-dusk border-b border-mg-sand">
+    <div className="animate-fade-in px-4 md:px-12 py-4 bg-canvas-hover-alt border-b border-line">
       {openKey === 'type' && (
         <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
           {typeOpts.map(t =>

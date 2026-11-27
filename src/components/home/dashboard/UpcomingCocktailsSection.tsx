@@ -28,10 +28,10 @@ export default function UpcomingCocktailsSection({
     return (
         <section className="space-y-4">
             <div className="flex items-end justify-between gap-3">
-                <h2 className="font-headline text-xl lg:text-2xl text-mg-ink">Upcoming cocktails and collections</h2>
+                <h2 className="font-headline text-xl lg:text-2xl text-fg">Upcoming cocktails and collections</h2>
                 <Link
                     href="/planner"
-                    className="text-xs text-mg-brown hover:text-mg-caramel font-medium transition-colors"
+                    className="text-xs text-brand hover:text-brand-soft-strong font-medium transition-colors"
                 >
                     View all →
                 </Link>
@@ -39,18 +39,18 @@ export default function UpcomingCocktailsSection({
 
             {!hasItems ? (
                 <div className="flex flex-col items-center text-center py-14 gap-3">
-                    <div className="w-14 h-14 rounded-full bg-mg-caramel/12 flex items-center justify-center">
-                        <CalendarClock size={26} className="text-mg-brown" />
+                    <div className="w-14 h-14 rounded-full bg-brand-soft/12 flex items-center justify-center">
+                        <CalendarClock size={26} className="text-brand" />
                     </div>
-                    <p className="font-headline italic text-lg text-mg-ink leading-tight">
+                    <p className="font-headline italic text-lg text-fg leading-tight">
                         Nothing on the agenda
                     </p>
-                    <p className="text-xs text-mg-muted max-w-xs">
+                    <p className="text-xs text-fg-muted max-w-xs">
                         Plan a cocktail or build a collection and it&apos;ll appear here.
                     </p>
                     <Link
                         href="/cocktails"
-                        className="mt-2 px-6 py-2 bg-gradient-to-br from-mg-brown to-mg-caramel text-white rounded-full font-label text-[11px] uppercase tracking-widest hover:scale-[0.98] transition-transform duration-200"
+                        className="mt-2 px-6 py-2 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full font-label text-[11px] uppercase tracking-widest hover:scale-[0.98] transition-transform duration-200"
                     >
                         Browse cocktails
                     </Link>

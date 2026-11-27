@@ -2,7 +2,7 @@
 
 export default function HomeLoading() {
     return (
-        <div className="bg-mg-cream min-h-screen">
+        <div className="bg-canvas min-h-screen">
             {/* Hero placeholder */}
             <Skeleton className="w-full h-[480px] rounded-none" />
 

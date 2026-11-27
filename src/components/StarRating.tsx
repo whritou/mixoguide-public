@@ -40,10 +40,10 @@ export default function StarRating({
                         size={size}
                         className={`transition-colors ${
                             filled
-                                ? 'text-amber-400'
+                                ? 'text-status-partial-dot'
                                 : halfFilled
-                                  ? 'text-amber-300'
-                                  : 'text-stone-300'
+                                  ? 'text-status-partial-dot/60'
+                                  : 'text-line-strong'
                         }`}
                         fill={filled ? 'currentColor' : halfFilled ? 'currentColor' : 'none'}
                         onMouseEnter={() => interactive && setHover(starValue)}
@@ -73,8 +73,8 @@ export function StarRatingDisplay({
 }) {
     if (!avg && !count) return null
 
-    const avgClass   = textLight ? 'text-stone-200' : 'text-stone-500'
-    const countClass = textLight ? 'text-stone-300' : 'text-stone-400'
+    const avgClass   = textLight ? 'text-fg-on-image/90' : 'text-fg-dim'
+    const countClass = textLight ? 'text-fg-on-image/80' : 'text-fg-muted'
 
     return (
         <span className={`inline-flex items-center gap-1 ${className}`}>

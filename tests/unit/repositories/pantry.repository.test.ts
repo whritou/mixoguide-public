@@ -5,16 +5,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // ── Hoisted mocks (available before vi.mock factories run) ───────────────────
-const { mockPI, mockPrisma, mockGetDerivationMap, mockConvertUnit } = vi.hoisted(() => {
+const { mockPI, mockIngredient, mockPrisma, mockGetDerivationMap, mockConvertUnit } = vi.hoisted(() => {
     const mockPI: any = {
         findMany:  vi.fn(),
         count:     vi.fn(),
         findFirst: vi.fn(),
         create:    vi.fn(),
         update:    vi.fn(),
+        createMany: vi.fn(),
     }
+    const mockIngredient: any = { findMany: vi.fn() }
     const mockPrisma: any = {
         userPantryItem: mockPI,
+        ingredient: mockIngredient,
         $transaction: vi.fn(),
     }
     const mockGetDerivationMap = vi.fn()
@@ -26,7 +29,7 @@ const { mockPI, mockPrisma, mockGetDerivationMap, mockConvertUnit } = vi.hoisted
         const r = rates[from]?.[to]
         return r !== undefined ? amount * r : null
     })
-    return { mockPI, mockPrisma, mockGetDerivationMap, mockConvertUnit }
+    return { mockPI, mockIngredient, mockPrisma, mockGetDerivationMap, mockConvertUnit }
 })
 
 vi.mock('@/lib/db/prisma', () => ({ prisma: mockPrisma }))
@@ -344,5 +347,55 @@ describe('PantryRepository.findMany filters', () => {
                 OR: expect.any(Array),
             }),
         }))
+    })
+})
+
+// ════════════════════════════════════════════════════════════════════════════
+describe('PantryRepository.importIngredientsIntoEmptyPantry', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        setupTx()
+    })
+
+    it('creates infinite in-pantry items for the ingredients that exist', async () => {
+        mockPI.count.mockResolvedValue(0)
+        mockIngredient.findMany.mockResolvedValue([
+            { id: 'gin', name: 'Gin', isAlcoholic: true, type: { name: 'Spirit' }, subType: null },
+            { id: 'lime', name: 'Lime', isAlcoholic: false, type: { name: 'Fresh produce' }, subType: null },
+        ])
+        mockPI.createMany.mockResolvedValue({ count: 2 })
+
+        const imported = await pantryRepository.importIngredientsIntoEmptyPantry('user-1', ['gin', 'lime', 'ghost'])
+
+        expect(imported).toBe(2)
+        expect(mockIngredient.findMany).toHaveBeenCalledWith(expect.objectContaining({
+            where: { id: { in: ['gin', 'lime', 'ghost'] } },
+        }))
+        const { data, skipDuplicates } = mockPI.createMany.mock.calls[0][0]
+        expect(skipDuplicates).toBe(true)
+        expect(data).toHaveLength(2)
+        expect(data[0]).toEqual(expect.objectContaining({
+            userId: 'user-1', ingredientId: 'gin', isInPantry: true, isInfinite: true,
+        }))
+    })
+
+    it('imports nothing when the user already has pantry items', async () => {
+        mockPI.count.mockResolvedValue(1)
+
+        const imported = await pantryRepository.importIngredientsIntoEmptyPantry('user-1', ['gin'])
+
+        expect(imported).toBe(0)
+        expect(mockIngredient.findMany).not.toHaveBeenCalled()
+        expect(mockPI.createMany).not.toHaveBeenCalled()
+    })
+
+    it('imports nothing when no id matches an ingredient', async () => {
+        mockPI.count.mockResolvedValue(0)
+        mockIngredient.findMany.mockResolvedValue([])
+
+        const imported = await pantryRepository.importIngredientsIntoEmptyPantry('user-1', ['ghost'])
+
+        expect(imported).toBe(0)
+        expect(mockPI.createMany).not.toHaveBeenCalled()
     })
 })

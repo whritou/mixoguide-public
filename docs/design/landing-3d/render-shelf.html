@@ -1,0 +1,226 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>render</title>
+<style>body{margin:0;background:#777;display:flex;flex-wrap:wrap;gap:4px} canvas{background:repeating-conic-gradient(#999 0 25%,#bbb 0 50%) 0 0/20px 20px}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const W = 360, H = 660;
+const only = new URLSearchParams(location.search).get('only');
+
+function makeRenderer(w, h) {
+  const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  r.setPixelRatio(1); r.setSize(w, h);
+  r.setClearColor(0x000000, 0);
+  r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.05;
+  r.outputColorSpace = THREE.SRGBColorSpace;
+  r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.body.appendChild(r.domElement);
+  return r;
+}
+function lights(scene, renderer) {
+  const pm = new THREE.PMREMGenerator(renderer);
+  const env = new THREE.Scene(); env.background = new THREE.Color(0x0b0a0a);
+  const box = (w, h, x, y, z, k) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(k, k * 0.97, k * 0.92), side: THREE.DoubleSide })); m.position.set(x, y, z); m.lookAt(0, 0.4, 0); env.add(m); };
+  box(1.1, 5, -3.2, 1.2, 2.4, 9);
+  box(0.5, 4, 3.4, 1.0, 1.2, 5);
+  box(5, 2.5, 0, 5, 0.5, 3);
+  box(8, 3, 0, 0.5, 6, 0.55);
+  box(8, 8, 0, -3, 0, 0.5);
+  scene.environment = pm.fromScene(env, 0.02).texture;
+  const key = new THREE.DirectionalLight(0xfff1dc, 1.6);
+  key.position.set(-1.6, 2.6, 2.2); key.castShadow = false;
+  key.shadow.mapSize.set(1024, 1024); key.shadow.radius = 9; key.shadow.bias = -0.0005;
+  const c = key.shadow.camera; c.left = -0.6; c.right = 0.6; c.top = 1.2; c.bottom = -0.3; c.near = 0.5; c.far = 8;
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0xffd9a8, 1.4); rim.position.set(2.2, 1.2, -1.5); scene.add(rim);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+}
+function camera(aspect) {
+  const cam = new THREE.PerspectiveCamera(20, aspect, 0.1, 50);
+  cam.position.set(0, 1.14, 4.2); cam.lookAt(0, 0.50, 0);
+  return cam;
+}
+
+const SHAPES = {
+  whiskey: { body: [[0.150, 0.0], [0.162, 0.018], [0.162, 0.50], [0.150, 0.565], [0.110, 0.635], [0.062, 0.685], [0.052, 0.70], [0.052, 0.865], [0.060, 0.870], [0.060, 0.895], [0.052, 0.90]], fill: 0.64, label: [0.14, 0.27], cap: 0.07 },
+  tall: { body: [[0.112, 0.0], [0.122, 0.016], [0.122, 0.58], [0.112, 0.64], [0.075, 0.70], [0.046, 0.74], [0.042, 0.76], [0.042, 0.93], [0.050, 0.935], [0.050, 0.955], [0.042, 0.96]], fill: 0.70, label: [0.17, 0.30], cap: 0.06 },
+  wine: { body: [[0.118, 0.0], [0.128, 0.016], [0.128, 0.44], [0.120, 0.52], [0.085, 0.63], [0.048, 0.72], [0.040, 0.75], [0.040, 0.945], [0.047, 0.95], [0.047, 0.972], [0.040, 0.976]], fill: 0.66, label: [0.12, 0.27], cap: 0.075 },
+  squat: { body: [[0.180, 0.0], [0.192, 0.018], [0.192, 0.36], [0.180, 0.43], [0.120, 0.50], [0.066, 0.545], [0.058, 0.56], [0.058, 0.67], [0.066, 0.675], [0.066, 0.70], [0.058, 0.705]], fill: 0.50, label: [0.08, 0.22], cap: 0.075 },
+  bitters: { body: [[0.090, 0.0], [0.098, 0.012], [0.098, 0.34], [0.090, 0.39], [0.060, 0.43], [0.044, 0.455], [0.042, 0.47], [0.042, 0.53], [0.048, 0.535], [0.048, 0.55], [0.042, 0.555]], fill: 0.34, label: [0.03, 0.46], cap: 0.07, loose: true },
+  small: { body: [[0.100, 0.0], [0.108, 0.014], [0.108, 0.38], [0.100, 0.44], [0.066, 0.50], [0.044, 0.54], [0.040, 0.555], [0.040, 0.66], [0.047, 0.665], [0.047, 0.685], [0.040, 0.69]], fill: 0.52, label: [0.10, 0.22], cap: 0.045 }
+};
+
+const ITEMS = [
+  ['bourbon', 'whiskey', { glass: 0xfff3e0, gOp: 0.10, liquid: 0xa85a14, lOp: 0.93, band: '#1b1c1a', ink: '#1b1c1a', paper: '#f3ead6', cap: 0x1b1c1a, capMetal: 0.2, text: 'BOURBON' }],
+  ['rye', 'whiskey', { glass: 0xfff3e0, gOp: 0.10, liquid: 0x8a4312, lOp: 0.95, band: '#7a1f1a', ink: '#7a1f1a', paper: '#efe2c6', cap: 0x3d2e1f, capMetal: 0.2, text: 'RYE' }],
+  ['gin', 'tall', { glass: 0xd9f0e6, gOp: 0.16, liquid: 0xcfe6dc, lOp: 0.30, band: '#2f5d50', ink: '#2f5d50', paper: '#f6f3ea', cap: 0xb8bcc0, capMetal: 0.9, text: 'DRY GIN' }],
+  ['rum', 'tall', { glass: 0xfffaf0, gOp: 0.12, liquid: 0xe9e2c8, lOp: 0.30, band: '#b08a3c', ink: '#5a4520', paper: '#f7f1e2', cap: 0xb08a3c, capMetal: 0.9, text: 'WHITE RUM' }],
+  ['vodka', 'tall', { glass: 0xe6f0f8, gOp: 0.16, liquid: 0xd0dde8, lOp: 0.30, band: '#2b4a7a', ink: '#2b4a7a', paper: '#f4f6f8', cap: 0x9aa2aa, capMetal: 0.9, text: 'VODKA' }],
+  ['tequila', 'squat', { glass: 0xfff6d8, gOp: 0.12, liquid: 0xd9b24a, lOp: 0.75, band: '#3f6b3a', ink: '#3f6b3a', paper: '#f5ecd2', cap: 0x7a5530, capMetal: 0.1, text: 'TEQUILA' }],
+  ['campari', 'wine', { glass: 0xffe4e0, gOp: 0.10, liquid: 0xc41f1a, lOp: 0.95, band: '#1f3566', ink: '#1f3566', paper: '#f6f1e6', cap: 0x1f3566, capMetal: 0.5, text: 'BITTER' }],
+  ['sweetv', 'wine', { glass: 0x2f5a2c, gOp: 0.82, liquid: 0x3a120c, lOp: 0.95, band: '#8a1a16', ink: '#8a1a16', paper: '#f1e6cc', cap: 0x8a1a16, capMetal: 0.5, text: 'VERMOUTH ROSSO' }],
+  ['dryv', 'wine', { glass: 0x9fc28a, gOp: 0.5, liquid: 0xe6e0a8, lOp: 0.5, band: '#2f5d50', ink: '#2f5d50', paper: '#f5f2e4', cap: 0xd6cfb4, capMetal: 0.6, text: 'VERMOUTH DRY' }],
+  ['triple', 'squat', { glass: 0xe08a2a, gOp: 0.6, liquid: 0xe9a23c, lOp: 0.6, band: '#c8302a', ink: '#8a1a16', paper: '#f6eedc', cap: 0xc8302a, capMetal: 0.4, text: 'TRIPLE SEC' }],
+  ['bitters', 'bitters', { glass: 0x4a2412, gOp: 0.85, liquid: 0x3a1408, lOp: 0.95, band: '#1b1c1a', ink: '#1b1c1a', paper: '#f4eedd', cap: 0xe6bf2e, capMetal: 0.1, text: 'AROMATIC BITTERS' }],
+  ['syrup', 'small', { glass: 0xfffaf0, gOp: 0.12, liquid: 0xe9d49a, lOp: 0.55, band: '#bc9366', ink: '#7a5830', paper: '#f7f1e2', cap: 0x8a8f94, capMetal: 0.9, text: 'SIMPLE SYRUP' }],
+  ['soda', 'small', { glass: 0xd8f0f6, gOp: 0.16, liquid: 0xcfe6ee, lOp: 0.30, band: '#2b6f8a', ink: '#2b6f8a', paper: '#f2f6f6', cap: 0xc8302a, capMetal: 0.8, text: 'SODA WATER' }],
+  ['lime', 'lime', {}],
+  ['lemon', 'lemon', {}]
+];
+
+function labelTexture(o, tall) {
+  const c = document.createElement('canvas'); c.width = 512; c.height = tall ? 640 : 300;
+  const g = c.getContext('2d');
+  g.fillStyle = o.paper; g.fillRect(0, 0, c.width, c.height);
+  for (let i = 0; i < 2500; i++) { g.fillStyle = `rgba(90,70,40,${Math.random() * 0.05})`; g.fillRect(Math.random() * c.width, Math.random() * c.height, 2, 2); }
+  g.strokeStyle = o.ink; g.lineWidth = 4; g.strokeRect(14, 14, c.width - 28, c.height - 28);
+  g.lineWidth = 1.5; g.strokeRect(24, 24, c.width - 48, c.height - 48);
+  g.fillStyle = o.band; g.fillRect(0, c.height - 70, c.width, 34);
+  g.fillStyle = o.ink; g.textAlign = 'center';
+  const cy = tall ? 250 : 120;
+  g.font = 'italic 44px Georgia, serif'; g.fillText('Maison', c.width / 2, cy - 44);
+  let size = 58; g.font = `700 ${size}px Georgia, serif`;
+  while (g.measureText(o.text).width > c.width - 90) { size -= 3; g.font = `700 ${size}px Georgia, serif`; }
+  g.fillText(o.text, c.width / 2, cy + 18);
+  g.fillRect(c.width / 2 - 70, cy + 40, 140, 3);
+  g.font = '22px Georgia, serif'; g.fillText('70 cl  ·  40% vol', c.width / 2, cy + 76);
+  if (tall) { g.beginPath(); g.arc(c.width / 2, 430, 62, 0, Math.PI * 2); g.lineWidth = 4; g.stroke(); g.font = 'italic 40px Georgia, serif'; g.fillText('No. 7', c.width / 2, 444); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+
+function buildBottle(shape, o) {
+  const grp = new THREE.Group();
+  const pts = [new THREE.Vector2(0, 0)].concat(shape.body.map(p => new THREE.Vector2(p[0], p[1])));
+  const geo = new THREE.LatheGeometry(pts, 128);
+  const glass = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: o.glass, transparent: true, opacity: o.gOp, side: THREE.DoubleSide, depthWrite: false }));
+  glass.renderOrder = 0; grp.add(glass);
+  const shellMat = new THREE.MeshPhysicalMaterial({ color: 0x000000, roughness: 0.02, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.0, envMapIntensity: 1.25, transparent: true, depthWrite: false, side: THREE.FrontSide });
+  shellMat.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <opaque_fragment>', '#include <opaque_fragment>\n float lum = max(max(outgoingLight.r, outgoingLight.g), outgoingLight.b);\n gl_FragColor = vec4(outgoingLight / max(lum, 0.0001), clamp(lum, 0.0, 1.0));'); };
+  const shell = new THREE.Mesh(geo, shellMat); shell.renderOrder = 5; grp.add(shell);
+  const edgeMat = new THREE.MeshBasicMaterial({ color: o.edge ?? 0x2a2420, transparent: true, depthWrite: false, side: THREE.FrontSide });
+  edgeMat.onBeforeCompile = (sh) => { sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\n varying float vF;').replace('#include <project_vertex>', '#include <project_vertex>\n vec3 nn = normalize(normalMatrix * normal); vF = 1.0 - abs(dot(nn, normalize(-mvPosition.xyz)));'); sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n varying float vF;').replace('#include <opaque_fragment>', '#include <opaque_fragment>\n gl_FragColor.a = pow(vF, 3.0) * ' + (o.edgeOp ?? 0.55).toFixed(2) + ';'); };
+  const edge = new THREE.Mesh(geo, edgeMat); edge.renderOrder = 4; grp.add(edge);
+  const lp = [new THREE.Vector2(0, 0.012)];
+  for (const p of shape.body) { if (p[1] > shape.fill) break; lp.push(new THREE.Vector2(Math.max(p[0] - 0.012, 0.01), Math.max(p[1], 0.012))); }
+  const top = lp[lp.length - 1].y; lp.push(new THREE.Vector2(0, top));
+  const liquid = new THREE.Mesh(new THREE.LatheGeometry(lp, 96), new THREE.MeshPhysicalMaterial({
+    color: o.liquid, roughness: 0.25, transparent: true, opacity: o.lOp, envMapIntensity: 0.35 }));
+  liquid.renderOrder = 1; liquid.castShadow = true; grp.add(liquid);
+  const r = shape.body[2][0] + (shape.loose ? 0.008 : 0.0025);
+  const [ly, lh] = shape.label; const arc = shape.loose ? Math.PI * 2 : 3.5;
+  const label = new THREE.Mesh(new THREE.CylinderGeometry(r, r, lh, 96, 1, true, -arc / 2, arc), new THREE.MeshStandardMaterial({
+    map: labelTexture(o, shape.loose), roughness: 0.85, metalness: 0, side: THREE.DoubleSide }));
+  label.position.y = ly + lh / 2; label.rotation.y = -0.12; label.renderOrder = 2; label.castShadow = true; grp.add(label);
+  const neck = shape.body[shape.body.length - 1]; const cr = shape.body[shape.body.length - 3][0] + 0.004;
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(cr, cr, shape.cap, 48), new THREE.MeshStandardMaterial({ color: o.cap, roughness: 0.35, metalness: o.capMetal }));
+  cap.position.y = neck[1] - 0.03 + shape.cap / 2; cap.castShadow = true; cap.renderOrder = 6; grp.add(cap);
+  return grp;
+}
+
+function bumpTex() {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+  g.fillStyle = '#808080'; g.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 2600; i++) { const v = 90 + Math.random() * 70; g.fillStyle = `rgb(${v},${v},${v})`; g.beginPath(); g.arc(Math.random() * 256, Math.random() * 256, 1 + Math.random() * 2.2, 0, 7); g.fill(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 2); return t;
+}
+function buildFruit(kind) {
+  const grp = new THREE.Group();
+  const lemon = kind === 'lemon';
+  const R = lemon ? 0.105 : 0.115;
+  const geo = new THREE.SphereGeometry(R, 64, 48);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    let x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    if (lemon) { const t = x / R; x = x * 1.32 + Math.sign(t) * Math.pow(Math.abs(t), 6) * 0.03; const k = 1 - Math.pow(Math.abs(t), 4) * 0.25; y *= k; z *= k; }
+    else { y *= 0.94; }
+    pos.setXYZ(i, x, y, z);
+  }
+  geo.computeVertexNormals();
+  const m = new THREE.Mesh(geo, new THREE.MeshPhysicalMaterial({ color: lemon ? 0xf2c81e : 0x6fa02c, roughness: 0.42, clearcoat: 0.35, clearcoatRoughness: 0.4, bumpMap: bumpTex(), bumpScale: 0.6, envMapIntensity: 0.9 }));
+  m.castShadow = true; m.position.y = lemon ? R * 0.99 : R * 0.94; m.rotation.y = lemon ? 0.5 : 0; grp.add(m);
+  if (!lemon) { const s = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.01, 0.014, 12), new THREE.MeshStandardMaterial({ color: 0x4a3a1e, roughness: 0.9 })); s.position.set(0.012, R * 1.86, 0.02); grp.add(s); }
+  return grp;
+}
+
+async function save(canvas, name) {
+  const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+  await fetch('/out/' + name, { method: 'PUT', body: blob });
+}
+
+const meta = { done: false, items: [] };
+window.__meta = meta;
+
+(async () => {
+  for (const [id, shapeName, o] of ITEMS) {
+    if (only && only !== id) continue;
+    const r = makeRenderer(W, H);
+    const scene = new THREE.Scene(); lights(scene, r);
+    const obj = SHAPES[shapeName] ? buildBottle(SHAPES[shapeName], o) : buildFruit(shapeName);
+    scene.add(obj);
+    const sc = document.createElement('canvas'); sc.width = sc.height = 256; const sg = sc.getContext('2d');
+    const gr = sg.createRadialGradient(128, 128, 10, 128, 128, 128); gr.addColorStop(0, 'rgba(0,0,0,0.6)'); gr.addColorStop(0.45, 'rgba(0,0,0,0.3)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    sg.fillStyle = gr; sg.fillRect(0, 0, 256, 256);
+    const rad = SHAPES[shapeName] ? SHAPES[shapeName].body[2][0] : 0.12;
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(rad * 3.6, rad * 2.6), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sc), transparent: true, depthWrite: false }));
+    ground.rotation.x = -Math.PI / 2; ground.position.set(rad * 0.25, 0.001, 0); ground.renderOrder = -1; scene.add(ground);
+    const cam = camera(W / H);
+    r.render(scene, cam);
+    const b = new THREE.Vector3(0, 0, 0).project(cam);
+    meta.base = (1 - (b.y + 1) / 2);
+    await save(r.domElement, id + '.png');
+    meta.items.push(id);
+  }
+  if (!only || only === 'shelf') {
+    const SW = 3000, SH = 150;
+    const r = makeRenderer(SW, SH);
+    const scene = new THREE.Scene(); lights(scene, r);
+    const wood = (base, dark) => {
+      const c = document.createElement('canvas'); c.width = 4096; c.height = 256; const g = c.getContext('2d');
+      const bg = g.createLinearGradient(0, 0, 4096, 0); bg.addColorStop(0, base[0]); bg.addColorStop(0.35, base[1]); bg.addColorStop(0.7, base[0]); bg.addColorStop(1, base[1]);
+      g.fillStyle = bg; g.fillRect(0, 0, 4096, 256);
+      let seed = 11; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+      for (let i = 0; i < 46; i++) {
+        const y = rnd() * 256, amp = 4 + rnd() * 16, ph = rnd() * 6, wl = 500 + rnd() * 1400;
+        g.strokeStyle = 'rgba(' + dark + ',' + (0.10 + rnd() * 0.28) + ')'; g.lineWidth = 1 + rnd() * 5;
+        g.beginPath(); for (let x = 0; x <= 4096; x += 32) { const yy = y + Math.sin(x / wl * 6.28 + ph) * amp; x ? g.lineTo(x, yy) : g.moveTo(x, yy); } g.stroke();
+      }
+      for (let i = 0; i < 26; i++) { const y = rnd() * 256; g.strokeStyle = 'rgba(255,214,160,' + (0.05 + rnd() * 0.10) + ')'; g.lineWidth = 2 + rnd() * 6; g.beginPath(); g.moveTo(0, y); g.bezierCurveTo(1300, y + (rnd() - 0.5) * 40, 2700, y + (rnd() - 0.5) * 40, 4096, y + (rnd() - 0.5) * 30); g.stroke(); }
+      for (let i = 0; i < 5; i++) { const x = rnd() * 4096, y = 40 + rnd() * 170; for (let k = 6; k > 0; k--) { g.strokeStyle = 'rgba(' + dark + ',' + (0.10 + k * 0.03) + ')'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y, k * 14, k * 5, 0, 0, 6.3); g.stroke(); } }
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 16; return t;
+    };
+    const topMat = new THREE.MeshPhysicalMaterial({ map: wood(['#a8703c', '#8f5a2c'], '70,36,12'), roughness: 0.38, clearcoat: 0.6, clearcoatRoughness: 0.3, envMapIntensity: 0.9 });
+    const frontMat = new THREE.MeshPhysicalMaterial({ map: wood(['#6e4220', '#5a3418'], '30,14,4'), roughness: 0.5, clearcoat: 0.3, clearcoatRoughness: 0.5, envMapIntensity: 0.5 });
+    const side = new THREE.MeshStandardMaterial({ color: 0x4a2c14 });
+    const plank = new THREE.Mesh(new THREE.BoxGeometry(8, 0.09, 0.46), [side, side, topMat, side, frontMat, side]);
+    plank.position.y = -0.045; scene.add(plank);
+    const edge = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 8, 12), new THREE.MeshStandardMaterial({ color: 0xd9a868, roughness: 0.3 }));
+    edge.rotation.z = Math.PI / 2; edge.position.set(0, -0.004, 0.228); scene.add(edge);
+    const lip = new THREE.Mesh(new THREE.BoxGeometry(8, 0.016, 0.014), new THREE.MeshStandardMaterial({ color: 0xd4a94e, roughness: 0.25, metalness: 1 }));
+    lip.position.set(0, -0.082, 0.234); scene.add(lip);
+    const u = SH / (H / (2 * 4.2 * Math.tan(THREE.MathUtils.degToRad(10))));
+    const halfH = u / 2, halfW = halfH * SW / SH;
+    const cam = new THREE.OrthographicCamera(-halfW, halfW, halfH, -halfH, 0.1, 50);
+    const dir = new THREE.Vector3(0, 1.14 - 0.50, 4.2).normalize();
+    const target = new THREE.Vector3(0, -0.01, 0);
+    cam.position.copy(target).addScaledVector(dir, 6); cam.lookAt(target);
+    r.render(scene, cam);
+    const t0 = new THREE.Vector3(0, 0, 0).project(cam);
+    meta.shelfTopCenter = (1 - (t0.y + 1) / 2);
+    meta.shelfUnitsWide = halfW * 2;
+    await save(r.domElement, 'shelf.png');
+    meta.items.push('shelf');
+  }
+  meta.done = true;
+  await fetch('/out/meta.json', { method: 'PUT', body: JSON.stringify(meta) });
+})().catch(e => { meta.error = String(e && e.stack || e); });
+</script>
+</body>
+</html>

@@ -80,18 +80,18 @@ export default function SuggestionDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden p-0 border-0 gap-0 [&>button]:hidden">
+            <DialogContent className="w-full max-w-lg bg-surface rounded-2xl shadow-2xl overflow-hidden p-0 border-0 gap-0 [&>button]:hidden">
 
                 {/* Header */}
-                <div className="bg-gradient-to-r from-mg-brown to-mg-caramel px-6 py-5 flex items-start justify-between">
+                <div className="bg-gradient-to-r from-brand-gradient-from to-brand-gradient-to px-6 py-5 flex items-start justify-between">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <MessageSquarePlus size={18} className="text-white/80" />
-                            <p className="text-xs font-medium uppercase tracking-widest text-white/70">
+                            <MessageSquarePlus size={18} className="text-fg-on-brand/80" />
+                            <p className="text-xs font-medium uppercase tracking-widest text-fg-on-brand/80">
                                 Community contribution
                             </p>
                         </div>
-                        <DialogTitle className="text-lg font-semibold text-white">
+                        <DialogTitle className="text-lg font-semibold text-fg-on-brand">
                             {targetName
                                 ? `Suggest a change to "${targetName}"`
                                 : 'Submit a suggestion'}
@@ -101,7 +101,7 @@ export default function SuggestionDialog({
                         type="button"
                         onClick={() => onOpenChange(false)}
                         aria-label="Close suggestion dialog"
-                        className="text-white/60 hover:text-white transition-colors mt-0.5"
+                        className="text-fg-on-brand/80 hover:text-fg-on-brand transition-colors mt-0.5"
                     >
                         <X size={20} />
                     </button>
@@ -113,7 +113,7 @@ export default function SuggestionDialog({
                     {/* Type selector — hide when it's locked to a modification */}
                     {!targetId && (
                         <div>
-                            <label className="block text-xs font-medium uppercase tracking-widest text-mg-muted mb-2">
+                            <label className="block text-xs font-medium uppercase tracking-widest text-fg-muted mb-2">
                                 Suggestion type
                             </label>
                             <div className="grid grid-cols-2 gap-2">
@@ -124,8 +124,8 @@ export default function SuggestionDialog({
                                         onClick={() => setType(opt.value)}
                                         className={`px-3 py-2 rounded-lg text-sm text-left border transition-colors ${
                                             type === opt.value
-                                                ? 'bg-[#f5ece0] border-mg-caramel text-mg-brown font-medium'
-                                                : 'border-mg-sand text-stone-600 hover:border-mg-caramel/40 hover:bg-[#faf9f7]'
+                                                ? 'bg-surface-muted border-brand-soft text-brand font-medium'
+                                                : 'border-line text-fg-secondary hover:border-brand-soft/40 hover:bg-surface-hover-alt'
                                         }`}
                                     >
                                         {opt.label}
@@ -137,8 +137,8 @@ export default function SuggestionDialog({
 
                     {/* Title */}
                     <div>
-                        <label className="block text-xs font-medium uppercase tracking-widest text-mg-muted mb-2">
-                            Title <span className="text-red-400">*</span>
+                        <label className="block text-xs font-medium uppercase tracking-widest text-fg-muted mb-2">
+                            Title <span className="text-danger">*</span>
                         </label>
                         <input
                             type="text"
@@ -150,15 +150,15 @@ export default function SuggestionDialog({
                                     ? 'e.g. "Wrong ABV listed" or "Better garnish idea"'
                                     : 'e.g. "Add a Penicillin cocktail"'
                             }
-                            className="w-full px-3 py-2.5 rounded-lg border border-mg-sand text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:border-mg-caramel focus:ring-2 focus:ring-mg-caramel/20"
+                            className="w-full px-3 py-2.5 rounded-lg border border-line-control text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand-soft focus:ring-2 focus:ring-ring/20"
                             required
                         />
                     </div>
 
                     {/* Content */}
                     <div>
-                        <label className="block text-xs font-medium uppercase tracking-widest text-mg-muted mb-2">
-                            Details <span className="text-red-400">*</span>
+                        <label className="block text-xs font-medium uppercase tracking-widest text-fg-muted mb-2">
+                            Details <span className="text-danger">*</span>
                         </label>
                         <textarea
                             value={content}
@@ -170,10 +170,10 @@ export default function SuggestionDialog({
                                     ? 'Describe what should be changed and why...'
                                     : 'Describe the cocktail, its ingredients, how to make it, and why you think it\'d be a great addition...'
                             }
-                            className="w-full px-3 py-2.5 rounded-lg border border-mg-sand text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:border-mg-caramel focus:ring-2 focus:ring-mg-caramel/20 resize-none"
+                            className="w-full px-3 py-2.5 rounded-lg border border-line-control text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand-soft focus:ring-2 focus:ring-ring/20 resize-none"
                             required
                         />
-                        <p className="mt-1 text-xs text-stone-400 text-right">{content.length}/5000</p>
+                        <p className="mt-1 text-xs text-fg-muted text-right">{content.length}/5000</p>
                     </div>
 
                     {/* Actions */}
@@ -181,14 +181,14 @@ export default function SuggestionDialog({
                         <button
                             type="button"
                             onClick={() => onOpenChange(false)}
-                            className="flex-1 px-4 py-2.5 rounded-full border border-mg-sand text-sm text-stone-600 hover:bg-stone-50 transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-full border border-line text-sm text-fg-secondary hover:bg-surface-hover-alt transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-mg-brown to-mg-caramel text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-60"
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-brand-gradient-from to-brand-gradient-to text-fg-on-brand text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-60"
                         >
                             {submitting ? (
                                 <>
@@ -205,7 +205,7 @@ export default function SuggestionDialog({
                     </div>
 
                     {!session?.user && (
-                        <p className="text-center text-xs text-stone-400">
+                        <p className="text-center text-xs text-fg-muted">
                             You need to be signed in to submit a suggestion.
                         </p>
                     )}

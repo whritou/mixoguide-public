@@ -12,7 +12,7 @@ export default function UnitPicker({
 }) {
     return (
         <div className="flex items-center">
-            <div className="flex bg-mg-parchment rounded-full p-1">
+            <div className="flex bg-surface-muted rounded-full p-1">
                 {units.map((u) => {
                     const isActive = unit === u
 
@@ -27,8 +27,8 @@ export default function UnitPicker({
                                 "flex items-center justify-center",
 
                                 isActive
-                                    ? "bg-mg-brown text-white shadow-sm"
-                                    : "text-mg-dim hover:bg-mg-parchment-hover"
+                                    ? "bg-brand text-fg-on-brand shadow-sm"
+                                    : "text-fg-dim hover:bg-surface-muted-hover"
                             )}
                         >
                             {u}

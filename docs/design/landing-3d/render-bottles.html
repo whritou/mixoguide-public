@@ -1,0 +1,308 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>render2</title>
+<style>body{margin:0;background:#666;display:flex;flex-wrap:wrap;gap:4px;align-items:flex-start} canvas.o{background:repeating-conic-gradient(#8a8a8a 0 25%,#b5b5b5 0 50%) 0 0/20px 20px}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+
+const OW = 360, OH = 660, SS = 2, RW = OW * SS, RH = OH * SS;
+const only = new URLSearchParams(location.search).get('only');
+const meta = { done: false, items: [] }; window.__meta = meta;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(RW, RH);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.domElement.style.display = 'none';
+document.body.appendChild(renderer.domElement);
+
+/* ---------- studio environment ---------- */
+function studioEnv() {
+  const pm = new THREE.PMREMGenerator(renderer);
+  const env = new THREE.Scene(); env.background = new THREE.Color(0x070606);
+  const box = (w, h, x, y, z, k, tint) => {
+    const c = new THREE.Color(k, k * (tint ? 0.93 : 0.98), k * (tint ? 0.82 : 0.95));
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide }));
+    m.position.set(x, y, z); m.lookAt(0, 0.45, 0); env.add(m);
+  };
+  box(0.9, 5.0, -3.0, 1.3, 2.6, 11);        // tall key softbox, front left
+  box(0.35, 4.0, -1.2, 1.2, 3.6, 3.5);      // thin strip, front
+  box(0.6, 4.2, 3.3, 1.1, 1.0, 5.5, true);  // warm rim, right
+  box(0.4, 3.5, 2.2, 1.0, -3.0, 4, true);   // back rim
+  box(5, 2.5, 0, 5, 0.6, 3.2);              // top
+  box(9, 3, 0, 0.6, 7, 0.45);               // soft front fill
+  box(9, 9, 0, -3, 0, 0.55, true);          // warm floor bounce
+  return pm.fromScene(env, 0.015).texture;
+}
+const ENV = studioEnv();
+
+function newScene() {
+  const scene = new THREE.Scene(); scene.environment = ENV;
+  const key = new THREE.DirectionalLight(0xfff0dc, 1.5); key.position.set(-1.8, 2.6, 2.4); scene.add(key);
+  const rim = new THREE.DirectionalLight(0xffd6a0, 1.1); rim.position.set(2.4, 1.3, -1.6); scene.add(rim);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+  return scene;
+}
+const cam = new THREE.PerspectiveCamera(20, OW / OH, 0.1, 50);
+cam.position.set(0, 1.14, 4.2); cam.lookAt(0, 0.50, 0);
+
+/* ---------- helpers ---------- */
+let seed = 7; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+function canvasTex(w, h, draw, srgb) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 16; return t;
+}
+function smooth(body) {
+  const curve = new THREE.CatmullRomCurve3(body.map(p => new THREE.Vector3(p[0], p[1], 0)), false, 'centripetal');
+  return curve.getPoints(160).map(v => new THREE.Vector2(Math.max(v.x, 0.0015), v.y));
+}
+function radiusAt(pts, y) {
+  for (let i = 1; i < pts.length; i++) if (pts[i].y >= y) { const a = pts[i - 1], b = pts[i]; const t = (y - a.y) / Math.max(b.y - a.y, 1e-6); return a.x + (b.x - a.x) * t; }
+  return pts[pts.length - 1].x;
+}
+const knurl = canvasTex(512, 8, (g, w, h) => { g.fillStyle = '#808080'; g.fillRect(0, 0, w, h); for (let x = 0; x < w; x += 8) { g.fillStyle = '#d0d0d0'; g.fillRect(x, 0, 3, h); g.fillStyle = '#303030'; g.fillRect(x + 4, 0, 3, h); } });
+knurl.wrapS = THREE.RepeatWrapping; knurl.repeat.set(1, 1);
+
+/* ---------- bottle data ---------- */
+const SHAPES = {
+  whiskey: { body: [[0.148, 0.0], [0.160, 0.012], [0.162, 0.03], [0.162, 0.50], [0.156, 0.555], [0.118, 0.63], [0.066, 0.685], [0.052, 0.705], [0.052, 0.865], [0.060, 0.870], [0.060, 0.895], [0.052, 0.90]], fill: 0.60, label: [0.14, 0.27] },
+  tall: { body: [[0.110, 0.0], [0.121, 0.010], [0.122, 0.028], [0.122, 0.58], [0.116, 0.635], [0.080, 0.70], [0.048, 0.74], [0.042, 0.765], [0.042, 0.93], [0.050, 0.935], [0.050, 0.955], [0.042, 0.96]], fill: 0.66, label: [0.17, 0.30] },
+  wine: { body: [[0.116, 0.0], [0.127, 0.010], [0.128, 0.028], [0.128, 0.44], [0.123, 0.51], [0.090, 0.63], [0.050, 0.72], [0.040, 0.755], [0.040, 0.945], [0.047, 0.95], [0.047, 0.972], [0.040, 0.976]], fill: 0.60, label: [0.12, 0.27] },
+  squat: { body: [[0.178, 0.0], [0.190, 0.012], [0.192, 0.032], [0.192, 0.36], [0.184, 0.425], [0.126, 0.50], [0.070, 0.545], [0.058, 0.565], [0.058, 0.67], [0.066, 0.675], [0.066, 0.70], [0.058, 0.705]], fill: 0.45, label: [0.08, 0.22] },
+  bitters: { body: [[0.088, 0.0], [0.097, 0.008], [0.098, 0.022], [0.098, 0.34], [0.093, 0.385], [0.064, 0.43], [0.046, 0.455], [0.042, 0.475], [0.042, 0.53], [0.048, 0.535], [0.048, 0.55], [0.042, 0.555]], fill: 0.36, label: [0.03, 0.46], loose: true },
+  small: { body: [[0.098, 0.0], [0.107, 0.008], [0.108, 0.024], [0.108, 0.38], [0.103, 0.435], [0.070, 0.50], [0.046, 0.54], [0.040, 0.56], [0.040, 0.66], [0.047, 0.665], [0.047, 0.685], [0.040, 0.69]], fill: 0.48, label: [0.10, 0.22] }
+};
+// glass: [attenuationColor, attenuationDistance]; liquid same; clear = no visible liquid colour
+const ITEMS = [
+  ['bourbon', 'whiskey', { glass: [0xf4fbf6, 3], liquid: [0xcf7418, 0.27], surf: 0x8a4208, cap: 'tcork', capColor: 0x141312, band: '#1b1c1a', ink: '#1b1c1a', paper: '#f1e7d0', text: 'BOURBON', sub: 'Kentucky straight' }],
+  ['rye', 'whiskey', { glass: [0xf4fbf6, 3], liquid: [0xb85a12, 0.22], surf: 0x6e2c06, cap: 'tcork', capColor: 0x3a2414, band: '#7a1f1a', ink: '#7a1f1a', paper: '#ecdfc0', text: 'RYE', sub: 'Straight whiskey' }],
+  ['gin', 'tall', { glass: [0xe6f6ee, 2.2], liquid: [0xe9f7f1, 3.5], clear: true, cap: 'screw', capColor: 0xc9ccd0, band: '#2f5d50', ink: '#2f5d50', paper: '#f5f2e8', text: 'DRY GIN', sub: 'London' }],
+  ['rum', 'tall', { glass: [0xfbfbf4, 3], liquid: [0xf8f4e6, 3.5], clear: true, cap: 'screw', capColor: 0xc9a24e, band: '#b08a3c', ink: '#5a4520', paper: '#f6f0e0', text: 'WHITE RUM', sub: 'Carta blanca' }],
+  ['vodka', 'tall', { glass: [0xeaf3fb, 2.5], liquid: [0xedf5fb, 3.5], clear: true, cap: 'screw', capColor: 0xaab2ba, band: '#2b4a7a', ink: '#2b4a7a', paper: '#f3f5f7', text: 'VODKA', sub: 'Triple distilled' }],
+  ['tequila', 'squat', { glass: [0xfbfaf0, 3], liquid: [0xecc058, 0.75], surf: 0xb88420, cap: 'woodball', capColor: 0x8a5a2c, band: '#3f6b3a', ink: '#3f6b3a', paper: '#f4ebd0', text: 'TEQUILA', sub: 'Reposado' }],
+  ['campari', 'wine', { glass: [0xfbf4f2, 3], liquid: [0xe0241a, 0.24], surf: 0x8a0a08, cap: 'capsule', capColor: 0x1f3566, band: '#1f3566', ink: '#1f3566', paper: '#f5f0e4', text: 'BITTER', sub: 'Aperitivo' }],
+  ['sweetv', 'wine', { glass: [0x3f8a44, 0.22], liquid: [0x6a3a1c, 0.16], surf: 0x1c0a06, cap: 'capsule', capColor: 0x8a1a16, band: '#8a1a16', ink: '#8a1a16', paper: '#f0e4c8', text: 'VERMOUTH', sub: 'Rosso' }],
+  ['dryv', 'wine', { glass: [0xa9d894, 0.45], liquid: [0xc9dc90, 0.5], surf: 0x7e9a48, cap: 'capsule', capColor: 0xd8d2ba, band: '#2f5d50', ink: '#2f5d50', paper: '#f4f1e2', text: 'VERMOUTH', sub: 'Extra dry' }],
+  ['triple', 'squat', { glass: [0xf6a23a, 0.45], liquid: [0xf0932a, 0.4], surf: 0xb05a08, cap: 'plastic', capColor: 0xb8241e, band: '#c8302a', ink: '#8a1a16', paper: '#f5edd8', text: 'TRIPLE SEC', sub: 'Orange liqueur' }],
+  ['bitters', 'bitters', { glass: [0x8a4a1c, 0.12], liquid: [0x6a2a0c, 0.10], surf: 0x1e0803, cap: 'plastic', capColor: 0xe9c22a, band: '#1b1c1a', ink: '#1b1c1a', paper: '#f3ecd8', text: 'AROMATIC', sub: 'Bitters' }],
+  ['syrup', 'small', { glass: [0xfbfbf4, 3], liquid: [0xf3dc9a, 0.9], surf: 0xd0b060, cap: 'pourer', capColor: 0xc9a56a, band: '#bc9366', ink: '#7a5830', paper: '#f6f0e0', text: 'SIMPLE', sub: 'Cane sugar syrup' }],
+  ['soda', 'small', { glass: [0xdff3f7, 2.0], liquid: [0xe6f6f9, 3.0], clear: true, cap: 'crown', capColor: 0xb8241e, band: '#2b6f8a', ink: '#2b6f8a', paper: '#f1f5f5', text: 'SODA', sub: 'Sparkling water' }],
+  ['lime', 'lime', {}],
+  ['lemon', 'lemon', {}]
+];
+
+/* ---------- label ---------- */
+function labelTexture(o, tall) {
+  return canvasTex(1024, tall ? 1280 : 600, (g, w, h) => {
+    g.fillStyle = o.paper; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 9000; i++) { g.fillStyle = 'rgba(90,70,40,' + (rnd() * 0.045) + ')'; g.fillRect(rnd() * w, rnd() * h, 2 + rnd() * 3, 1 + rnd() * 2); }
+    g.strokeStyle = o.ink; g.lineWidth = 8; g.strokeRect(26, 26, w - 52, h - 52);
+    g.lineWidth = 2.5; g.strokeRect(44, 44, w - 88, h - 88);
+    g.fillStyle = o.band; g.fillRect(0, h - 128, w, 58);
+    g.fillStyle = o.ink; g.textAlign = 'center';
+    const cy = tall ? 470 : 250;
+    g.font = 'italic 84px Georgia, serif'; g.fillText('Maison', w / 2, cy - 96);
+    let size = 128; g.font = '700 ' + size + 'px Georgia, serif';
+    while (g.measureText(o.text).width > w - 190) { size -= 4; g.font = '700 ' + size + 'px Georgia, serif'; }
+    g.fillText(o.text, w / 2, cy + 30);
+    g.fillRect(w / 2 - 150, cy + 62, 300, 5);
+    g.font = 'italic 50px Georgia, serif'; g.fillText(o.sub, w / 2, cy + 126);
+    g.font = '34px Georgia, serif'; g.fillText('70 cl   40% vol', w / 2, cy + 178);
+    if (tall) { g.beginPath(); g.arc(w / 2, 880, 120, 0, Math.PI * 2); g.lineWidth = 7; g.stroke(); g.beginPath(); g.arc(w / 2, 880, 104, 0, Math.PI * 2); g.lineWidth = 2.5; g.stroke(); g.font = 'italic 78px Georgia, serif'; g.fillText('No. 7', w / 2, 906); }
+  }, true);
+}
+const paperBump = canvasTex(256, 256, (g, w, h) => { g.fillStyle = '#808080'; g.fillRect(0, 0, w, h); for (let i = 0; i < 5000; i++) { const v = 110 + rnd() * 40; g.fillStyle = 'rgb(' + v + ',' + v + ',' + v + ')'; g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 3, 1); } });
+paperBump.wrapS = paperBump.wrapT = THREE.RepeatWrapping; paperBump.repeat.set(4, 2);
+
+/* ---------- caps ---------- */
+function lathe(points, mat, seg) { return new THREE.Mesh(new THREE.LatheGeometry(points.map(p => new THREE.Vector2(p[0], p[1])), seg || 64), mat); }
+function buildCap(o, top, lipR, neckR) {
+  const g = new THREE.Group(); const col = o.capColor;
+  if (o.cap === 'tcork') {
+    const m = new THREE.MeshPhysicalMaterial({ color: col, roughness: 0.55, clearcoat: 0.3, clearcoatRoughness: 0.5 });
+    const r = lipR + 0.012;
+    const c = lathe([[0, 0.034], [r - 0.006, 0.034], [r, 0.028], [r, 0.004], [r - 0.004, 0], [0, 0]], m); c.position.y = top + 0.001; g.add(c);
+  } else if (o.cap === 'screw') {
+    const m = new THREE.MeshStandardMaterial({ color: col, roughness: 0.32, metalness: 1, bumpMap: knurl, bumpScale: 1.4 });
+    const r = lipR + 0.004, h = 0.07;
+    const c = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 96, 1, true), m); c.position.y = top - 0.045 + h / 2; g.add(c);
+    const t = lathe([[0, 0.006], [r - 0.006, 0.006], [r, 0], [r, -0.004]], new THREE.MeshStandardMaterial({ color: col, roughness: 0.28, metalness: 1 })); t.position.y = top - 0.045 + h; g.add(t);
+    const ring = new THREE.Mesh(new THREE.CylinderGeometry(r + 0.0015, r + 0.0015, 0.008, 64, 1, true), new THREE.MeshStandardMaterial({ color: col, roughness: 0.3, metalness: 1 })); ring.position.y = top - 0.048; g.add(ring);
+  } else if (o.cap === 'capsule') {
+    const m = new THREE.MeshPhysicalMaterial({ color: col, roughness: 0.38, metalness: 0.75, clearcoat: 0.4 });
+    const r = Math.max(lipR, neckR) + 0.004;
+    const c = lathe([[0, 0.012], [r - 0.006, 0.012], [r, 0.006], [r, -0.03], [neckR + 0.004, -0.045], [neckR + 0.004, -0.19]], m); c.position.y = top; g.add(c);
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(neckR + 0.0055, neckR + 0.0055, 0.012, 48, 1, true), new THREE.MeshStandardMaterial({ color: 0xd9b25a, roughness: 0.3, metalness: 1 })); band.position.y = top - 0.165; g.add(band);
+  } else if (o.cap === 'woodball') {
+    const cork = new THREE.Mesh(new THREE.CylinderGeometry(lipR + 0.003, lipR + 0.003, 0.022, 48), new THREE.MeshStandardMaterial({ color: 0xc9a274, roughness: 0.9 })); cork.position.y = top + 0.011; g.add(cork);
+    const wood = canvasTex(256, 256, (c, w, h) => { c.fillStyle = '#8a5a2c'; c.fillRect(0, 0, w, h); for (let i = 0; i < 40; i++) { c.strokeStyle = 'rgba(50,25,8,' + (0.1 + rnd() * 0.25) + ')'; c.lineWidth = 1 + rnd() * 4; const y = rnd() * h; c.beginPath(); c.moveTo(0, y); c.bezierCurveTo(80, y + 14, 170, y - 14, 256, y + 6); c.stroke(); } }, true);
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.056, 48, 32), new THREE.MeshPhysicalMaterial({ map: wood, roughness: 0.45, clearcoat: 0.5, clearcoatRoughness: 0.3 })); ball.scale.y = 0.82; ball.position.y = top + 0.06; g.add(ball);
+  } else if (o.cap === 'plastic') {
+    const m = new THREE.MeshPhysicalMaterial({ color: col, roughness: 0.35, clearcoat: 0.6, clearcoatRoughness: 0.25, bumpMap: knurl, bumpScale: 0.5 });
+    const r = lipR + 0.006, h = 0.07;
+    const c = lathe([[0, h], [r - 0.008, h], [r, h - 0.008], [r, 0]], m, 96); c.position.y = top - 0.04; g.add(c);
+  } else if (o.cap === 'crown') {
+    const m = new THREE.MeshStandardMaterial({ color: col, roughness: 0.35, metalness: 0.85, bumpMap: knurl, bumpScale: 2.2 });
+    const r = lipR + 0.002;
+    const c = lathe([[0, 0.018], [r - 0.006, 0.018], [r, 0.012], [r + 0.006, -0.006]], m, 96); c.position.y = top - 0.004; g.add(c);
+  } else if (o.cap === 'pourer') {
+    const cork = new THREE.Mesh(new THREE.CylinderGeometry(lipR + 0.001, neckR, 0.03, 48), new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.8 })); cork.position.y = top + 0.012; g.add(cork);
+    const steel = new THREE.MeshStandardMaterial({ color: 0xe4e6e8, roughness: 0.18, metalness: 1 });
+    const collar = new THREE.Mesh(new THREE.CylinderGeometry(lipR + 0.006, lipR + 0.006, 0.01, 48), steel); collar.position.y = top + 0.03; g.add(collar);
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.0085, 0.014, 0.15, 32, 1, true), steel); tube.geometry.translate(0, 0.075, 0);
+    tube.position.y = top + 0.034; tube.rotation.z = -0.42; g.add(tube);
+  }
+  return g;
+}
+
+/* ---------- bottle ---------- */
+function glassMat(c, dist, thickness, ior) {
+  return new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: 1, thickness: thickness, ior: ior, roughness: 0.015, metalness: 0,
+    attenuationColor: new THREE.Color(c), attenuationDistance: dist, specularIntensity: 1, envMapIntensity: 1.15, side: THREE.DoubleSide, clearcoat: 1, clearcoatRoughness: 0.0 });
+}
+function buildBottle(shape, o) {
+  const grp = new THREE.Group();
+  const pts = smooth(shape.body);
+  const fy = shape.fill, fr = radiusAt(pts, fy);
+  const lower = [new THREE.Vector2(0.0015, 0)].concat(pts.filter(p => p.y < fy), [new THREE.Vector2(fr, fy)]);
+  const upper = [new THREE.Vector2(fr, fy)].concat(pts.filter(p => p.y > fy));
+  const bodyR = shape.body[3][0];
+  const up = new THREE.Mesh(new THREE.LatheGeometry(upper, 128), glassMat(o.glass[0], o.glass[1], 0.03, 1.5)); grp.add(up);
+  const lowColor = new THREE.Color(o.liquid[0]).multiply(new THREE.Color(o.glass[0]).lerp(new THREE.Color(0xffffff), o.glass[1] > 1 ? 1 : 0.35));
+  const lo = new THREE.Mesh(new THREE.LatheGeometry(lower, 128), glassMat(lowColor, Math.min(o.liquid[1], o.glass[1] < 1 ? o.glass[1] : 99), bodyR * 0.9, 1.33)); grp.add(lo);
+  if (o.clear) {
+    const men = new THREE.Mesh(new THREE.TorusGeometry(fr - 0.004, 0.0028, 12, 96), new THREE.MeshStandardMaterial({ color: 0xe8f0f0, roughness: 0.15, metalness: 0.2 }));
+    men.rotation.x = Math.PI / 2; men.position.y = fy; grp.add(men);
+  } else {
+    const surf = new THREE.Mesh(new THREE.CircleGeometry(fr - 0.006, 64), new THREE.MeshPhysicalMaterial({ color: o.surf, roughness: 0.08, clearcoat: 1 }));
+    surf.rotation.x = -Math.PI / 2; surf.position.y = fy - 0.002; grp.add(surf);
+  }
+  const edgeMat = new THREE.MeshBasicMaterial({ color: 0x1a1512, transparent: true, depthWrite: false, side: THREE.FrontSide });
+  edgeMat.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\n varying float vF;').replace('#include <project_vertex>', '#include <project_vertex>\n vec3 nn = normalize(normalMatrix * normal); vF = 1.0 - abs(dot(nn, normalize(-mvPosition.xyz)));');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n varying float vF;').replace('#include <opaque_fragment>', '#include <opaque_fragment>\n gl_FragColor.a = pow(vF, 3.5) * 0.5;');
+  };
+  const edge = new THREE.Mesh(new THREE.LatheGeometry(pts, 128), edgeMat); edge.renderOrder = 8; grp.add(edge);
+  const [ly, lh] = shape.label; let maxR = 0; for (const p of pts) if (p.y >= ly - 0.01 && p.y <= ly + lh + 0.01 && p.x > maxR) maxR = p.x; const lr = maxR + (shape.loose ? 0.007 : 0.003); const arc = shape.loose ? Math.PI * 2 : 3.5;
+  const label = new THREE.Mesh(new THREE.CylinderGeometry(lr, lr, lh, 128, 1, true, -arc / 2, arc), new THREE.MeshStandardMaterial({ map: labelTexture(o, shape.loose), bumpMap: paperBump, bumpScale: 0.25, roughness: 0.8, side: THREE.DoubleSide }));
+  label.position.y = ly + lh / 2; label.rotation.y = -0.14; grp.add(label);
+  const n = shape.body.length; const top = shape.body[n - 1][1]; const lipR = shape.body[n - 2][0]; const neckR = shape.body[n - 4][0];
+  grp.add(buildCap(o, top, lipR, neckR));
+  return { grp: grp, r: bodyR, tint: o.clear ? null : o.liquid[0] };
+}
+
+/* ---------- fruit ---------- */
+function skinMap(base, dark, light) {
+  return canvasTex(1024, 512, (g, w, h) => {
+    g.fillStyle = base; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 260; i++) { const x = rnd() * w, y = rnd() * h, r = 20 + rnd() * 90; const gr = g.createRadialGradient(x, y, 0, x, y, r); const c = rnd() > 0.5 ? dark : light; gr.addColorStop(0, 'rgba(' + c + ',' + (0.05 + rnd() * 0.14) + ')'); gr.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); }
+    for (let i = 0; i < 9000; i++) { g.fillStyle = 'rgba(' + dark + ',' + (0.05 + rnd() * 0.12) + ')'; g.beginPath(); g.arc(rnd() * w, rnd() * h, 0.8 + rnd() * 1.4, 0, 7); g.fill(); }
+  }, true);
+}
+const poreBump = canvasTex(1024, 512, (g, w, h) => {
+  g.fillStyle = '#909090'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 400; i++) { const x = rnd() * w, y = rnd() * h, r = 14 + rnd() * 40; const gr = g.createRadialGradient(x, y, 0, x, y, r); const v = rnd() > 0.5 ? 255 : 0; gr.addColorStop(0, 'rgba(' + v + ',' + v + ',' + v + ',0.10)'); gr.addColorStop(1, 'rgba(' + v + ',' + v + ',' + v + ',0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); }
+  for (let i = 0; i < 16000; i++) { const x = rnd() * w, y = rnd() * h, r = 1.2 + rnd() * 2.4; const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(20,20,20,0.75)'); gr.addColorStop(1, 'rgba(20,20,20,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); }
+});
+function cutFace(rind, pith, pulpA, pulpB, segs) {
+  return canvasTex(1024, 1024, (g, w) => {
+    const c = w / 2; g.clearRect(0, 0, w, w);
+    g.fillStyle = rind; g.beginPath(); g.arc(c, c, c - 2, 0, 7); g.fill();
+    g.fillStyle = pith; g.beginPath(); g.arc(c, c, c - 22, 0, 7); g.fill();
+    const R = c - 52; const gr = g.createRadialGradient(c, c, 20, c, c, R); gr.addColorStop(0, pulpB); gr.addColorStop(1, pulpA);
+    g.fillStyle = gr; g.beginPath(); g.arc(c, c, R, 0, 7); g.fill();
+    g.save(); g.beginPath(); g.arc(c, c, R, 0, 7); g.clip();
+    for (let i = 0; i < 2600; i++) { const a = rnd() * 6.283, r0 = 40 + rnd() * (R - 60), len = 18 + rnd() * 46; g.strokeStyle = rnd() > 0.5 ? 'rgba(255,255,240,' + (0.10 + rnd() * 0.25) + ')' : 'rgba(60,80,10,' + (0.04 + rnd() * 0.10) + ')'; g.lineWidth = 2 + rnd() * 5; g.lineCap = 'round'; g.beginPath(); g.moveTo(c + Math.cos(a) * r0, c + Math.sin(a) * r0); g.lineTo(c + Math.cos(a) * (r0 + len), c + Math.sin(a) * (r0 + len)); g.stroke(); }
+    g.restore();
+    g.strokeStyle = pith; g.lineCap = 'round';
+    for (let i = 0; i < segs; i++) { const a = i / segs * 6.283 + 0.2; g.lineWidth = 9 + rnd() * 5; g.beginPath(); g.moveTo(c + Math.cos(a) * 26, c + Math.sin(a) * 26); g.lineTo(c + Math.cos(a) * (R + 8), c + Math.sin(a) * (R + 8)); g.stroke(); }
+    g.fillStyle = pith; g.beginPath(); g.arc(c, c, 34, 0, 7); g.fill();
+  }, true);
+}
+function buildFruit(kind) {
+  const grp = new THREE.Group(); const lemon = kind === 'lemon';
+  const R = lemon ? 0.098 : 0.104;
+  const map = lemon ? skinMap('#f0c81a', '150,110,0', '255,236,120') : skinMap('#4c8a1a', '24,60,8', '150,190,60');
+  const skin = new THREE.MeshPhysicalMaterial({ map: map, bumpMap: poreBump, bumpScale: 1.6, roughness: 0.46, clearcoat: 0.35, clearcoatRoughness: 0.38, sheen: 0.4, sheenColor: new THREE.Color(lemon ? 0xfff0a0 : 0xc8e890), envMapIntensity: 0.85 });
+  const geo = new THREE.SphereGeometry(R, 128, 96); const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    let x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    const n = 1 + 0.006 * Math.sin(x * 34 + y * 21) + 0.005 * Math.sin(z * 29 - y * 26) + 0.004 * Math.sin(x * 17 + z * 23);
+    x *= n; y *= n; z *= n;
+    if (lemon) { const t = x / R; const k = 1 - Math.pow(Math.abs(t), 3.2) * 0.22; y *= k; z *= k; x = x * 1.26 + Math.sign(t) * Math.pow(Math.abs(t), 9) * 0.026; }
+    else { y *= 0.93; }
+    pos.setXYZ(i, x, y, z);
+  }
+  geo.computeVertexNormals();
+  const whole = new THREE.Mesh(geo, skin); whole.position.set(-0.075, lemon ? R * 0.94 : R * 0.93, -0.05); whole.rotation.set(0.15, lemon ? 0.45 : 0.3, lemon ? 0.06 : 0); grp.add(whole);
+  if (!lemon) { const s = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.011, 0.008, 10), new THREE.MeshStandardMaterial({ color: 0x4a3a1c, roughness: 0.95 })); s.position.set(-0.075 + 0.006, R * 1.855, -0.05 + 0.012); grp.add(s); }
+  const Rh = R * 0.95;
+  const half = new THREE.Group();
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(Rh, 96, 48, 0, Math.PI * 2, 0, Math.PI / 2), skin); half.add(dome);
+  const face = new THREE.Mesh(new THREE.CircleGeometry(Rh, 96), new THREE.MeshPhysicalMaterial({
+    map: lemon ? cutFace('#e9c019', '#fbf3cf', '#f3de6a', '#f8eda6', 10) : cutFace('#5a941f', '#eef2c8', '#b9d35a', '#dbe99a', 10),
+    roughness: 0.22, clearcoat: 0.9, clearcoatRoughness: 0.18, envMapIntensity: 0.9 }));
+  face.rotation.x = Math.PI / 2; face.position.y = -0.0005; half.add(face);
+  half.rotation.set(-1.80, 0, 0); half.rotation.order = 'YXZ'; half.rotation.y = -0.38;
+  half.position.set(0.105, Rh * 0.985, 0.09); grp.add(half);
+  grp.scale.setScalar(1.28);
+  return { grp: grp, r: 0.2, tint: null, fruit: true };
+}
+
+/* ---------- ground: contact shadow + colour cast ---------- */
+function ground(scene, info) {
+  const sh = canvasTex(256, 256, (g) => { const gr = g.createRadialGradient(128, 128, 6, 128, 128, 128); gr.addColorStop(0, 'rgba(0,0,0,0.72)'); gr.addColorStop(0.4, 'rgba(0,0,0,0.34)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256); });
+  const mk = (w, d, x, z, tex, y) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(x, y, z); m.renderOrder = -2; scene.add(m); };
+  if (info.fruit) { mk(0.44, 0.33, -0.08, -0.05, sh, 0.001); mk(0.38, 0.26, 0.15, 0.115, sh, 0.0012); return; }
+  mk(info.r * 3.8, info.r * 2.6, info.r * 0.28, 0, sh, 0.001);
+  if (info.tint) {
+    const c = new THREE.Color(info.tint); const rgb = Math.round(c.r * 255) + ',' + Math.round(c.g * 255) + ',' + Math.round(c.b * 255);
+    const ct = canvasTex(256, 256, (g) => { const gr = g.createRadialGradient(128, 128, 4, 128, 128, 128); gr.addColorStop(0, 'rgba(' + rgb + ',0.55)'); gr.addColorStop(0.5, 'rgba(' + rgb + ',0.2)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256); }, true);
+    mk(info.r * 2.6, info.r * 1.5, info.r * 1.05, 0.05, ct, 0.0015);
+  }
+}
+
+/* ---------- difference matte ---------- */
+const lin = new Float32Array(256); for (let i = 0; i < 256; i++) { const v = i / 255; lin[i] = v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+const toS = (v) => { v = Math.min(Math.max(v, 0), 1); return Math.round((v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055) * 255); };
+const big = document.createElement('canvas'); big.width = RW; big.height = RH; const bctx = big.getContext('2d', { willReadFrequently: true });
+function grab(scene, bg) { scene.background = new THREE.Color(bg); renderer.render(scene, cam); bctx.drawImage(renderer.domElement, 0, 0); return bctx.getImageData(0, 0, RW, RH); }
+function matte(scene) {
+  const W = grab(scene, 0xffffff).data, B = grab(scene, 0x000000).data;
+  const wl = [lin[W[0]], lin[W[1]], lin[W[2]]];
+  const out = bctx.createImageData(RW, RH); const O = out.data;
+  for (let i = 0; i < W.length; i += 4) {
+    let t = 1; const lb = [0, 0, 0], lw = [0, 0, 0];
+    for (let c = 0; c < 3; c++) { lw[c] = lin[W[i + c]]; lb[c] = lin[B[i + c]]; const d = Math.min(Math.max((lw[c] - lb[c]) / wl[c], 0), 1); if (d < t) t = d; }
+    const a = 1 - t;
+    if (a < 0.006) { O[i + 3] = 0; continue; }
+    for (let c = 0; c < 3; c++) { const p = 0.5 * (lb[c] + Math.max(lw[c] - t * wl[c], 0)); O[i + c] = toS(p / a); }
+    O[i + 3] = Math.round(a * 255);
+  }
+  bctx.putImageData(out, 0, 0);
+  const small = document.createElement('canvas'); small.width = OW; small.height = OH; small.className = 'o';
+  const sctx = small.getContext('2d'); sctx.imageSmoothingQuality = 'high'; sctx.drawImage(big, 0, 0, OW, OH);
+  document.body.appendChild(small); return small;
+}
+async function save(canvas, name) { const blob = await new Promise(r => canvas.toBlob(r, 'image/png')); await fetch('/out/' + name, { method: 'PUT', body: blob }); }
+
+(async () => {
+  for (const [id, shapeName, o] of ITEMS) {
+    if (only && !only.split(',').includes(id)) continue;
+    const scene = newScene();
+    const info = SHAPES[shapeName] ? buildBottle(SHAPES[shapeName], o) : buildFruit(shapeName);
+    scene.add(info.grp); ground(scene, info);
+    await save(matte(scene), id + '.png');
+    meta.items.push(id);
+    await new Promise(r => setTimeout(r, 30));
+  }
+  meta.done = true;
+})().catch(e => { meta.error = String(e && e.stack || e); });
+</script>
+</body>
+</html>

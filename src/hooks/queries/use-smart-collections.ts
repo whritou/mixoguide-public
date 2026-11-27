@@ -22,6 +22,7 @@ export interface SmartCollection {
     defaultServings:  number
     defaultDayOffset: number
     occasions:        string[]
+    season?:          { from: { month: number; day: number }; to: { month: number; day: number } }
     cocktailCount:    number
     cocktails:        SmartCollectionCocktail[]
 }

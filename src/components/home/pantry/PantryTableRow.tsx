@@ -49,9 +49,9 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
     const subTypeName = ing?.subType?.name ?? ''
 
     const barColor =
-        stock === 'ok'  ? '#4a7c59' :
-        stock === 'low' ? '#bc9366' :
-                          '#d3c4b7'
+        stock === 'ok'  ? 'var(--success)' :
+        stock === 'low' ? 'var(--brand-soft)' :
+                          'var(--line-strong)'
     const shoppingQty = item.shoppingQuantity ?? 0
 
     const handleFavorite = async () => {
@@ -117,35 +117,35 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
     return (
         <>
             <div
-                className="grid grid-cols-[1fr_auto_32px] sm:grid-cols-[2fr_1fr_1.5fr_minmax(100px,1fr)_40px] gap-3 sm:gap-4 items-center px-4 sm:px-6 py-4 bg-white hover:bg-[#faf8f5] cursor-pointer transition-colors"
+                className="grid grid-cols-[1fr_auto_32px] sm:grid-cols-[2fr_1fr_1.5fr_minmax(100px,1fr)_40px] gap-3 sm:gap-4 items-center px-4 sm:px-6 py-4 bg-surface hover:bg-surface-hover-alt cursor-pointer transition-colors"
                 onClick={() => setEditOpen(true)}
             >
                 {/* INGREDIENT */}
                 <div className="flex items-center gap-3 min-w-0">
                     <div
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex-shrink-0 bg-mg-sand bg-cover bg-center"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex-shrink-0 bg-line bg-cover bg-center"
                         style={ing?.imageUrl ? { backgroundImage: `url(${ing.imageUrl})` } : {}}
                     />
                     <div className="min-w-0">
-                        <p className="text-sm font-medium text-mg-ink truncate">{ing?.name ?? '—'}</p>
+                        <p className="text-sm font-medium text-fg truncate">{ing?.name ?? '—'}</p>
                         {item.note && (
-                            <p className="text-xs text-mg-muted truncate">{item.note}</p>
+                            <p className="text-xs text-fg-muted truncate">{item.note}</p>
                         )}
                     </div>
                 </div>
 
                 {/* TYPE — desktop only */}
-                <div className="hidden sm:block text-sm text-mg-charcoal truncate">
+                <div className="hidden sm:block text-sm text-fg-secondary truncate">
                     {typeName}
-                    {subTypeName && <span className="text-mg-muted"> · {subTypeName}</span>}
+                    {subTypeName && <span className="text-fg-muted"> · {subTypeName}</span>}
                 </div>
 
                 {/* STOCK BAR — desktop only */}
                 <div className="hidden sm:flex items-center">
                     {isShoppingView || !inPantry || stock === 'out' ? (
-                        <span className="text-xs text-mg-muted">—</span>
+                        <span className="text-xs text-fg-muted">—</span>
                     ) : (
-                        <div className="h-1.5 bg-mg-sand rounded-full overflow-hidden w-full max-w-[160px]">
+                        <div className="h-1.5 bg-line rounded-full overflow-hidden w-full max-w-[160px]">
                             <div
                                 className="h-full rounded-full transition-all"
                                 style={{ width: `${fill * 100}%`, backgroundColor: barColor }}
@@ -158,7 +158,7 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
                 <div className="text-right">
                     {isShoppingView ? (
                         <div className="flex items-center justify-end gap-2">
-                            <span className="text-sm font-medium text-mg-ink">
+                            <span className="text-sm font-medium text-fg">
                                 {shoppingQty > 0 ? `${shoppingQty} ${item.unitLeft}` : '—'}
                             </span>
                             {shoppingQty > 0 && (
@@ -167,7 +167,7 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
                                         type="button"
                                         onClick={handleMoveToPantry}
                                         disabled={busy}
-                                        className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-mg-brown px-3 py-1.5 text-[11px] font-medium text-white transition-colors hover:bg-[#5c4023] disabled:opacity-50"
+                                        className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1.5 text-[11px] font-medium text-fg-on-brand transition-colors hover:bg-brand/90 disabled:opacity-50"
                                     >
                                         {busy ? <Loader2 size={12} className="animate-spin" /> : <PackageCheck size={12} />}
                                         Move to pantry
@@ -176,21 +176,21 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
                             )}
                         </div>
                     ) : !inPantry ? (
-                        <span className="text-xs font-medium text-mg-caramel">
+                        <span className="text-xs font-medium text-brand-soft-strong">
                             {item.isInShoppingList ? `${shoppingQty} ${item.unitLeft}` : '—'}
                         </span>
                     ) : infinite ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-mg-caramel/15 px-2 py-0.5 text-xs font-medium text-mg-brown">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-brand-soft/15 px-2 py-0.5 text-xs font-medium text-brand">
                             <span aria-hidden className="text-base leading-none">∞</span>
                             Always stocked
                         </span>
                     ) : stock === 'out' ? (
-                        <span className="text-xs font-medium text-mg-caramel">Out of stock</span>
+                        <span className="text-xs font-medium text-brand-soft-strong">Out of stock</span>
                     ) : (
-                        <span className={`text-sm font-medium ${stock === 'low' ? 'text-mg-brown' : 'text-mg-ink'}`}>
+                        <span className={`text-sm font-medium ${stock === 'low' ? 'text-brand' : 'text-fg'}`}>
                             {item.quantity} {item.unitLeft}
                             {stock === 'low' && (
-                                <span className="ml-1.5 text-xs text-mg-caramel">· Low stock</span>
+                                <span className="ml-1.5 text-xs text-brand-soft-strong">· Low stock</span>
                             )}
                         </span>
                     )}
@@ -205,7 +205,7 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
                         <DropdownMenuTrigger asChild>
                             <button
                                 type="button"
-                                className="p-1.5 rounded-lg hover:bg-mg-dusk text-mg-muted transition-colors"
+                                className="p-1.5 rounded-lg hover:bg-canvas-hover-alt text-fg-muted transition-colors"
                                 aria-label={`Actions for ${ing?.name ?? 'pantry item'}`}
                             >
                                 <MoreHorizontal size={16} />
@@ -215,17 +215,17 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
                             align="end"
                             sideOffset={6}
                             collisionPadding={12}
-                            className="z-50 min-w-[140px] rounded-xl border-mg-sand bg-white py-1 text-mg-charcoal shadow-lg"
+                            className="z-50 min-w-[140px] rounded-xl border-line bg-surface py-1 text-fg-secondary shadow-lg"
                         >
                             <DropdownMenuItem
                                 onSelect={() => setEditOpen(true)}
-                                className="rounded-lg px-4 py-2 focus:bg-mg-frost focus:text-mg-charcoal"
+                                className="rounded-lg px-4 py-2 focus:bg-surface-hover-alt focus:text-fg-secondary"
                             >
                                 Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onSelect={() => void handleFavorite()}
-                                className="rounded-lg px-4 py-2 focus:bg-mg-frost focus:text-mg-charcoal"
+                                className="rounded-lg px-4 py-2 focus:bg-surface-hover-alt focus:text-fg-secondary"
                             >
                                 {item.favorite ? 'Unfavourite' : 'Favourite'}
                             </DropdownMenuItem>
@@ -233,16 +233,16 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
                                 <DropdownMenuItem
                                     onSelect={() => void handleMoveToPantry()}
                                     disabled={busy}
-                                    className="rounded-lg px-4 py-2 focus:bg-mg-frost focus:text-mg-charcoal"
+                                    className="rounded-lg px-4 py-2 focus:bg-surface-hover-alt focus:text-fg-secondary"
                                 >
                                     Move to pantry
                                 </DropdownMenuItem>
                             )}
-                            <DropdownMenuSeparator className="bg-mg-sand" />
+                            <DropdownMenuSeparator className="bg-line" />
                             <DropdownMenuItem
                                 onSelect={() => setConfirmOpen(true)}
                                 disabled={busy}
-                                className="rounded-lg px-4 py-2 text-mg-danger focus:bg-mg-danger-light focus:text-mg-danger"
+                                className="rounded-lg px-4 py-2 text-danger focus:bg-danger-bg focus:text-danger"
                             >
                                 {busy && <Loader2 size={13} className="animate-spin" />}
                                 Remove

@@ -35,7 +35,7 @@ export function DangerZone({ hasPassword }: { hasPassword: boolean }) {
 
     return (
         <Section icon={AlertTriangle} title="Danger Zone" danger>
-            <p className="text-sm text-mg-charcoal/80 font-body mb-4">
+            <p className="text-sm text-fg-secondary/80 font-body mb-4">
                 Permanently delete your account and all associated data — pantry, favourites, ratings, and planned cocktails.
                 This action <strong>cannot be undone</strong>.
             </p>
@@ -43,15 +43,15 @@ export function DangerZone({ hasPassword }: { hasPassword: boolean }) {
             {!open ? (
                 <button
                     onClick={() => setOpen(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 border border-mg-danger/40 text-mg-danger rounded-full
-                               text-xs font-label uppercase tracking-widest hover:bg-mg-danger/5 transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 border border-danger/40 text-danger rounded-full
+                               text-xs font-label uppercase tracking-widest hover:bg-danger/5 transition-colors"
                 >
                     <Trash2 size={14} />
                     Delete my account
                 </button>
             ) : (
-                <div className="bg-mg-danger-light/40 border border-mg-danger/20 rounded-2xl p-5 space-y-4">
-                    <p className="text-sm font-body text-mg-danger">
+                <div className="bg-danger-bg/40 border border-danger/20 rounded-2xl p-5 space-y-4">
+                    <p className="text-sm font-body text-danger">
                         Type <strong>DELETE</strong> below to confirm. This will permanently delete your account and all data.
                         {!hasPassword && ' No password needed — you signed up with Google.'}
                     </p>
@@ -61,13 +61,13 @@ export function DangerZone({ hasPassword }: { hasPassword: boolean }) {
                         onChange={(e) => { setConfirmText(e.target.value); setError('') }}
                         placeholder="DELETE"
                         autoFocus
-                        className="w-full px-4 py-3 rounded-xl bg-white/70 text-sm font-body text-mg-ink
-                                   border border-mg-danger/30 focus:outline-none focus:ring-1 focus:ring-mg-danger"
+                        className="w-full px-4 py-3 rounded-xl bg-surface/70 text-sm font-body text-fg
+                                   border border-danger/30 focus:outline-none focus:ring-1 focus:ring-danger"
                     />
 
                     {hasPassword && (
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-mg-danger/70 mb-1.5">
+                            <label className="block text-xs font-label uppercase tracking-widest text-danger/70 mb-1.5">
                                 Confirm your password
                             </label>
                             <input
@@ -75,29 +75,29 @@ export function DangerZone({ hasPassword }: { hasPassword: boolean }) {
                                 value={password}
                                 onChange={(e) => { setPassword(e.target.value); setError('') }}
                                 placeholder="Your current password"
-                                className="w-full px-4 py-3 rounded-xl bg-white/70 text-sm font-body text-mg-ink
-                                           border border-mg-danger/30 focus:outline-none focus:ring-1 focus:ring-mg-danger"
+                                className="w-full px-4 py-3 rounded-xl bg-surface/70 text-sm font-body text-fg
+                                           border border-danger/30 focus:outline-none focus:ring-1 focus:ring-danger"
                             />
                         </div>
                     )}
 
-                    {error && <p className="text-sm text-mg-danger font-body">{error}</p>}
+                    {error && <p className="text-sm text-danger font-body">{error}</p>}
 
                     <div className="flex gap-3">
                         <button
                             onClick={handleDelete}
                             disabled={deleting || confirmText !== 'DELETE' || (hasPassword && !password)}
-                            className="px-5 py-2.5 bg-mg-danger text-white rounded-full
+                            className="px-5 py-2.5 bg-danger text-fg-on-brand rounded-full
                                        font-label text-xs uppercase tracking-widest
-                                       hover:bg-[#9e1515] transition-colors
+                                       hover:bg-danger/90 transition-colors
                                        disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {deleting ? 'Deleting…' : 'Yes, delete permanently'}
                         </button>
                         <button
                             onClick={() => { setOpen(false); setConfirmText(''); setPassword(''); setError('') }}
-                            className="px-5 py-2.5 rounded-full border border-mg-ink/20 text-sm font-body
-                                       text-mg-ink/70 hover:bg-mg-ink/5 transition-colors"
+                            className="px-5 py-2.5 rounded-full border border-fg/20 text-sm font-body
+                                       text-fg/70 hover:bg-fg/5 transition-colors"
                         >
                             Cancel
                         </button>

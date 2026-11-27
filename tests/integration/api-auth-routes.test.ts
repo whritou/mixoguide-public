@@ -8,6 +8,7 @@ const {
     mockGetIp,
     mockMailService,
     mockMobileAuthService,
+    mockPantryService,
     mockSendResetPasswordEmail,
     mockSendVerificationEmail,
     mockUserRepository,
@@ -34,6 +35,9 @@ const {
         sendResetPasswordEmail: vi.fn(),
         sendVerificationEmail: vi.fn(),
     },
+    mockPantryService: {
+        importDemoBar: vi.fn(),
+    },
     mockSendResetPasswordEmail: vi.fn(),
     mockSendVerificationEmail: vi.fn(),
     mockUserRepository: {
@@ -54,6 +58,7 @@ vi.mock('@/lib/rateLimit', () => ({
 
 vi.mock('@/services/auth.service', () => ({ authService: mockAuthService }))
 vi.mock('@/services/mail.service', () => ({ mailService: mockMailService }))
+vi.mock('@/services/pantry.service', () => ({ pantryService: mockPantryService }))
 vi.mock('@/services/user.service', () => ({ userService: mockUserService }))
 vi.mock('@/services/mobile-auth.service', () => ({ mobileAuthService: mockMobileAuthService }))
 vi.mock('@/repositories/user.repository', () => ({ userRepository: mockUserRepository }))
@@ -408,4 +413,68 @@ describe('mobile auth routes', () => {
         expect(body.data.message).toContain('Password reset successfully')
     })
 
+})
+
+describe('register with a demo bar', () => {
+    const register = (extra: Record<string, unknown> = {}) =>
+        webRegister(
+            nextRequest({
+                method: 'POST',
+                path: '/api/auth/register',
+                body: {
+                    name: 'User',
+                    email: 'user@example.com',
+                    password: 'password123',
+                    passwordConfirm: 'password123',
+                    turnstileToken: 'captcha-token',
+                    ...extra,
+                },
+            }),
+            routeContext(),
+        )
+
+    beforeEach(() => {
+        mockPantryService.importDemoBar.mockResolvedValue({ imported: 1 })
+    })
+
+    it('imports the demo bar for the new user after creating the account', async () => {
+        const response = await register({ demoBar: ['gin'] })
+
+        expect(response.status).toBe(201)
+        expect(mockPantryService.importDemoBar).toHaveBeenCalledWith('user-1', ['gin'])
+        expect(mockUserService.create.mock.invocationCallOrder[0])
+            .toBeLessThan(mockPantryService.importDemoBar.mock.invocationCallOrder[0])
+    })
+
+    it('registers normally and skips the import when the demo bar is invalid', async () => {
+        const response = await register({ demoBar: 'gin' })
+
+        expect(response.status).toBe(201)
+        expect(mockUserService.create).toHaveBeenCalled()
+        expect(mockPantryService.importDemoBar).not.toHaveBeenCalled()
+        expect(mockMailService.sendVerificationEmail).toHaveBeenCalled()
+    })
+
+    it('still registers and sends the verification email when the import fails', async () => {
+        mockPantryService.importDemoBar.mockRejectedValueOnce(new Error('db down'))
+
+        const response = await register({ demoBar: ['gin'] })
+
+        expect(response.status).toBe(201)
+        expect(mockMailService.sendVerificationEmail).toHaveBeenCalledWith('user@example.com', 'email-token', '/')
+    })
+
+    it('skips the import when no demo bar is sent', async () => {
+        const response = await register()
+
+        expect(response.status).toBe(201)
+        expect(mockPantryService.importDemoBar).not.toHaveBeenCalled()
+    })
+
+    it('skips the import for an empty demo bar', async () => {
+        const response = await register({ demoBar: [] })
+
+        expect(response.status).toBe(201)
+        expect(mockPantryService.importDemoBar).not.toHaveBeenCalled()
+    })
 })

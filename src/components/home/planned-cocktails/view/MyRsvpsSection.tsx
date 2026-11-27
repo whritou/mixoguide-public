@@ -9,9 +9,9 @@ const STATUS_LABEL: Record<string, string> = {
     not_going: "Can't make it",
 }
 const STATUS_STYLE: Record<string, string> = {
-    going:     'bg-mg-brown/10 text-mg-brown',
-    maybe:     'bg-mg-caramel/15 text-mg-charcoal',
-    not_going: 'bg-mg-sand text-mg-muted',
+    going:     'bg-brand/10 text-brand',
+    maybe:     'bg-brand-soft/15 text-fg-secondary',
+    not_going: 'bg-line text-fg-muted',
 }
 
 export default function MyRsvpsSection() {
@@ -21,7 +21,7 @@ export default function MyRsvpsSection() {
         return (
             <div className="space-y-2">
                 {[1, 2].map(i => (
-                    <div key={i} className="h-20 rounded-xl bg-mg-sand/40 animate-pulse" />
+                    <div key={i} className="h-20 rounded-xl bg-line/40 animate-pulse" />
                 ))}
             </div>
         )
@@ -29,9 +29,9 @@ export default function MyRsvpsSection() {
 
     if (rsvps.length === 0) {
         return (
-            <div className="rounded-2xl border border-mg-sand bg-white p-8 text-center">
-                <p className="text-sm text-mg-muted">You haven&apos;t RSVP&apos;d to any events yet.</p>
-                <p className="text-xs text-mg-muted/70 mt-1">When a host shares an invite link with you, your RSVP will appear here.</p>
+            <div className="rounded-2xl border border-line bg-surface p-8 text-center">
+                <p className="text-sm text-fg-muted">You haven&apos;t RSVP&apos;d to any events yet.</p>
+                <p className="text-xs text-fg-muted/70 mt-1">When a host shares an invite link with you, your RSVP will appear here.</p>
             </div>
         )
     }
@@ -53,11 +53,11 @@ export default function MyRsvpsSection() {
                 return (
                     <div
                         key={rsvp.id}
-                        className="flex items-start justify-between gap-4 rounded-xl border border-mg-sand bg-white px-4 py-4"
+                        className="flex items-start justify-between gap-4 rounded-xl border border-line bg-surface px-4 py-4"
                     >
                         <div className="min-w-0 flex-1">
                             <div className="flex items-start gap-2">
-                                <p className="font-headline text-base text-mg-ink leading-tight">
+                                <p className="font-headline text-base text-fg leading-tight">
                                     {rsvp.collection.title}
                                 </p>
                                 {inviteUrl && (
@@ -65,31 +65,31 @@ export default function MyRsvpsSection() {
                                         href={inviteUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="shrink-0 text-mg-muted hover:text-mg-brown transition-colors mt-0.5"
+                                        className="shrink-0 text-fg-muted hover:text-brand transition-colors mt-0.5"
                                     >
                                         <ExternalLink size={12} />
                                     </a>
                                 )}
                             </div>
                             {hostLabel && (
-                                <p className="text-xs text-mg-muted mt-0.5">
+                                <p className="text-xs text-fg-muted mt-0.5">
                                     Hosted by {hostLabel}
                                 </p>
                             )}
                             <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                                <span className="flex items-center gap-1 text-xs text-mg-muted">
+                                <span className="flex items-center gap-1 text-xs text-fg-muted">
                                     <CalendarDays size={11} />
                                     {date}
                                 </span>
                                 {rsvp.guestCount > 1 && (
-                                    <span className="flex items-center gap-1 text-xs text-mg-muted">
+                                    <span className="flex items-center gap-1 text-xs text-fg-muted">
                                         <Users size={11} />
                                         {rsvp.guestCount} guests
                                     </span>
                                 )}
                             </div>
                             {rsvp.note && (
-                                <p className="text-xs text-mg-muted/80 mt-1 italic truncate">&ldquo;{rsvp.note}&rdquo;</p>
+                                <p className="text-xs text-fg-muted/80 mt-1 italic truncate">&ldquo;{rsvp.note}&rdquo;</p>
                             )}
                         </div>
                         <span className={`shrink-0 text-[10px] font-label uppercase tracking-widest px-2.5 py-1 rounded-full ${STATUS_STYLE[rsvp.status]}`}>

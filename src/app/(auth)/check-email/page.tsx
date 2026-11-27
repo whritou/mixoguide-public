@@ -39,28 +39,28 @@ function CheckEmailContent() {
     if (!email) {
         return (
             <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-mg-sand flex items-center justify-center mx-auto mb-6">
-                    <Mail size={28} className="text-mg-brown" />
+                <div className="w-16 h-16 rounded-full bg-line flex items-center justify-center mx-auto mb-6">
+                    <Mail size={28} className="text-brand" />
                 </div>
-                <p className="text-mg-charcoal font-body">Loading...</p>
+                <p className="text-fg-secondary font-body">Loading...</p>
             </div>
         );
     }
 
     return (
         <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-mg-caramel/15 flex items-center justify-center mx-auto mb-6">
-                <Mail size={28} className="text-mg-brown" />
+            <div className="w-16 h-16 rounded-full bg-brand-soft/15 flex items-center justify-center mx-auto mb-6">
+                <Mail size={28} className="text-brand" />
             </div>
 
-            <h1 className="font-headline text-3xl text-mg-ink mb-2">Check your email</h1>
-            <p className="text-mg-charcoal font-body text-sm mb-2">
+            <h1 className="font-headline text-3xl text-fg mb-2">Check your email</h1>
+            <p className="text-fg-secondary font-body text-sm mb-2">
                 We&apos;ve sent a confirmation link to
             </p>
-            <p className="text-mg-brown font-body font-semibold text-sm mb-8">
+            <p className="text-brand font-body font-semibold text-sm mb-8">
                 {email}
             </p>
-            <p className="text-mg-muted font-body text-sm mb-8">
+            <p className="text-fg-muted font-body text-sm mb-8">
                 Click the link in the email to verify your account. If you don&apos;t see it,
                 check your spam folder.
             </p>
@@ -70,7 +70,7 @@ function CheckEmailContent() {
                 disabled={remaining > 0 || sending}
                 className="w-full py-3 rounded-full font-label text-sm uppercase tracking-widest transition-all duration-200
                            disabled:opacity-50 disabled:cursor-not-allowed
-                           bg-white text-mg-brown shadow-sm hover:bg-mg-smoke
+                           bg-surface text-brand shadow-sm hover:bg-surface-hover
                            flex items-center justify-center gap-2"
             >
                 <RotateCw size={14} className={sending ? "animate-spin" : ""} />
@@ -81,13 +81,13 @@ function CheckEmailContent() {
             </button>
 
             {sent && (
-                <p className="mt-4 text-sm text-mg-brown bg-mg-caramel/10 rounded-xl px-4 py-3 font-body">
+                <p className="mt-4 text-sm text-brand bg-brand-soft/10 rounded-xl px-4 py-3 font-body">
                     Email sent! Check your inbox.
                 </p>
             )}
 
-            <p className="mt-8 text-center text-sm text-mg-charcoal font-body">
-                <Link href="/signin" className="text-mg-brown font-semibold hover:underline">
+            <p className="mt-8 text-center text-sm text-fg-secondary font-body">
+                <Link href="/signin" className="text-brand font-semibold hover:underline">
                     Back to sign in
                 </Link>
             </p>
@@ -99,10 +99,10 @@ export default function CheckEmailPage() {
     return (
         <Suspense fallback={
             <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-mg-sand flex items-center justify-center mx-auto mb-6">
-                    <Mail size={28} className="text-mg-brown" />
+                <div className="w-16 h-16 rounded-full bg-line flex items-center justify-center mx-auto mb-6">
+                    <Mail size={28} className="text-brand" />
                 </div>
-                <p className="text-mg-charcoal font-body">Loading...</p>
+                <p className="text-fg-secondary font-body">Loading...</p>
             </div>
         }>
             <CheckEmailContent />

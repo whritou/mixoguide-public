@@ -44,23 +44,23 @@ export default function ResetPasswordPage() {
 
     return (
         <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-mg-caramel/15 flex items-center justify-center mx-auto mb-6">
-                <Lock size={28} className="text-mg-brown" />
+            <div className="w-16 h-16 rounded-full bg-brand-soft/15 flex items-center justify-center mx-auto mb-6">
+                <Lock size={28} className="text-brand" />
             </div>
 
-            <h1 className="font-headline text-3xl text-mg-ink mb-2">Reset your password</h1>
-            <p className="text-mg-charcoal font-body text-sm mb-8">
+            <h1 className="font-headline text-3xl text-fg mb-2">Reset your password</h1>
+            <p className="text-fg-secondary font-body text-sm mb-8">
                 Enter your new password below.
             </p>
 
             {success ? (
                 <div>
-                    <p className="text-sm text-mg-brown bg-mg-caramel/10 rounded-xl px-4 py-4 font-body mb-4">
+                    <p className="text-sm text-brand bg-brand-soft/10 rounded-xl px-4 py-4 font-body mb-4">
                         Password updated successfully. Redirecting to sign in...
                     </p>
                     <Link
                         href="/signin"
-                        className="text-mg-brown font-semibold text-sm hover:underline"
+                        className="text-brand font-semibold text-sm hover:underline"
                     >
                         Go to sign in
                     </Link>
@@ -68,7 +68,7 @@ export default function ResetPasswordPage() {
             ) : (
                 <form onSubmit={handleSubmit} className="space-y-4 text-left">
                     <div>
-                        <label className="block text-xs font-label uppercase tracking-widest text-mg-charcoal mb-1.5">
+                        <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                             New Password
                         </label>
                         <input
@@ -79,14 +79,14 @@ export default function ResetPasswordPage() {
                                 setError("");
                             }}
                             required
-                            className="w-full px-4 py-3 rounded-xl bg-mg-sand/50 text-sm font-body text-mg-ink
-                                       placeholder:text-mg-muted border-none
-                                       focus:outline-none focus:ring-1 focus:ring-mg-caramel"
+                            className="w-full px-4 py-3 rounded-xl bg-line/50 text-sm font-body text-fg
+                                       placeholder:text-fg-muted border border-line-control
+                                       focus:outline-none focus:ring-1 focus:ring-ring"
                             placeholder="Enter new password"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-label uppercase tracking-widest text-mg-charcoal mb-1.5">
+                        <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                             Confirm Password
                         </label>
                         <input
@@ -97,9 +97,9 @@ export default function ResetPasswordPage() {
                                 setError("");
                             }}
                             required
-                            className="w-full px-4 py-3 rounded-xl bg-mg-sand/50 text-sm font-body text-mg-ink
-                                       placeholder:text-mg-muted border-none
-                                       focus:outline-none focus:ring-1 focus:ring-mg-caramel"
+                            className="w-full px-4 py-3 rounded-xl bg-line/50 text-sm font-body text-fg
+                                       placeholder:text-fg-muted border border-line-control
+                                       focus:outline-none focus:ring-1 focus:ring-ring"
                             placeholder="Confirm new password"
                         />
                     </div>
@@ -107,7 +107,7 @@ export default function ResetPasswordPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 bg-gradient-to-br from-mg-brown to-mg-caramel text-white rounded-full
+                        className="w-full py-3 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full
                                    font-label text-sm uppercase tracking-widest
                                    hover:scale-[0.98] transition-transform duration-200
                                    disabled:opacity-60 disabled:cursor-not-allowed"
@@ -116,7 +116,7 @@ export default function ResetPasswordPage() {
                     </button>
 
                     {error && (
-                        <p className="text-sm text-center text-mg-danger bg-mg-danger-light rounded-xl px-4 py-3 font-body">
+                        <p className="text-sm text-center text-danger bg-danger-bg rounded-xl px-4 py-3 font-body">
                             {error}
                         </p>
                     )}

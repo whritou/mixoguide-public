@@ -139,20 +139,20 @@ export default function EditPantryItemDialog({
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-mg-ink/50 backdrop-blur-sm">
-            <div className="w-full max-w-lg bg-mg-cream rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-overlay/67 backdrop-blur-sm">
+            <div className="w-full max-w-lg bg-canvas rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-mg-sand">
-                    <h2 className="font-headline text-xl text-mg-ink">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-line">
+                    <h2 className="font-headline text-xl text-fg">
                         Edit {item.ingredient?.name ?? 'item'}
                     </h2>
                     <button
                         onClick={() => onOpenChange(false)}
                         aria-label="Close"
-                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-mg-sand transition-colors"
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-line transition-colors"
                     >
-                        <X size={16} className="text-mg-muted" />
+                        <X size={16} className="text-fg-muted" />
                     </button>
                 </div>
 
@@ -163,7 +163,7 @@ export default function EditPantryItemDialog({
                         {/* Quantity + Unit */}
                         <div className="grid grid-cols-5 gap-3">
                             <div className="col-span-3">
-                                <label className="block text-xs font-label uppercase tracking-widest text-mg-muted mb-1.5">
+                                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                     {contextMode === 'shopping' ? 'Shopping quantity' : 'Quantity'}
                                 </label>
                                 <input
@@ -173,20 +173,20 @@ export default function EditPantryItemDialog({
                                     min="0"
                                     step="0.1"
                                     placeholder="0"
-                                    className="w-full px-4 py-2.5 rounded-xl bg-white border border-mg-sand text-sm font-body text-mg-ink
-                             placeholder:text-mg-muted focus:outline-none focus:ring-1 focus:ring-mg-caramel"
+                                    className="w-full px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body text-fg
+                             placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring"
                                 />
                             </div>
 
                             <div className="col-span-2">
-                                <label className="block text-xs font-label uppercase tracking-widest text-mg-muted mb-1.5">
+                                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                     Unit
                                 </label>
                                 <select
                                     value={unit}
                                     onChange={e => setUnit(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-xl bg-white border border-mg-sand text-sm font-body text-mg-ink
-                             focus:outline-none focus:ring-1 focus:ring-mg-caramel"
+                                    className="w-full px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body text-fg
+                             focus:outline-none focus:ring-1 focus:ring-ring"
                                 >
                                     {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
                                 </select>
@@ -195,26 +195,26 @@ export default function EditPantryItemDialog({
 
                         {/* Expiration date */}
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-mg-muted mb-1.5">
+                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 Expiration date
-                                <span className="ml-1 text-mg-muted/60 normal-case font-body tracking-normal">(optional)</span>
+                                <span className="ml-1 text-fg-muted/60 normal-case font-body tracking-normal">(optional)</span>
                             </label>
                             <input
                                 type="date"
                                 value={expiryDate}
                                 onChange={e => setExpiryDate(e.target.value)}
                                 min={new Date().toISOString().split('T')[0]}
-                                className="w-full px-4 py-2.5 rounded-xl bg-white border border-mg-sand text-sm font-body text-mg-ink
-                           focus:outline-none focus:ring-1 focus:ring-mg-caramel"
+                                className="w-full px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body text-fg
+                           focus:outline-none focus:ring-1 focus:ring-ring"
                             />
                         </div>
 
                         {contextMode !== 'shopping' && (
                             <div>
-                                <label className="block text-xs font-label uppercase tracking-widest text-mg-muted mb-1.5">
+                                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                     Add to
                                 </label>
-                                <div className="flex rounded-xl border border-mg-sand overflow-hidden">
+                                <div className="flex rounded-xl border border-line overflow-hidden">
                                     {([
                                         { value: 'pantry' as Destination, label: 'Pantry', sub: 'Available in your bar' },
                                         { value: 'shopping' as Destination, label: 'Shopping list', sub: 'Buy it later' },
@@ -226,16 +226,16 @@ export default function EditPantryItemDialog({
                                             className={clsx(
                                                 'flex-1 px-4 py-3 text-left transition-colors',
                                                 destination === value
-                                                    ? 'bg-gradient-to-br from-mg-brown/10 to-mg-caramel/10 border-mg-caramel'
-                                                    : 'bg-white hover:bg-mg-smoke',
-                                                value === 'pantry' && 'border-r border-mg-sand',
+                                                    ? 'bg-gradient-to-br from-brand-gradient-from/10 to-brand-gradient-to/10 border-brand-soft'
+                                                    : 'bg-surface hover:bg-surface-hover',
+                                                value === 'pantry' && 'border-r border-line',
                                             )}
                                         >
                                             <p className={clsx(
                                                 'text-sm font-body leading-none mb-0.5',
-                                                destination === value ? 'text-mg-brown font-medium' : 'text-mg-ink',
+                                                destination === value ? 'text-brand font-medium' : 'text-fg',
                                             )}>{label}</p>
-                                            <p className="text-xs text-mg-muted">{sub}</p>
+                                            <p className="text-xs text-fg-muted">{sub}</p>
                                         </button>
                                     ))}
                                 </div>
@@ -243,12 +243,12 @@ export default function EditPantryItemDialog({
                         )}
 
                         {/* Switches */}
-                        <div className="rounded-xl border border-mg-sand overflow-hidden divide-y divide-mg-sand">
+                        <div className="rounded-xl border border-line overflow-hidden divide-y divide-line">
                             {SWITCHES.map(({ key, label, sub }) => (
-                                <div key={key} className="flex items-center justify-between px-4 py-3 bg-white">
+                                <div key={key} className="flex items-center justify-between px-4 py-3 bg-surface">
                                     <div>
-                                        <p className="text-sm font-body text-mg-ink leading-none mb-0.5">{label}</p>
-                                        <p className="text-xs text-mg-muted">{sub}</p>
+                                        <p className="text-sm font-body text-fg leading-none mb-0.5">{label}</p>
+                                        <p className="text-xs text-fg-muted">{sub}</p>
                                     </div>
                                     <Switch
                                         checked={switches[key]}
@@ -260,7 +260,7 @@ export default function EditPantryItemDialog({
 
                         {/* Note */}
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-mg-muted mb-1.5">
+                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 Note
                             </label>
                             <textarea
@@ -268,21 +268,21 @@ export default function EditPantryItemDialog({
                                 onChange={e => setNote(e.target.value)}
                                 rows={2}
                                 maxLength={500}
-                                className="w-full px-4 py-2.5 rounded-xl bg-white border border-mg-sand text-sm font-body text-mg-ink
-                           focus:outline-none focus:ring-1 focus:ring-mg-caramel resize-none"
+                                className="w-full px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body text-fg
+                           focus:outline-none focus:ring-1 focus:ring-ring resize-none"
                             />
                         </div>
 
                     </div>
 
                     {/* Footer */}
-                    <div className="flex gap-3 px-6 py-4 border-t border-mg-sand bg-mg-cream">
+                    <div className="flex gap-3 px-6 py-4 border-t border-line bg-canvas">
                         <button
                             type="button"
                             onClick={() => setConfirmDelete(true)}
                             disabled={submitting}
                             className="py-2.5 px-4 text-xs font-label uppercase tracking-widest rounded-full
-                         bg-mg-danger/10 text-mg-danger hover:bg-mg-danger/20 transition-colors"
+                         bg-danger/10 text-danger hover:bg-danger/20 transition-colors"
                         >
                             Delete
                         </button>
@@ -292,7 +292,7 @@ export default function EditPantryItemDialog({
                                 type="button"
                                 onClick={() => onOpenChange(false)}
                                 className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full
-                           bg-mg-sand/60 text-mg-charcoal"
+                           bg-line/60 text-fg-secondary"
                             >
                                 Cancel
                             </button>
@@ -301,7 +301,7 @@ export default function EditPantryItemDialog({
                                 type="submit"
                                 disabled={submitting || (!switches.isInfinite && (!qty || Number(qty) <= 0))}
                                 className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full
-                           bg-gradient-to-br from-mg-brown to-mg-caramel text-white"
+                           bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand"
                             >
                                 {submitting ? 'Saving…' : 'Save'}
                             </button>

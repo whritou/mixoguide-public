@@ -16,7 +16,7 @@ function Dots() {
             {[0, 1, 2].map((i) => (
                 <motion.span
                     key={i}
-                    className="block h-2 w-2 rounded-full bg-mg-caramel"
+                    className="block h-2 w-2 rounded-full bg-brand-soft"
                     animate={{ y: [0, -7, 0], opacity: [0.4, 1, 0.4] }}
                     transition={{
                         duration: 0.9,
@@ -69,7 +69,7 @@ function Shaker() {
                 >
                     {/* Darker seal line for better contrast */}
                     {/* Inner rim depth */}
-                    <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-black/20 to-transparent" />
+                    <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-overlay/27 to-transparent" />
                 </div>
             </motion.div>
 
@@ -88,7 +88,7 @@ function Shaker() {
 function Ring({ size = 24 }: { size?: number }) {
     return (
         <motion.span
-            className="block rounded-full border-2 border-stone-200 border-t-mg-caramel"
+            className="block rounded-full border-2 border-line border-t-brand-soft"
             style={{ width: size, height: size }}
             animate={{ rotate: 360 }}
             transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}

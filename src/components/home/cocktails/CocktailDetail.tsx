@@ -17,17 +17,17 @@ export default function CocktailDetails({ cocktail }: { cocktail: CocktailDetail
         <>
           <h2
             id="instructions"
-            className="font-title text-mg-copper text-2xl font-semibold mb-4"
+            className="font-title text-brand-warm text-2xl font-semibold mb-4"
           >
             Steps
           </h2>
           <ol
-            className="space-y-6 max-w-prose text-slate-800"
+            className="space-y-6 max-w-prose text-fg"
             aria-labelledby="instructions"
           >
             {cocktail.instructions.map((step: string, i: number) => (
               <li key={i} className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-7 h-7 rounded-full bg-mg-copper text-white font-semibold text-sm mt-1 shrink-0">
+                <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand text-fg-on-brand font-semibold text-sm mt-1 shrink-0">
                   {i + 1}
                 </div>
                 <p className="text-md leading-relaxed first-letter:capitalize">{step}</p>
@@ -41,12 +41,12 @@ export default function CocktailDetails({ cocktail }: { cocktail: CocktailDetail
             <div className="mt-10">
                 <h2
                     id="bar-tools"
-                    className="font-title text-mg-copper text-2xl font-semibold mb-4"
+                    className="font-title text-brand-warm text-2xl font-semibold mb-4"
                 >
                     Bar Tools
                 </h2>
 
-                <ol className="ml-6 space-y-3 max-w-prose text-slate-800">
+                <ol className="ml-6 space-y-3 max-w-prose text-fg">
                     {cocktail.barTools.map((item) => {
                         const tool = item.barTool
 
@@ -58,8 +58,8 @@ export default function CocktailDetails({ cocktail }: { cocktail: CocktailDetail
                                         <span
                                             className={`text-xs px-2 py-0.5 rounded ${
                                                 tool.isEssential
-                                                    ? "bg-green-200 text-green-800"
-                                                    : "bg-yellow-100 text-yellow-700"
+                                                    ? "bg-success-bg text-success"
+                                                    : "bg-warning-bg text-warning"
                                             }`}
                                         >
                                           {tool.isEssential ? "Essential" : "Optional"}

@@ -42,7 +42,7 @@ export function EditProfileSection({ profile, onUpdate }: EditProfileSectionProp
         <Section icon={User} title="Edit Profile">
             <form onSubmit={handleSave} className="space-y-4">
                 <div>
-                    <label className="block text-xs font-label uppercase tracking-widest text-mg-charcoal mb-1.5">
+                    <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                         Display name
                     </label>
                     <input
@@ -51,27 +51,27 @@ export function EditProfileSection({ profile, onUpdate }: EditProfileSectionProp
                         minLength={2}
                         maxLength={100}
                         required
-                        className="w-full px-4 py-3 rounded-xl bg-mg-sand/50 text-sm font-body text-mg-ink
-                                   placeholder:text-mg-muted focus:outline-none focus:ring-1 focus:ring-mg-caramel"
+                        className="w-full px-4 py-3 rounded-xl border border-line-control bg-line/50 text-sm font-body text-fg
+                                   placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-label uppercase tracking-widest text-mg-charcoal mb-1.5">
+                    <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                         Email
                     </label>
                     <input
                         value={profile.email}
                         readOnly
-                        className="w-full px-4 py-3 rounded-xl bg-mg-sand/30 text-sm font-body text-mg-ink/50 cursor-not-allowed"
+                        className="w-full px-4 py-3 rounded-xl bg-line/30 text-sm font-body text-fg/50 cursor-not-allowed"
                     />
-                    <p className="text-xs text-mg-charcoal/50 font-body mt-1">Email cannot be changed.</p>
+                    <p className="text-xs text-fg-secondary/50 font-body mt-1">Email cannot be changed.</p>
                 </div>
 
                 <div className="flex items-center gap-4">
                     <button
                         type="submit"
                         disabled={saving || name === (profile.name ?? '')}
-                        className="px-6 py-2.5 bg-gradient-to-br from-mg-brown to-mg-caramel text-white rounded-full
+                        className="px-6 py-2.5 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full
                                    font-label text-xs uppercase tracking-widest
                                    hover:scale-[0.98] transition-transform
                                    disabled:opacity-50 disabled:cursor-not-allowed"
@@ -79,7 +79,7 @@ export function EditProfileSection({ profile, onUpdate }: EditProfileSectionProp
                         {saving ? 'Saving…' : 'Save changes'}
                     </button>
                     {feedback && (
-                        <p className={`text-sm font-body ${feedback.type === 'ok' ? 'text-mg-brown' : 'text-mg-danger'}`}>
+                        <p className={`text-sm font-body ${feedback.type === 'ok' ? 'text-brand' : 'text-danger'}`}>
                             {feedback.msg}
                         </p>
                     )}

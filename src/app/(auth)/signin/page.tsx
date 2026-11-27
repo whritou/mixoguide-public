@@ -84,8 +84,8 @@ export default function SignInPage() {
     return (
         <>
             <div className="mb-8">
-                <h1 className="font-headline text-3xl text-mg-ink mb-2">Welcome back</h1>
-                <p className="text-mg-charcoal font-body text-sm">
+                <h1 className="font-headline text-3xl text-fg mb-2">Welcome back</h1>
+                <p className="text-fg-secondary font-body text-sm">
                     Sign in to your account to continue mixing.
                 </p>
             </div>
@@ -93,8 +93,8 @@ export default function SignInPage() {
             <button
                 onClick={() => signIn("google", { callbackUrl })}
                 className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl
-                           bg-white text-mg-ink text-sm font-body font-medium
-                           shadow-sm hover:bg-mg-smoke transition-colors duration-200"
+                           bg-surface text-fg text-sm font-body font-medium
+                           shadow-sm hover:bg-surface-hover transition-colors duration-200"
             >
                 <svg viewBox="0 0 24 24" width="18" height="18">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -106,16 +106,16 @@ export default function SignInPage() {
             </button>
 
             <div className="flex items-center gap-4 my-6">
-                <div className="flex-1 h-px bg-mg-bone/40" />
-                <span className="text-[10px] font-label uppercase tracking-widest text-mg-muted">
+                <div className="flex-1 h-px bg-line-strong/40" />
+                <span className="text-[10px] font-label uppercase tracking-widest text-fg-muted">
                     or
                 </span>
-                <div className="flex-1 h-px bg-mg-bone/40" />
+                <div className="flex-1 h-px bg-line-strong/40" />
             </div>
 
             <form onSubmit={handleCredSubmit} className="space-y-4" autoComplete="on">
                 <div>
-                    <label className="block text-xs font-label uppercase tracking-widest text-mg-charcoal mb-1.5">
+                    <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                         Email
                     </label>
                     <input
@@ -123,14 +123,14 @@ export default function SignInPage() {
                         type="email"
                         required
                         autoComplete="email"
-                        className="w-full px-4 py-3 rounded-xl bg-mg-sand/50 text-sm font-body text-mg-ink
-                                   placeholder:text-mg-muted border-none
-                                   focus:outline-none focus:ring-1 focus:ring-mg-caramel"
+                        className="w-full px-4 py-3 rounded-xl bg-line/50 text-sm font-body text-fg
+                                   placeholder:text-fg-muted border border-line-control
+                                   focus:outline-none focus:ring-1 focus:ring-ring"
                         placeholder="you@example.com"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-label uppercase tracking-widest text-mg-charcoal mb-1.5">
+                    <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                         Password
                     </label>
                     <input
@@ -138,9 +138,9 @@ export default function SignInPage() {
                         type="password"
                         required
                         autoComplete="current-password"
-                        className="w-full px-4 py-3 rounded-xl bg-mg-sand/50 text-sm font-body text-mg-ink
-                                   placeholder:text-mg-muted border-none
-                                   focus:outline-none focus:ring-1 focus:ring-mg-caramel"
+                        className="w-full px-4 py-3 rounded-xl bg-line/50 text-sm font-body text-fg
+                                   placeholder:text-fg-muted border border-line-control
+                                   focus:outline-none focus:ring-1 focus:ring-ring"
                         placeholder="Enter your password"
                     />
                 </div>
@@ -148,7 +148,7 @@ export default function SignInPage() {
                 <div className="flex justify-end">
                     <Link
                         href="/request-reset-password"
-                        className="text-xs text-mg-brown font-medium hover:underline"
+                        className="text-xs text-brand font-medium hover:underline"
                     >
                         Forgot password?
                     </Link>
@@ -166,7 +166,7 @@ export default function SignInPage() {
                 <button
                     type="submit"
                     disabled={loading || !turnstileToken}
-                    className="w-full py-3 bg-gradient-to-br from-mg-brown to-mg-caramel text-white rounded-full
+                    className="w-full py-3 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full
                                font-label text-sm uppercase tracking-widest
                                hover:scale-[0.98] transition-transform duration-200
                                disabled:opacity-60 disabled:cursor-not-allowed"
@@ -176,22 +176,22 @@ export default function SignInPage() {
             </form>
 
             {error && error !== "OAuthAccountNotLinked" && (
-                <p className="mt-4 text-sm text-center text-mg-danger bg-mg-danger-light rounded-xl px-4 py-3 font-body">
+                <p className="mt-4 text-sm text-center text-danger bg-danger-bg rounded-xl px-4 py-3 font-body">
                     {error}
                 </p>
             )}
 
             {error === "OAuthAccountNotLinked" && (
-                <p className="mt-4 text-sm text-center text-mg-danger bg-mg-danger-light rounded-xl px-4 py-3 font-body">
+                <p className="mt-4 text-sm text-center text-danger bg-danger-bg rounded-xl px-4 py-3 font-body">
                     This email is already registered with another provider.
                 </p>
             )}
 
-            <p className="mt-8 text-center text-sm text-mg-charcoal font-body">
+            <p className="mt-8 text-center text-sm text-fg-secondary font-body">
                 Don&apos;t have an account?{" "}
                 <Link
                     href={`/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`}
-                    className="text-mg-brown font-semibold hover:underline"
+                    className="text-brand font-semibold hover:underline"
                 >
                     Sign up
                 </Link>

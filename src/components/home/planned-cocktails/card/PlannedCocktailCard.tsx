@@ -38,10 +38,10 @@ interface Props {
 }
 
 const STOCK_COLOR: Record<string, string> = {
-    ok: 'text-mg-brown',
-    low: 'text-mg-caramel',
-    out: 'text-mg-danger',
-    unknown: 'text-mg-muted',
+    ok: 'text-brand',
+    low: 'text-brand-soft-strong',
+    out: 'text-danger',
+    unknown: 'text-fg-muted',
 }
 
 export default function PlannedCocktailCard({ item, now, onUpdate, getIngredientStatus }: Props) {
@@ -109,10 +109,10 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
     const missingIngredientCount = modalItems.filter((entry) => entry.missing > 0).length
     const availabilityPill = !isDone && modalItems.length > 0
         ? missingIngredientCount === 0
-            ? { label: 'READY', className: 'bg-mg-sage-light text-mg-sage' }
+            ? { label: 'READY', className: 'bg-success-bg text-success' }
             : {
                 label: `${missingIngredientCount} MISSING`,
-                className: 'bg-mg-danger-light text-mg-danger',
+                className: 'bg-danger-bg text-danger',
             }
         : null
 
@@ -155,23 +155,23 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
     }
 
     const statusPill = isDone
-        ? { label: 'DONE', className: 'bg-mg-ink/75 text-white' }
+        ? { label: 'DONE', className: 'bg-surface-inverse/75 text-fg-on-inverse inset-ring-1 inset-ring-fg/40' }
         : isPast
-            ? { label: 'OVERDUE', className: 'bg-mg-danger-light text-mg-danger' }
+            ? { label: 'OVERDUE', className: 'bg-danger-bg text-danger' }
             : isToday
-                ? { label: 'TODAY', className: 'bg-mg-brown/15 text-mg-brown' }
-                : { label: 'PLANNED', className: 'bg-mg-ink/75 text-white' }
+                ? { label: 'TODAY', className: 'bg-brand/15 text-brand' }
+                : { label: 'PLANNED', className: 'bg-surface-inverse/75 text-fg-on-inverse inset-ring-1 inset-ring-fg/40' }
 
     return (
         <>
             <article
-                className={`group relative max-w-xl overflow-hidden rounded-2xl shadow-xs bg-white transition-all duration-300 hover:shadow-sm ${isDone ? 'opacity-80' : ''}`}
+                className={`group relative max-w-xl overflow-hidden rounded-2xl shadow-xs bg-surface transition-all duration-300 hover:shadow-sm ${isDone ? 'opacity-80' : ''}`}
             >
                 <button
                     type="button"
                     onClick={() => setConfirmRemove(true)}
                     disabled={removing}
-                    className="absolute right-3 top-3 z-20 rounded-full bg-white/90 p-1.5 text-mg-muted shadow-sm backdrop-blur-sm transition-colors hover:bg-mg-danger-light hover:text-mg-danger disabled:opacity-50"
+                    className="absolute right-3 top-3 z-20 rounded-full bg-surface/90 p-1.5 text-fg-muted shadow-sm backdrop-blur-sm transition-colors hover:bg-danger-bg hover:text-danger disabled:opacity-50"
                     title="Remove from planner"
                     aria-label="Remove from planner"
                 >
@@ -181,7 +181,7 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
                 <div className="flex min-h-[148px]">
                     <Link
                         href={`/cocktails/${item.cocktailId}`}
-                        className="relative w-32 shrink-0 overflow-hidden bg-mg-sand sm:w-40"
+                        className="relative w-32 shrink-0 overflow-hidden bg-line sm:w-40"
                     >
                         <Image
                             src={item.cocktail?.imageUrl ?? '/placeholder.svg'}
@@ -190,7 +190,7 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
                             sizes="(max-width: 640px) 128px, 160px"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-r from-mg-ink/25 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-overlay/33 to-transparent" />
                     </Link>
 
                     <div className="flex min-w-0 flex-1 flex-col gap-2 p-3 pr-8 sm:p-4 sm:pr-14">
@@ -204,7 +204,7 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
                                 </span>
                             )}
                             {item.quantity > 1 && (
-                                <span className="rounded-full bg-mg-ink/65 px-2 py-0.5 text-[10px] font-label uppercase tracking-widest text-white">
+                                <span className="rounded-full bg-surface-inverse/65 px-2 py-0.5 text-[10px] font-label uppercase tracking-widest text-fg-on-inverse inset-ring-1 inset-ring-fg/40">
                                     x{item.quantity}
                                 </span>
                             )}
@@ -213,16 +213,16 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
                         <div className="flex items-start justify-between gap-2">
                             <Link
                                 href={`/cocktails/${item.cocktailId}`}
-                                className="line-clamp-1 font-headline text-lg leading-tight text-mg-ink transition-colors hover:text-mg-brown"
+                                className="line-clamp-1 font-headline text-lg leading-tight text-fg transition-colors hover:text-brand"
                             >
                                 {item.cocktail?.name ?? '-'}
                             </Link>
                         </div>
 
-                        <p className={`flex flex-wrap items-center gap-1.5 text-xs ${isPast && !isDone ? 'text-mg-danger' : 'text-mg-muted'}`}>
+                        <p className={`flex flex-wrap items-center gap-1.5 text-xs ${isPast && !isDone ? 'text-danger' : 'text-fg-muted'}`}>
                             <CalendarDays size={12} />
                             <span>{formattedDate}</span>
-                            {item.quantity > 1 && <span className="font-medium text-mg-charcoal">({item.quantity} servings)</span>}
+                            {item.quantity > 1 && <span className="font-medium text-fg-secondary">({item.quantity} servings)</span>}
                         </p>
 
                         {!isDone && ingredients.length > 0 && (
@@ -230,7 +230,7 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
                                 <button
                                     type="button"
                                     onClick={() => setShowIngredients((prev) => !prev)}
-                                    className="flex items-center gap-1 text-xs text-mg-muted transition-colors hover:text-mg-brown"
+                                    className="flex items-center gap-1 text-xs text-fg-muted transition-colors hover:text-brand"
                                 >
                                     {showIngredients ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                                     {ingredients.length} ingredient{ingredients.length > 1 ? 's' : ''}
@@ -248,19 +248,19 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
                                                     <div className="flex min-w-0 items-center gap-1.5">
                                                         <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${
                                                             isNonBlocking
-                                                                ? 'bg-mg-brown/30'
+                                                                ? 'bg-brand/30'
                                                                 : status?.inPantry
                                                                 ? status.stockLevel === 'ok'
-                                                                    ? 'bg-mg-brown'
+                                                                    ? 'bg-brand'
                                                                     : status.stockLevel === 'low'
-                                                                        ? 'bg-mg-caramel'
-                                                                        : 'bg-mg-danger'
-                                                                : 'bg-mg-bone'
+                                                                        ? 'bg-brand-soft'
+                                                                        : 'bg-danger'
+                                                                : 'bg-line-strong'
                                                         }`}
                                                         />
-                                                        <span className="truncate text-mg-charcoal">{ingredient.ingredient.name}</span>
+                                                        <span className="truncate text-fg-secondary">{ingredient.ingredient.name}</span>
                                                     </div>
-                                                    <span className={`font-mono ${status ? STOCK_COLOR[status.stockLevel] : 'text-mg-muted'}`}>
+                                                    <span className={`font-mono ${status ? STOCK_COLOR[status.stockLevel] : 'text-fg-muted'}`}>
                                                         {scaledAmount ? `${scaledAmount}${ingredient.unit ?? 'pcs'}` : '-'}
                                                     </span>
                                                 </li>
@@ -276,7 +276,7 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
                               <button
                                   type="button"
                                   onClick={() => setShowAddModal(true)}
-                                  className="inline-flex h-8 px-3 py-1.5 font-label uppercase tracking-widest gap-1 text-[11px]  items-center justify-center rounded-full border border-mg-bone bg-white text-mg-charcoal transition-colors hover:bg-mg-haze"
+                                  className="inline-flex h-8 px-3 py-1.5 font-label uppercase tracking-widest gap-1 text-[11px]  items-center justify-center rounded-full border border-line-strong bg-surface text-fg-secondary transition-colors hover:bg-canvas-hover"
                                   title="Manage missing ingredients"
                                   aria-label="Manage missing ingredients"
                               >
@@ -290,7 +290,7 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
                           <button
                             type="button"
                             onClick={() => setRescheduleOpen(true)}
-                            className="inline-flex h-8 px-3 py-1.5 font-label uppercase tracking-widest gap-1 text-[11px] items-center justify-center rounded-full border border-mg-bone bg-white text-mg-charcoal transition-colors hover:bg-mg-haze"
+                            className="inline-flex h-8 px-3 py-1.5 font-label uppercase tracking-widest gap-1 text-[11px] items-center justify-center rounded-full border border-line-strong bg-surface text-fg-secondary transition-colors hover:bg-canvas-hover"
                             title="Reschedule"
                             aria-label="Reschedule"
                           >
@@ -303,7 +303,7 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
                           <button
                             type="button"
                             onClick={() => void markDone()}
-                            className="ml-auto inline-flex h-8 items-center gap-1 rounded-full bg-mg-brown px-3 py-1.5 text-[11px] font-label uppercase tracking-widest text-white transition-colors hover:bg-mg-brown/80"
+                            className="ml-auto inline-flex h-8 items-center gap-1 rounded-full bg-brand px-3 py-1.5 text-[11px] font-label uppercase tracking-widest text-fg-on-brand transition-colors hover:bg-brand/80"
                           >
                             <CheckCheck size={13} />
                             Done

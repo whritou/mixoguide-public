@@ -11,7 +11,7 @@ function Skeleton({ className, ...props }: React.ComponentProps<'div'>) {
             {...props}
         >
             <motion.div
-                className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-fg-on-image/30 to-transparent"
                 animate={{ x: ['0%', '200%'] }}
                 transition={{ duration: 1.4, repeat: Infinity, ease: 'linear', repeatDelay: 0.3 }}
             />

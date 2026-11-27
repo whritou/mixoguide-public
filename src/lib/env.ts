@@ -24,6 +24,10 @@ const envSchema = z.object({
   NEXTAUTH_SECRET: optionalString,
   NEXTAUTH_URL: optionalUrl,
   NEXT_PUBLIC_BASE_URL: urlWithDefault("https://mixoguide.com"),
+  NEXT_PUBLIC_DARK_MODE: z.preprocess(
+    emptyToUndefined,
+    z.enum(["off", "preview", "on"]).default("on"),
+  ),
 
   AUTH_GOOGLE_ID: optionalString,
   AUTH_GOOGLE_SECRET: optionalString,
@@ -58,11 +62,24 @@ const envSchema = z.object({
   ),
 })
 
-const parsedEnv = envSchema.parse(process.env)
+// Next inlines NEXT_PUBLIC_* only for literal `process.env.NAME` references, so they must be named explicitly to be readable on the client.
+const parsedEnv = envSchema.parse({
+  ...process.env,
+  NODE_ENV: process.env.NODE_ENV,
+  NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+  NEXT_PUBLIC_DARK_MODE: process.env.NEXT_PUBLIC_DARK_MODE,
+})
 
 export const env = {
   ...parsedEnv,
   NEXTAUTH_URL: parsedEnv.NEXTAUTH_URL ?? parsedEnv.NEXT_PUBLIC_BASE_URL,
+}
+
+export function isDarkModeAvailable(): boolean {
+  return (
+    env.NEXT_PUBLIC_DARK_MODE === "on" ||
+    (env.NEXT_PUBLIC_DARK_MODE === "preview" && env.NODE_ENV !== "production")
+  )
 }
 
 export type AppEnv = typeof env

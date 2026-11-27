@@ -12,6 +12,7 @@ import MakeCocktailDialog  from '@/components/home/cocktails/MakeCocktailDialog'
 import SuggestionDialog    from '@/components/home/suggestions/SuggestionDialog'
 import type { PlanState } from '@/components/home/cocktails/CocktailHero'
 import { useRateMutation } from '@/hooks/mutations/use-rate-mutation'
+import CanYouMakeIt from '@/components/home/cocktails/CanYouMakeIt'
 import UnitPicker from '@/components/home/cocktails/UnitPicker'
 import StarRating, { StarRatingDisplay } from '@/components/StarRating'
 import { useCocktailIngredientPantry } from '@/hooks/useCocktailIngredientPantry'
@@ -203,9 +204,9 @@ export default function Page() {
     ].map(formatLabel)
     const techniques = (cocktail.technique ?? []).map(formatLabel)
     const barTools = cocktail.barTools ?? []
-    const metaLabelClass = 'text-[11px] font-semibold uppercase tracking-[0.12em] text-white/75 font-mono'
-    const metaValueClass = 'text-base font-medium leading-tight text-white'
-    const metaChipClass = 'rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium leading-tight text-white/95'
+    const metaLabelClass = 'text-[11px] font-semibold uppercase tracking-[0.12em] text-fg-on-image/75 font-mono'
+    const metaValueClass = 'text-base font-medium leading-tight text-fg-on-image'
+    const metaChipClass = 'rounded-full bg-fg-on-image/15 px-2.5 py-1 text-xs font-medium leading-tight text-fg-on-image/95'
 
     const handleGoBack = () => {
         if (window.history.length > 1) {
@@ -217,20 +218,20 @@ export default function Page() {
 
 
     return (
-        <main className="min-h-screen bg-[#faf7f1] px-4 md:px-10 pt-8 pb-40 md:pb-8">
+        <main className="min-h-screen bg-canvas px-4 md:px-10 pt-8 pb-40 md:pb-8">
             <div className="md:hidden max-w-6xl mx-auto mb-4">
                 <button
                     onClick={handleGoBack}
-                    className="h-8 inline-flex items-center gap-1.5 px-3 rounded-full text-xs font-label uppercase tracking-widest border border-mg-sand text-mg-muted bg-white/85 hover:bg-mg-linen hover:text-mg-charcoal hover:border-mg-caramel/40 transition-colors"
+                    className="h-8 inline-flex items-center gap-1.5 px-3 rounded-full text-xs font-label uppercase tracking-widest border border-line text-fg-muted bg-surface/85 hover:bg-surface-subtle hover:text-fg-secondary hover:border-brand-soft/40 transition-colors"
                 >
                     <ArrowLeft size={13} />
                     Back
                 </button>
             </div>
-            <div className="max-w-6xl mx-auto grid md:grid-cols-2 rounded-2xl overflow-hidden border border-[#e8e3dc] bg-white">
+            <div className="max-w-6xl mx-auto grid md:grid-cols-2 rounded-2xl overflow-hidden border border-line bg-surface">
 
                 {/* ── LEFT ───────────────────────────────────────────── */}
-                <div className="relative flex flex-col justify-between p-14 text-white bg-[linear-gradient(165deg,#2a1e12,#5a3820)] overflow-hidden">
+                <div className="relative flex flex-col justify-between p-14 text-fg-on-image bg-[linear-gradient(165deg,#2a1e12,#5a3820)] overflow-hidden">
 
                     <div className="absolute right-[-120px] top-[-120px] w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(216,150,90,0.55),transparent_60%)]" />
 
@@ -247,7 +248,7 @@ export default function Page() {
                     <div className="relative z-10 flex flex-col gap-6 h-full">
 
                         <div>
-                            <p className="text-[11px] uppercase tracking-[0.12em] text-white/80 font-mono">
+                            <p className="text-[11px] uppercase tracking-[0.12em] text-fg-on-image/80 font-mono">
                                 {cocktail.origin ?? cocktail.difficulty}
                             </p>
 
@@ -256,7 +257,7 @@ export default function Page() {
                             </h1>
 
                             {cocktail.description && (
-                                <p className="mt-4 text-sm text-white/90">
+                                <p className="mt-4 text-sm text-fg-on-image/90">
                                     {cocktail.description}
                                 </p>
                             )}
@@ -266,7 +267,7 @@ export default function Page() {
                         {tags.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                                 {tags.slice(0, 6).map((t, i) => (
-                                    <span key={i} className="px-3 py-1 text-xs rounded-full bg-white/10">
+                                    <span key={i} className="px-3 py-1 text-xs rounded-full bg-fg-on-image/10">
                                       {t}
                                     </span>
                                 ))}
@@ -303,7 +304,7 @@ export default function Page() {
                         </div>
 
                         {/* specs */}
-                        <div className="flex flex-wrap gap-x-7 gap-y-4 pt-5 border-t border-white/15">
+                        <div className="flex flex-wrap gap-x-7 gap-y-4 pt-5 border-t border-fg-on-image/15">
                             {cocktail.preparationTime && cocktail.preparationTime > 0 && (
                                 <div>
                                     <span className={metaLabelClass}>Time</span>
@@ -325,7 +326,7 @@ export default function Page() {
                         </div>
 
                         {(techniques.length > 0 || barTools.length > 0) && (
-                            <div className="grid gap-4 pt-5 border-t border-white/15 md:grid-cols-2">
+                            <div className="grid gap-4 pt-5 border-t border-fg-on-image/15 md:grid-cols-2">
                                 {techniques.length > 0 && (
                                     <section aria-labelledby="cocktail-techniques">
                                         <h2
@@ -372,7 +373,7 @@ export default function Page() {
 
                         {/* plan state */}
                         {planState?.exists && (
-                            <div className="text-sm text-white/90 flex items-center gap-2">
+                            <div className="text-sm text-fg-on-image/90 flex items-center gap-2">
                                 {planState.status === "planned" && (
                                     <>
                                         <CalendarDays size={13} />
@@ -390,17 +391,17 @@ export default function Page() {
                         {/* actions */}
                         {session?.user && (
                             <>
-                                <div className="hidden md:flex flex-wrap gap-2 mt-auto pt-6 border-t border-white/15">
+                                <div className="hidden md:flex flex-wrap gap-2 mt-auto pt-6 border-t border-fg-on-image/15">
                                     <button
                                         onClick={() => dispatch({ type: 'SET_DIALOG', dialog: 'make', open: true })}
-                                        className="px-4 py-2.5 rounded-full bg-white text-[#181715] text-sm flex items-center gap-2 hover:bg-white/90 whitespace-nowrap"
+                                        className="px-4 py-2.5 rounded-full bg-fg-on-image text-surface-inverse text-sm flex items-center gap-2 hover:bg-fg-on-image/90 whitespace-nowrap"
                                     >
                                         <FlaskConical size={14} /> Make now
                                     </button>
 
                                     <button
                                         onClick={() => dispatch({ type: 'SET_DIALOG', dialog: 'plan', open: true })}
-                                        className="px-4 py-2.5 rounded-full border border-white/30 text-sm flex items-center gap-2 hover:bg-white/10 whitespace-nowrap"
+                                        className="px-4 py-2.5 rounded-full border border-fg-on-image/30 text-sm flex items-center gap-2 hover:bg-fg-on-image/10 whitespace-nowrap"
                                     >
                                         <CalendarDays size={14} /> Plan
                                     </button>
@@ -409,7 +410,7 @@ export default function Page() {
                                         href={`/api/cocktails/${id}/pdf`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="px-4 py-2.5 rounded-full border border-white/30 text-sm flex items-center gap-2 hover:bg-white/10 whitespace-nowrap"
+                                        className="px-4 py-2.5 rounded-full border border-fg-on-image/30 text-sm flex items-center gap-2 hover:bg-fg-on-image/10 whitespace-nowrap"
                                     >
                                         <Printer size={14} /> PDF
                                     </a>
@@ -418,7 +419,7 @@ export default function Page() {
                                         <button
                                             onClick={handleCompleted}
                                             disabled={completing}
-                                            className="px-4 py-2.5 rounded-full border border-white/30 text-sm hover:bg-white/10 flex items-center gap-2 whitespace-nowrap"
+                                            className="px-4 py-2.5 rounded-full border border-fg-on-image/30 text-sm hover:bg-fg-on-image/10 flex items-center gap-2 whitespace-nowrap"
                                         >
                                             {completing ? "Saving…" : "Mark done"}
                                         </button>
@@ -429,7 +430,7 @@ export default function Page() {
                                     <button
                                         onClick={handleCompleted}
                                         disabled={completing}
-                                        className="md:hidden mt-2 px-4 py-2 rounded-full border border-white/30 hover:bg-white/10 flex items-center gap-2 w-fit"
+                                        className="md:hidden mt-2 px-4 py-2 rounded-full border border-fg-on-image/30 hover:bg-fg-on-image/10 flex items-center gap-2 w-fit"
                                     >
                                         {completing ? "Saving…" : "Mark done"}
                                     </button>
@@ -443,9 +444,9 @@ export default function Page() {
                     {/* Readiness banner */}
                     {session?.user && totalIng > 0 && (
                         <div className={`flex justify-between px-4 py-3 rounded-lg ${
-                            readinessCls === 'sage'  ? 'bg-mg-sage-light text-mg-sage' :
-                            readinessCls === 'amber' ? 'bg-mg-amber-light text-mg-brown' :
-                                                       'bg-mg-rust-light text-mg-rust'
+                            readinessCls === 'sage'  ? 'bg-success-bg text-success' :
+                            readinessCls === 'amber' ? 'bg-warning-bg text-brand' :
+                                                       'bg-missing-bg text-missing'
                         }`}>
                             <span>{readinessLabel}</span>
                             <b className="font-serif">{totalIng - missingCount} / {totalIng}</b>
@@ -460,13 +461,13 @@ export default function Page() {
                         </div>
 
                         <div className="flex items-center gap-3 mb-4 flex-wrap">
-                            <span className="text-xs text-mg-dim whitespace-nowrap">
+                            <span className="text-xs text-fg-dim whitespace-nowrap">
                                 Servings
                             </span>
-                            <div className="flex items-center bg-mg-parchment rounded-full h-8">
+                            <div className="flex items-center bg-surface-muted rounded-full h-8">
                                 <button
                                     onClick={() => dispatch({ type: 'SET_SERVINGS', servings: Math.max(1, servings - 1) })}
-                                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-mg-parchment-hover"
+                                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-muted-hover"
                                 >
                                     −
                                 </button>
@@ -475,7 +476,7 @@ export default function Page() {
                                 </span>
                                 <button
                                     onClick={() => dispatch({ type: 'SET_SERVINGS', servings: Math.min(24, servings + 1) })}
-                                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-mg-parchment-hover"
+                                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-muted-hover"
                                 >
                                     +
                                 </button>
@@ -484,7 +485,7 @@ export default function Page() {
                             {session?.user && hasMissingIngredients && (
                                 <button
                                     onClick={() => dispatch({ type: 'SET_DIALOG', dialog: 'addIngredients', open: true })}
-                                    className="h-8 px-3 rounded-full bg-mg-brown hover:bg-mg-brown/90 text-white text-[11px] md:text-sm leading-none flex items-center whitespace-nowrap"
+                                    className="h-8 px-3 rounded-full bg-brand hover:bg-brand/90 text-fg-on-brand text-[11px] md:text-sm leading-none flex items-center whitespace-nowrap"
                                 >
                                     Manage ingredients
                                 </button>
@@ -492,7 +493,7 @@ export default function Page() {
                         </div>
 
                         {/* list */}
-                        <div className="divide-y divide-[#e8e3dc]">
+                        <div className="divide-y divide-line">
                             {cocktail.ingredients?.map((row) => {
                                 // ── RECIPE AMOUNT ─────────────────────────────
                                 const neededUnit = row.unit ?? 'pcs'
@@ -585,12 +586,12 @@ export default function Page() {
                                 let badge: { label: string; className: string } | null = isNonBlocking
                                     ? {
                                         label: row.amount == null ? "Not required" : "Garnish",
-                                        className: "bg-mg-brown/10 text-mg-brown",
+                                        className: "bg-brand/10 text-brand",
                                     }
                                     : isAuthenticated
                                         ? {
                                             label: "Missing",
-                                            className: "bg-mg-rust-light text-mg-rust",
+                                            className: "bg-missing-bg text-missing",
                                         }
                                         : null
 
@@ -598,29 +599,29 @@ export default function Page() {
                                     if (!isNonBlocking && status.derivedFrom) {
                                         badge = {
                                             label: "Derived",
-                                            className: "bg-mg-sage-light text-mg-sage",
+                                            className: "bg-success-bg text-success",
                                         }
                                     } else if (!isNonBlocking && status.inPantry) {
                                         if (isEnough) {
                                             badge = {
                                                 label: "Ready",
-                                                className: "bg-mg-sage-light text-mg-sage",
+                                                className: "bg-success-bg text-success",
                                             }
                                         } else if (isOutOfStock) {
                                             badge = {
                                                 label: "Out of stock",
-                                                className: "bg-mg-rust-light text-mg-rust",
+                                                className: "bg-missing-bg text-missing",
                                             }
                                         } else {
                                             badge = {
                                                 label: "Not enough",
-                                                className: "bg-mg-amber-light text-mg-brown",
+                                                className: "bg-warning-bg text-brand",
                                             }
                                         }
                                     } else if (!isNonBlocking && status.inWishlist) {
                                         badge = {
                                             label: "In shopping list",
-                                            className: "bg-mg-amber-light text-mg-brown",
+                                            className: "bg-warning-bg text-brand",
                                         }
                                     }
                                 }
@@ -635,7 +636,7 @@ export default function Page() {
                                             <div className="font-serif">
                                                 {displayAmt ?? "—"}
                                             </div>
-                                            <div className="text-[10px] uppercase text-mg-dim">
+                                            <div className="text-[10px] uppercase text-fg-dim">
                                                 {displayUnit}
                                             </div>
                                         </div>
@@ -645,7 +646,7 @@ export default function Page() {
                                             <span>{row.ingredient?.name}</span>
 
                                             {status.inPantry && availableForDisplay != null && (
-                                                <span className="text-xs text-mg-dim">
+                                                <span className="text-xs text-fg-dim">
                                                     {availableForDisplay === 0
                                                         ? "Out of stock"
                                                         : `${availableForDisplay} ${availableDisplayUnit} available`}
@@ -654,7 +655,7 @@ export default function Page() {
 
                                             {/* derived info */}
                                             {status.derivedFrom && (
-                                                <span className="text-xs text-mg-dim italic">
+                                                <span className="text-xs text-fg-dim italic">
                                                 From another ingredient
                                             </span>
                                             )}
@@ -680,7 +681,7 @@ export default function Page() {
                                                         )
                                                     }
                                                     disabled={shoppingLoading[row.ingredientId]}
-                                                    className="w-6 h-6 flex items-center justify-center rounded-full bg-mg-parchment hover:bg-mg-parchment-hover"
+                                                    className="w-6 h-6 flex items-center justify-center rounded-full bg-surface-muted hover:bg-surface-muted-hover"
                                                 >
                                                     +
                                                 </button>
@@ -692,6 +693,21 @@ export default function Page() {
                         </div>
                     </div>
 
+                    {authStatus === 'unauthenticated' && (
+                        <CanYouMakeIt
+                            cocktailId={cocktail.id}
+                            ingredients={(cocktail.ingredients ?? []).map((row) => ({
+                                id: row.ingredientId,
+                                name: row.ingredient?.name ?? 'Ingredient',
+                                optional: row.optional,
+                                amount: row.amount,
+                                unit: row.unit,
+                                type: row.ingredient?.type?.name,
+                                subType: row.ingredient?.subType?.name,
+                            }))}
+                        />
+                    )}
+
                     {/* method */}
                     {cocktail.instructions &&  cocktail.instructions?.length > 0 && (
                         <div>
@@ -699,7 +715,7 @@ export default function Page() {
                             <ol className="flex flex-col gap-4">
                                 {cocktail.instructions.map((step, i) => (
                                     <li key={i} className="flex gap-4">
-                                        <span className="text-mg-brown font-mono">{String(i + 1).padStart(2, '0')}</span>
+                                        <span className="text-brand font-mono">{String(i + 1).padStart(2, '0')}</span>
                                         <p>{step}</p>
                                     </li>
                                 ))}
@@ -711,16 +727,16 @@ export default function Page() {
 
             {session?.user && (
                 <div className="md:hidden fixed inset-x-4 bottom-24 z-40">
-                    <div className="rounded-2xl border border-mg-bone/50 bg-mg-cream/95 backdrop-blur-md px-2 py-2 shadow-[0_12px_30px_rgba(27,28,26,0.18)] flex items-center gap-2">
+                    <div className="rounded-2xl border border-line-strong/50 bg-canvas/95 backdrop-blur-md px-2 py-2 shadow-[0_12px_30px_rgba(27,28,26,0.18)] flex items-center gap-2">
                         <button
                             onClick={() => dispatch({ type: 'SET_DIALOG', dialog: 'make', open: true })}
-                            className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-br from-mg-brown to-mg-caramel text-white flex items-center justify-center gap-2 font-label text-[11px] uppercase tracking-widest"
+                            className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand flex items-center justify-center gap-2 font-label text-[11px] uppercase tracking-widest"
                         >
                             <FlaskConical size={14} /> Make now
                         </button>
                         <button
                             onClick={() => dispatch({ type: 'SET_DIALOG', dialog: 'plan', open: true })}
-                            className="flex-1 px-4 py-3 rounded-xl border border-[#cfb79e] bg-[#f4ece2] text-mg-brown flex items-center justify-center gap-2 font-label text-[11px] uppercase tracking-widest"
+                            className="flex-1 px-4 py-3 rounded-xl border border-line-strong bg-surface-muted text-brand flex items-center justify-center gap-2 font-label text-[11px] uppercase tracking-widest"
                         >
                             <CalendarDays size={14} /> Plan
                         </button>

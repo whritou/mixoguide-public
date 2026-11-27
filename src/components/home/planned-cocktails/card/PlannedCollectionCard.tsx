@@ -239,11 +239,11 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
             tabIndex={0}
             onClick={handleCardClick}
             onKeyDown={handleCardKeyDown}
-            className="group bg-white rounded-2xl overflow-hidden flex flex-col shadow-xs hover:shadow-md transition-all duration-300 border border-mg-bone/50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-mg-caramel"
+            className="group bg-surface rounded-2xl overflow-hidden flex flex-col shadow-xs hover:shadow-md transition-all duration-300 border border-line-strong/50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
 
             {/* ───── Hero: thumbnails + corner actions ───── */}
-            <div className="relative h-28 w-full bg-mg-sand overflow-hidden isolate">
+            <div className="relative h-28 w-full bg-line overflow-hidden isolate">
                 {item.cocktails.length > 0 ? (
                     <>
                         <div className={`absolute inset-0 z-0 flex ${isDone ? 'opacity-60' : ''}`}>
@@ -260,23 +260,23 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                             ))}
                         </div>
                         {item.cocktails.length > 4 && (
-                            <div className="absolute bottom-2 left-3 z-10 text-[10px] font-label uppercase tracking-widest text-white bg-mg-ink/55 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                            <div className="absolute bottom-2 left-3 z-10 text-[10px] font-label uppercase tracking-widest text-fg-on-image bg-overlay/73 backdrop-blur-sm px-2 py-0.5 rounded-full">
                                 +{item.cocktails.length - 4} more
                             </div>
                         )}
                         {/* Top fade so the corner pills stay readable on any image */}
-                        <div className="absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-black/35 to-transparent pointer-events-none" />
+                        <div className="absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-overlay/47 to-transparent pointer-events-none" />
                     </>
                 ) : (
-                    <div className="absolute inset-0 z-0 flex items-center justify-center bg-mg-sand/60">
+                    <div className="absolute inset-0 z-0 flex items-center justify-center bg-line/60">
                         <EmptyState icon={FlaskConical} heading="No cocktails yet" size="card" />
                     </div>
                 )}
 
                 {/* Done overlay */}
                 {isDone && (
-                    <div className="absolute inset-0 z-10 bg-mg-ink/40 flex items-center justify-center">
-                        <span className="text-white font-label text-xs uppercase tracking-widest flex items-center gap-1.5">
+                    <div className="absolute inset-0 z-10 bg-overlay/53 flex items-center justify-center">
+                        <span className="text-fg-on-image font-label text-xs uppercase tracking-widest flex items-center gap-1.5">
                             <CheckCheck size={14} /> Done
                         </span>
                     </div>
@@ -291,8 +291,8 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                         aria-label={shareToken ? 'Manage invite link' : 'Invite guests'}
                         className={`inline-flex h-7 items-center gap-1.5 px-2.5 rounded-full backdrop-blur-sm shadow-sm transition-all text-[10px] font-label uppercase tracking-widest
                             ${shareToken
-                                ? 'bg-mg-brown text-white hover:bg-mg-brown/80'
-                                : 'bg-white/90 text-mg-brown hover:bg-white border border-mg-bone'
+                                ? 'bg-brand text-fg-on-brand hover:bg-brand/80'
+                                : 'bg-surface/90 text-brand hover:bg-surface border border-line-strong'
                             }`}
                     >
                         <Link2 size={12} />
@@ -303,7 +303,7 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                         onClick={(e) => { e.stopPropagation(); dispatch({ type: 'SET', key: 'confirmRemove', value: true }) }}
                         title="Delete event"
                         aria-label="Delete event"
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/85 backdrop-blur-sm shadow-sm hover:bg-mg-danger-light text-mg-muted hover:text-mg-danger transition-all"
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-surface/85 backdrop-blur-sm shadow-sm hover:bg-danger-bg text-fg-muted hover:text-danger transition-all"
                     >
                         <Trash2 size={13} />
                     </button>
@@ -316,31 +316,31 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                 {/* Identity: title + status chip, then date */}
                 <div className="space-y-1.5">
                     <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-headline italic text-xl text-mg-ink leading-tight line-clamp-2">
+                        <h3 className="font-headline italic text-xl text-fg leading-tight line-clamp-2">
                             {item.title}
                         </h3>
                         {isDone ? (
-                            <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-widest px-2 py-0.5 rounded-full bg-mg-brown/10 text-mg-brown">
+                            <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-widest px-2 py-0.5 rounded-full bg-brand/10 text-brand">
                                 <CheckCheck size={10} />
                                 Done
                             </span>
                         ) : isPast ? (
-                            <span className="shrink-0 text-[10px] font-label uppercase tracking-widest px-2 py-0.5 rounded-full bg-mg-danger-light text-mg-danger">
+                            <span className="shrink-0 text-[10px] font-label uppercase tracking-widest px-2 py-0.5 rounded-full bg-danger-bg text-danger">
                                 Overdue
                             </span>
                         ) : null}
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-mg-muted">
+                    <div className="flex items-center gap-1.5 text-xs text-fg-muted">
                         <CalendarDays size={12} />
                         <span>{showPlannedTime ? `${formattedDate} at ${formattedTime}` : formattedDate}</span>
                         {isDone && completedDate && (
-                            <span className="text-mg-brown ml-1">· done {completedDate}</span>
+                            <span className="text-brand ml-1">· done {completedDate}</span>
                         )}
                     </div>
                 </div>
 
                 {/* Stat band — cocktails / servings / going */}
-                <div className="flex items-center divide-x divide-mg-bone/60 border-y border-mg-bone/60 py-2.5 -mx-1">
+                <div className="flex items-center divide-x divide-line-strong/60 border-y border-line-strong/60 py-2.5 -mx-1">
                     <StatCell icon={FlaskConical} value={item.cocktails.length} label="cocktails" />
                     <StatCell icon={Users}        value={item.servings}          label={item.servings === 1 ? 'serving' : 'servings'} />
                     {goingCount > 0 && (
@@ -354,14 +354,14 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                         {item.occasions.slice(0, 2).map((occ) => (
                             <span
                                 key={occ}
-                                className="inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-widest px-2 py-0.5 rounded-full bg-mg-sand text-mg-charcoal"
+                                className="inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-widest px-2 py-0.5 rounded-full bg-line text-fg-secondary"
                             >
                                 <Tag size={8} />
                                 {formatLabel(occ)}
                             </span>
                         ))}
                         {item.occasions.length > 2 && (
-                            <span className="text-[10px] font-label uppercase tracking-widest px-2 py-0.5 rounded-full bg-mg-sand/60 text-mg-muted">
+                            <span className="text-[10px] font-label uppercase tracking-widest px-2 py-0.5 rounded-full bg-line/60 text-fg-muted">
                                 +{item.occasions.length - 2}
                             </span>
                         )}
@@ -372,16 +372,16 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                 {!isDone && item.cocktails.length > 0 && (
                     <div className="flex items-center justify-between gap-2 mt-auto">
                         {groceryLoading && groceryItems.length === 0 ? (
-                            <span className="text-[10px] font-label uppercase tracking-widest text-mg-muted italic">
+                            <span className="text-[10px] font-label uppercase tracking-widest text-fg-muted italic">
                                 checking pantry…
                             </span>
                         ) : statusCounts.missing + statusCounts.partial > 0 ? (
-                            <span className="inline-flex items-center gap-1.5 text-[10px] font-label uppercase tracking-widest text-mg-danger bg-mg-danger-light rounded-full px-2 py-1">
+                            <span className="inline-flex items-center gap-1.5 text-[10px] font-label uppercase tracking-widest text-danger bg-danger-bg rounded-full px-2 py-1">
                                 <AlertTriangle size={11} />
                                 {statusCounts.missing + statusCounts.partial} missing
                             </span>
                         ) : groceryItems.length > 0 ? (
-                            <span className="inline-flex items-center gap-1.5 text-[10px] font-label uppercase tracking-widest text-mg-brown bg-mg-brown/10 rounded-full px-2 py-1">
+                            <span className="inline-flex items-center gap-1.5 text-[10px] font-label uppercase tracking-widest text-brand bg-brand/10 rounded-full px-2 py-1">
                                 <CheckCheck size={11} />
                                 All stocked
                             </span>
@@ -389,7 +389,7 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                             <span /> // spacer so "View details" stays right-aligned
                         )}
 
-                        <span className="inline-flex items-center gap-0.5 text-[10px] font-label uppercase tracking-widest text-mg-muted group-hover:text-mg-brown group-hover:underline underline-offset-4 transition-colors">
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-label uppercase tracking-widest text-fg-muted group-hover:text-brand group-hover:underline underline-offset-4 transition-colors">
                             View details
                             <ChevronRight size={11} className="transition-transform group-hover:translate-x-0.5" />
                         </span>
@@ -403,7 +403,7 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                             type="button"
                             onClick={(e) => { e.stopPropagation(); void openIngredientManager() }}
                             disabled={groceryLoading}
-                            className="min-w-0 flex-1 overflow-hidden px-2 py-2.5 text-[9px] sm:text-[10px] 2xl:text-[11px] font-label uppercase tracking-[0.04em] rounded-full flex items-center justify-center gap-1 bg-mg-sand/60 text-mg-charcoal hover:bg-mg-caramel/20 hover:text-mg-brown transition-colors disabled:opacity-40"
+                            className="min-w-0 flex-1 overflow-hidden px-2 py-2.5 text-[9px] sm:text-[10px] 2xl:text-[11px] font-label uppercase tracking-[0.04em] rounded-full flex items-center justify-center gap-1 bg-line/60 text-fg-secondary hover:bg-brand-soft/20 hover:text-brand transition-colors disabled:opacity-40"
                         >
                             <ShoppingCart size={12} className="shrink-0" />
                             <span className="min-w-0 whitespace-nowrap text-center leading-none">Manage ingredients</span>
@@ -414,7 +414,7 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                             type="button"
                             onClick={(e) => { e.stopPropagation(); void openIngredientManager() }}
                             disabled={groceryLoading}
-                            className="min-w-0 flex-1 overflow-hidden px-2 py-2.5 text-[9px] sm:text-[10px] 2xl:text-[11px] font-label uppercase tracking-[0.04em] rounded-full flex items-center justify-center gap-1 bg-mg-brown/10 text-mg-brown hover:bg-mg-brown/15 transition-colors"
+                            className="min-w-0 flex-1 overflow-hidden px-2 py-2.5 text-[9px] sm:text-[10px] 2xl:text-[11px] font-label uppercase tracking-[0.04em] rounded-full flex items-center justify-center gap-1 bg-brand/10 text-brand hover:bg-brand/15 transition-colors"
                         >
                             <CheckCheck size={12} className="shrink-0" />
                             <span className="min-w-0 whitespace-nowrap text-center leading-none">All stocked</span>
@@ -432,7 +432,7 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                                 dispatch({ type: 'SET', key: 'confirmDone', value: true })
                             }}
                             disabled={completing}
-                            className="min-w-0 flex-1 overflow-hidden px-2 py-2.5 text-[9px] sm:text-[10px] 2xl:text-[11px] font-label uppercase tracking-[0.04em] rounded-full flex items-center justify-center gap-1 bg-mg-brown text-white hover:bg-mg-brown/80 transition-colors disabled:opacity-50"
+                            className="min-w-0 flex-1 overflow-hidden px-2 py-2.5 text-[9px] sm:text-[10px] 2xl:text-[11px] font-label uppercase tracking-[0.04em] rounded-full flex items-center justify-center gap-1 bg-brand text-fg-on-brand hover:bg-brand/80 transition-colors disabled:opacity-50"
                         >
                             <CheckCheck size={13} className="shrink-0" />
                             <span className="min-w-0 whitespace-nowrap text-center leading-none">Mark done</span>
@@ -441,7 +441,7 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); void undoDone() }}
-                            className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full flex items-center justify-center gap-1.5 bg-mg-sand/60 text-mg-charcoal hover:bg-mg-sand transition-colors"
+                            className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full flex items-center justify-center gap-1.5 bg-line/60 text-fg-secondary hover:bg-line transition-colors"
                         >
                             <RotateCcw size={13} /> Undo
                         </button>
@@ -472,12 +472,12 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                         const deducted = groceryItems.filter(i => i.inPantry > 0)
                         if (deducted.length === 0) return null
                         return (
-                            <div className="rounded-xl bg-mg-sand/60 px-3 py-2.5 space-y-1">
-                                <p className="text-[10px] font-label uppercase tracking-widest text-mg-muted mb-1.5">
+                            <div className="rounded-xl bg-line/60 px-3 py-2.5 space-y-1">
+                                <p className="text-[10px] font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                     Deducted from pantry
                                 </p>
                                 {deducted.map(gi => (
-                                    <p key={gi.ingredientId} className="text-xs text-mg-charcoal">
+                                    <p key={gi.ingredientId} className="text-xs text-fg-secondary">
                                         <span className="font-medium">{Math.min(gi.totalNeeded, gi.inPantry)} {gi.unit}</span>
                                         {' — '}{gi.ingredientName}
                                     </p>
@@ -544,11 +544,11 @@ function StatCell({ icon: Icon, value, label, accent = false }: {
 }) {
     return (
         <div className="flex-1 flex flex-col items-center gap-0.5 px-1">
-            <Icon size={13} className={accent ? 'text-mg-brown' : 'text-mg-muted'} />
-            <span className={`text-base font-headline ${accent ? 'text-mg-brown' : 'text-mg-ink'} leading-none mt-1`}>
+            <Icon size={13} className={accent ? 'text-brand' : 'text-fg-muted'} />
+            <span className={`text-base font-headline ${accent ? 'text-brand' : 'text-fg'} leading-none mt-1`}>
                 {value}
             </span>
-            <span className="text-[9px] font-label uppercase tracking-widest text-mg-muted">
+            <span className="text-[9px] font-label uppercase tracking-widest text-fg-muted">
                 {label}
             </span>
         </div>

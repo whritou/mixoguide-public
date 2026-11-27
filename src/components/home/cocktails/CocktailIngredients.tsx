@@ -44,18 +44,18 @@ export function CocktailIngredients({
             </div>
 
             <div className="flex items-center gap-3 mb-4 flex-wrap">
-                <span className="text-xs text-mg-dim whitespace-nowrap">Servings</span>
-                <div className="flex items-center bg-mg-parchment rounded-full h-8">
+                <span className="text-xs text-fg-dim whitespace-nowrap">Servings</span>
+                <div className="flex items-center bg-surface-muted rounded-full h-8">
                     <button
                         onClick={() => setServings(s => Math.max(1, s - 1))}
-                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-mg-parchment-hover"
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-muted-hover"
                     >
                         −
                     </button>
                     <span className="w-8 text-center text-sm">{servings}</span>
                     <button
                         onClick={() => setServings(s => Math.min(24, s + 1))}
-                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-mg-parchment-hover"
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-muted-hover"
                     >
                         +
                     </button>
@@ -64,14 +64,14 @@ export function CocktailIngredients({
                 {session?.user && hasMissingIngredients && (
                     <button
                         onClick={onOpenManage}
-                        className="h-8 px-3 rounded-full bg-mg-brown hover:bg-mg-brown/90 text-white text-[11px] md:text-sm leading-none flex items-center whitespace-nowrap"
+                        className="h-8 px-3 rounded-full bg-brand hover:bg-brand/90 text-fg-on-brand text-[11px] md:text-sm leading-none flex items-center whitespace-nowrap"
                     >
                         Manage ingredients
                     </button>
                 )}
             </div>
 
-            <div className="divide-y divide-[#e8e3dc]">
+            <div className="divide-y divide-line">
                 {ingredients.map((row) => {
                     const neededUnit  = row.unit ?? 'pcs'
                     const scaled      = row.amount != null ? row.amount * servings : null
@@ -133,16 +133,16 @@ export function CocktailIngredients({
                     const isOutOfStock = status.inPantry && status.pantryAmount === 0
 
                     let badge = isNonBlocking
-                        ? { label: row.amount == null ? 'Not required' : 'Garnish', className: 'bg-mg-brown/10 text-mg-brown' }
-                        : { label: 'Missing', className: 'bg-mg-rust-light text-mg-rust' }
+                        ? { label: row.amount == null ? 'Not required' : 'Garnish', className: 'bg-brand/10 text-brand' }
+                        : { label: 'Missing', className: 'bg-missing-bg text-missing' }
                     if (!isNonBlocking && status.derivedFrom) {
-                        badge = { label: 'Derived',        className: 'bg-mg-sage-light text-mg-sage' }
+                        badge = { label: 'Derived',        className: 'bg-success-bg text-success' }
                     } else if (!isNonBlocking && status.inPantry) {
-                        if (isEnough)       badge = { label: 'Ready',        className: 'bg-mg-sage-light text-mg-sage' }
-                        else if (isOutOfStock) badge = { label: 'Out of stock', className: 'bg-mg-rust-light text-mg-rust' }
-                        else                badge = { label: 'Not enough',   className: 'bg-mg-amber-light text-mg-brown' }
+                        if (isEnough)       badge = { label: 'Ready',        className: 'bg-success-bg text-success' }
+                        else if (isOutOfStock) badge = { label: 'Out of stock', className: 'bg-missing-bg text-missing' }
+                        else                badge = { label: 'Not enough',   className: 'bg-warning-bg text-brand' }
                     } else if (!isNonBlocking && status.inWishlist) {
-                        badge = { label: 'In shopping list', className: 'bg-mg-amber-light text-mg-brown' }
+                        badge = { label: 'In shopping list', className: 'bg-warning-bg text-brand' }
                     }
 
                     return (
@@ -152,20 +152,20 @@ export function CocktailIngredients({
                         >
                             <div>
                                 <div className="font-serif">{displayAmt ?? '—'}</div>
-                                <div className="text-[10px] uppercase text-mg-dim">{displayUnit}</div>
+                                <div className="text-[10px] uppercase text-fg-dim">{displayUnit}</div>
                             </div>
 
                             <div className="flex flex-col">
                                 <span>{row.ingredient?.name}</span>
                                 {status.inPantry && availableForDisplay != null && (
-                                    <span className="text-xs text-mg-dim">
+                                    <span className="text-xs text-fg-dim">
                                         {availableForDisplay === 0
                                             ? 'Out of stock'
                                             : `${availableForDisplay} ${availableDisplayUnit} available`}
                                     </span>
                                 )}
                                 {status.derivedFrom && (
-                                    <span className="text-xs text-mg-dim italic">From another ingredient</span>
+                                    <span className="text-xs text-fg-dim italic">From another ingredient</span>
                                 )}
                             </div>
 
@@ -177,7 +177,7 @@ export function CocktailIngredients({
                                     <button
                                         onClick={() => onAddToShoppingList(row.ingredientId, scaled ?? undefined, neededUnit)}
                                         disabled={shoppingLoading[row.ingredientId]}
-                                        className="w-6 h-6 flex items-center justify-center rounded-full bg-mg-parchment hover:bg-mg-parchment-hover"
+                                        className="w-6 h-6 flex items-center justify-center rounded-full bg-surface-muted hover:bg-surface-muted-hover"
                                     >
                                         +
                                     </button>

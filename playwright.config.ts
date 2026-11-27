@@ -13,6 +13,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: ['**/visual/**'],
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -39,7 +40,15 @@ export default defineConfig({
         { name: 'webkit',   use: { ...devices['Desktop Safari'] } },
       ]
     : [
-        { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+        {
+          name: 'chromium',
+          use: {
+            ...devices['Desktop Chrome'],
+            ...(process.env.PLAYWRIGHT_CHROMIUM_PATH
+              ? { launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } }
+              : {}),
+          },
+        },
       ],
 
   /* Run your local dev server before starting the tests */

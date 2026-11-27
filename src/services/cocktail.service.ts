@@ -3,6 +3,7 @@ import { getDerivationMap } from '@/lib/derivations/derivation-cache'
 import { getMakeableCache, setMakeableCache } from '@/lib/cache/makeable-cache'
 import { NotFoundError } from '@/utils/errors'
 import type { Flavor, Occasion, Technique } from '@prisma/client'
+import type { MakeableCocktail, MakeablePreview } from '@/types/models/cocktail'
 import type { QueryParams } from '@/lib/query/types'
 import type { CreateCocktailInput, UpdateCocktailInput } from '@/validations'
 
@@ -51,6 +52,45 @@ class CocktailService {
 
         await setMakeableCache(userId, maxMissing, result as unknown as import('@/types/models/cocktail').MakeableCocktail[])
         return result
+    }
+
+    async previewMakeable(ingredientIds: string[], maxMissing: 0 | 1 = 1, cocktailId?: string): Promise<MakeablePreview> {
+        const ids = [...new Set(ingredientIds)]
+        const derivationMap = await getDerivationMap()
+        const [results, target] = await Promise.all([
+            cocktailRepository.findMakeable(ids, maxMissing, derivationMap, 200),
+            cocktailId ? cocktailRepository.findMakeableTarget(cocktailId, ids, derivationMap) : undefined,
+        ])
+
+        const full = results
+            .filter(c => c.missingCount === 0)
+            .sort((a, b) => {
+                const ratingDiff = (b.avgRating ?? 0) - (a.avgRating ?? 0)
+                if (ratingDiff !== 0) return ratingDiff
+                return (b.ratingCount ?? 0) - (a.ratingCount ?? 0)
+            })
+
+        const groups = new Map<string, { ingredient: { id: string; name: string }; unlocks: { id: string; name: string }[] }>()
+        for (const c of results) {
+            if (c.missingCount !== 1) continue
+            const missing = c.missingIngredients[0]
+            if (!missing) continue
+            const group = groups.get(missing.id) ?? { ingredient: missing, unlocks: [] }
+            group.unlocks.push({ id: c.id, name: c.name })
+            groups.set(missing.id, group)
+        }
+
+        let best: { ingredient: { id: string; name: string }; unlocks: { id: string; name: string }[] } | null = null
+        for (const group of groups.values()) {
+            if (!best || group.unlocks.length > best.unlocks.length) best = group
+        }
+
+        return {
+            makeableCount: full.length,
+            top: full.slice(0, 8) as unknown as MakeableCocktail[],
+            oneBottleAway: best && { ingredient: best.ingredient, unlocks: best.unlocks.slice(0, 2) },
+            ...(target !== undefined && { target }),
+        }
     }
 
     async create(data: CreateCocktailInput) {

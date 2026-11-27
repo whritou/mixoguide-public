@@ -10,6 +10,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { isDarkModeAvailable } from "@/lib/env";
 import { useCallbackUrl } from "@/hooks/usePreviousUrl";
 import { CalendarDays, FlaskConical, Home, Instagram, LogIn, Martini, MoreHorizontal, Package, Wrench } from "lucide-react";
 import { useState } from "react";
@@ -71,12 +73,12 @@ export default function AppBar() {
 
     return (
         <>
-            <nav className="hidden md:block fixed top-0 w-full z-50 bg-mg-cream/80 backdrop-blur-md">
+            <nav data-app-bar className="hidden md:block fixed top-0 w-full z-50 bg-canvas/80 backdrop-blur-md">
                 <div className="flex justify-between items-center px-6 md:px-12 py-5 max-w-full mx-auto">
                     <div className="flex items-center gap-8 lg:gap-12">
                         <Link
                             href="/"
-                            className="font-headline text-2xl italic text-mg-brown shrink-0"
+                            className="font-headline text-2xl italic text-brand shrink-0"
                         >
                             Mixoguide
                         </Link>
@@ -89,8 +91,8 @@ export default function AppBar() {
                                     className={`
                                         font-label uppercase tracking-widest text-[12px] pb-1 transition-colors duration-300
                                         ${isActive(item.href)
-                                            ? "text-mg-brown font-bold border-b-2 border-mg-brown"
-                                            : "text-mg-ink/70 font-medium hover:text-mg-brown"
+                                            ? "text-brand font-bold border-b-2 border-brand"
+                                            : "text-fg/70 font-medium hover:text-brand"
                                         }
                                     `}
                                 >
@@ -101,6 +103,7 @@ export default function AppBar() {
                     </div>
 
                     <div className="flex items-center gap-4 lg:gap-6">
+                        <ThemeToggle />
                         {session ? (
                             <>
                                 <a
@@ -108,16 +111,16 @@ export default function AppBar() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label="Follow MixoGuide on Instagram"
-                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-mg-caramel/25 bg-white/60 text-mg-brown transition-colors hover:border-mg-caramel hover:bg-white"
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-brand-soft/25 bg-surface/60 text-brand transition-colors hover:border-brand-soft hover:bg-surface"
                                 >
                                     <Instagram size={16} aria-hidden="true" />
                                 </a>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <button className="focus:outline-none">
-                                            <Avatar className="w-8 h-8 cursor-pointer ring-2 ring-mg-bone/30 hover:ring-mg-caramel transition-all">
+                                            <Avatar className="w-8 h-8 cursor-pointer ring-2 ring-line-strong/30 hover:ring-ring transition-all">
                                                 <AvatarImage src={session.user?.image || ""} alt={"User profile image"} />
-                                                <AvatarFallback className="bg-mg-brown text-white text-xs font-label">
+                                                <AvatarFallback className="bg-brand text-fg-on-brand text-xs font-label">
                                                     {session.user?.name?.[0]?.toUpperCase() ?? "?"}
                                                 </AvatarFallback>
                                             </Avatar>
@@ -125,21 +128,21 @@ export default function AppBar() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent
                                         align="end"
-                                        className="z-[130] bg-white/95 backdrop-blur-md border-mg-bone/20 rounded-xl shadow-lg"
+                                        className="z-[130] bg-surface/95 backdrop-blur-md border-line-strong/20 rounded-xl shadow-lg"
                                     >
                                         <DropdownMenuItem asChild>
-                                            <Link href="/user" className="text-sm font-body text-mg-ink">
+                                            <Link href="/user" className="text-sm font-body text-fg">
                                                 Profile
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem asChild>
-                                            <Link href="/stats" className="text-sm font-body text-mg-ink">
+                                            <Link href="/stats" className="text-sm font-body text-fg">
                                                 My Stats
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             onClick={() => signOut({ callbackUrl: "/" })}
-                                            className="text-sm font-body text-mg-ink"
+                                            className="text-sm font-body text-fg"
                                         >
                                             Logout
                                         </DropdownMenuItem>
@@ -150,13 +153,13 @@ export default function AppBar() {
                             <div className="hidden md:flex items-center gap-3">
                                 <Link
                                     href={`/signin?callbackUrl=${encodeURIComponent(authCallback)}`}
-                                    className="text-[10px] font-label uppercase tracking-widest text-mg-brown font-bold hover:opacity-80 transition-opacity"
+                                    className="text-[10px] font-label uppercase tracking-widest text-brand font-bold hover:opacity-80 transition-opacity"
                                 >
                                     Sign in
                                 </Link>
                                 <Link
                                     href={`/signup?callbackUrl=${encodeURIComponent(authCallback)}`}
-                                    className="px-5 py-2 bg-gradient-to-br from-mg-brown to-mg-caramel text-white rounded-full
+                                    className="px-5 py-2 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full
                                                 font-label text-[10px] uppercase tracking-widest hover:scale-95 transition-transform duration-200"
                                 >
                                     Sign up
@@ -167,36 +170,42 @@ export default function AppBar() {
                 </div>
             </nav>
 
-            <div className="md:hidden fixed inset-x-4 bottom-4 z-[130]">
+            <div data-app-bar className="md:hidden fixed inset-x-4 bottom-4 z-[130]">
                 {/* ── Authenticated: More drawer ── */}
                 {session && mobileMoreOpen && (
-                    <div className="mb-2 rounded-2xl border border-mg-bone/50 bg-mg-cream/95 backdrop-blur-md shadow-[0_12px_30px_rgba(27,28,26,0.18)] p-2">
+                    <div className="mb-2 rounded-2xl border border-line-strong/50 bg-canvas/95 backdrop-blur-md shadow-[0_12px_30px_rgba(27,28,26,0.18)] p-2">
                         <div className="flex flex-col">
+                            {isDarkModeAvailable() && (
+                                <div className="flex items-center justify-between px-4 py-1 text-sm text-fg/85">
+                                    Theme
+                                    <ThemeToggle />
+                                </div>
+                            )}
                             <Link
                                 href="/ingredients"
                                 onClick={() => setMobileMoreOpen(false)}
-                                className="px-4 py-3 rounded-xl text-sm text-mg-ink/85 hover:bg-mg-parchment-hover transition-colors"
+                                className="px-4 py-3 rounded-xl text-sm text-fg/85 hover:bg-surface-muted-hover transition-colors"
                             >
                                 Ingredients
                             </Link>
                             <Link
                                 href="/user"
                                 onClick={() => setMobileMoreOpen(false)}
-                                className="px-4 py-3 rounded-xl text-sm text-mg-ink/85 hover:bg-mg-parchment-hover transition-colors"
+                                className="px-4 py-3 rounded-xl text-sm text-fg/85 hover:bg-surface-muted-hover transition-colors"
                             >
                                 Profile
                             </Link>
                             <Link
                                 href="/stats"
                                 onClick={() => setMobileMoreOpen(false)}
-                                className="px-4 py-3 rounded-xl text-sm text-mg-ink/85 hover:bg-mg-parchment-hover transition-colors"
+                                className="px-4 py-3 rounded-xl text-sm text-fg/85 hover:bg-surface-muted-hover transition-colors"
                             >
                                 Stats
                             </Link>
                             <Link
                                 href="/bar-tools"
                                 onClick={() => setMobileMoreOpen(false)}
-                                className="px-4 py-3 rounded-xl text-sm text-mg-ink/85 hover:bg-mg-parchment-hover transition-colors"
+                                className="px-4 py-3 rounded-xl text-sm text-fg/85 hover:bg-surface-muted-hover transition-colors"
                             >
                                 Bar tools
                             </Link>
@@ -204,14 +213,14 @@ export default function AppBar() {
                                 <Link
                                     href="/admin"
                                     onClick={() => setMobileMoreOpen(false)}
-                                    className="px-4 py-3 rounded-xl text-sm text-mg-ink/85 hover:bg-mg-parchment-hover transition-colors"
+                                    className="px-4 py-3 rounded-xl text-sm text-fg/85 hover:bg-surface-muted-hover transition-colors"
                                 >
                                     Admin
                                 </Link>
                             )}
                             <button
                                 onClick={() => signOut({ callbackUrl: "/" })}
-                                className="mt-2 px-4 py-3 rounded-xl text-left text-sm text-[#9d4b31] hover:bg-[#f2dfd3] transition-colors"
+                                className="mt-2 px-4 py-3 rounded-xl text-left text-sm text-missing hover:bg-missing-bg transition-colors"
                             >
                                 Logout
                             </button>
@@ -219,9 +228,15 @@ export default function AppBar() {
                     </div>
                 )}
 
+                {!session && isDarkModeAvailable() && (
+                    <div className="mb-2 flex justify-end">
+                        <ThemeToggle className="size-11 bg-canvas/95 backdrop-blur-md" />
+                    </div>
+                )}
+
                 {session ? (
                     /* ── Authenticated bottom bar: Home / Cocktails / Pantry / Planner / More ── */
-                    <div className="grid grid-cols-5 gap-1 rounded-2xl border border-mg-bone/50 bg-mg-cream/95 backdrop-blur-md shadow-[0_12px_30px_rgba(27,28,26,0.18)] p-2">
+                    <div className="grid grid-cols-5 gap-1 rounded-2xl border border-line-strong/50 bg-canvas/95 backdrop-blur-md shadow-[0_12px_30px_rgba(27,28,26,0.18)] p-2">
                         {mobilePrimaryItems.map((item) => {
                             const Icon = item.icon;
                             const active = isActive(item.href);
@@ -232,8 +247,8 @@ export default function AppBar() {
                                     onClick={() => setMobileMoreOpen(false)}
                                     className={`rounded-xl py-2 flex flex-col items-center justify-center gap-1 transition-colors ${
                                         active
-                                            ? "bg-mg-parchment-hover text-mg-brown"
-                                            : "text-[#6d655d] hover:bg-[#f3ece2]"
+                                            ? "bg-surface-muted-hover text-brand"
+                                            : "text-fg-dim hover:bg-surface-muted"
                                     }`}
                                 >
                                     <Icon size={16} />
@@ -248,8 +263,8 @@ export default function AppBar() {
                             onClick={() => setMobileMoreOpen((prev) => !prev)}
                             className={`rounded-xl py-2 flex flex-col items-center justify-center gap-1 transition-colors ${
                                 moreActive || mobileMoreOpen
-                                    ? "bg-mg-parchment-hover text-mg-brown"
-                                    : "text-[#6d655d] hover:bg-[#f3ece2]"
+                                    ? "bg-surface-muted-hover text-brand"
+                                    : "text-fg-dim hover:bg-surface-muted"
                             }`}
                         >
                             <MoreHorizontal size={16} />
@@ -260,7 +275,7 @@ export default function AppBar() {
                     </div>
                 ) : (
                     /* ── Guest bottom bar: Home / Cocktails / Ingredients / Bar Tools / Login ── */
-                    <div className="grid grid-cols-5 gap-1 rounded-2xl border border-mg-bone/50 bg-mg-cream/95 backdrop-blur-md shadow-[0_12px_30px_rgba(27,28,26,0.18)] p-2">
+                    <div className="grid grid-cols-5 gap-1 rounded-2xl border border-line-strong/50 bg-canvas/95 backdrop-blur-md shadow-[0_12px_30px_rgba(27,28,26,0.18)] p-2">
                         {mobileGuestItems.map((item) => {
                             const Icon = item.icon;
                             const active = isActive(item.href);
@@ -270,8 +285,8 @@ export default function AppBar() {
                                     href={item.href}
                                     className={`rounded-xl py-2 flex flex-col items-center justify-center gap-1 transition-colors ${
                                         active
-                                            ? "bg-mg-parchment-hover text-mg-brown"
-                                            : "text-[#6d655d] hover:bg-[#f3ece2]"
+                                            ? "bg-surface-muted-hover text-brand"
+                                            : "text-fg-dim hover:bg-surface-muted"
                                     }`}
                                 >
                                     <Icon size={16} />
@@ -283,7 +298,7 @@ export default function AppBar() {
                         })}
                         <Link
                             href={`/signin?callbackUrl=${encodeURIComponent(authCallback)}`}
-                            className="rounded-xl py-2 flex flex-col items-center justify-center gap-1 transition-colors text-mg-brown hover:bg-[#f3ece2]"
+                            className="rounded-xl py-2 flex flex-col items-center justify-center gap-1 transition-colors text-brand hover:bg-surface-muted"
                         >
                             <LogIn size={16} />
                             <span className="font-label text-[9px] uppercase tracking-[0.08em]">

@@ -24,10 +24,10 @@ interface Props {
 }
 
 const triggerCls = `
-    w-full flex items-center justify-between px-4 py-2 rounded-xl bg-white
-    border border-mg-sand text-sm font-body text-left
-    focus:outline-none focus:ring-1 focus:ring-mg-caramel/40
-    hover:border-mg-caramel/50 transition-colors
+    w-full flex items-center justify-between px-4 py-2 rounded-xl bg-surface
+    border border-line-control text-sm font-body text-left
+    focus:outline-none focus:ring-1 focus:ring-ring/40
+    hover:border-brand-soft/50 transition-colors
     disabled:opacity-50 disabled:cursor-not-allowed
 `.trim()
 
@@ -90,20 +90,20 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
 
             {/* Type */}
             <div>
-                <label className="block text-xs font-label uppercase tracking-widest text-mg-muted mb-1.5">
-                    Type <span className="text-mg-caramel">*</span>
+                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                    Type <span className="text-brand-soft-strong">*</span>
                 </label>
                 <Popover open={typeOpen} onOpenChange={setTypeOpen} modal>
                     <PopoverTrigger asChild>
                         <button type="button" role="combobox" aria-controls="type-listbox" aria-expanded={typeOpen} disabled={disabled} className={triggerCls}>
-                            <span className={selectedType ? 'text-mg-ink' : 'text-mg-muted'}>
+                            <span className={selectedType ? 'text-fg' : 'text-fg-muted'}>
                                 {selectedType ? selectedType.name : 'Select a type…'}
                             </span>
-                            <ChevronsUpDown size={14} className="shrink-0 text-mg-muted" />
+                            <ChevronsUpDown size={14} className="shrink-0 text-fg-muted" />
                         </button>
                     </PopoverTrigger>
                     <PopoverContent
-                        className="p-0 rounded-xl border-mg-sand"
+                        className="p-0 rounded-xl border-line"
                         style={{ width: 'var(--radix-popover-trigger-width)' }}
                         align="start"
                     >
@@ -114,7 +114,7 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
                                 className="text-sm font-body"
                             />
                             <CommandList id="type-listbox" className="max-h-60">
-                                <CommandEmpty className="py-4 text-center text-sm font-body text-mg-muted">
+                                <CommandEmpty className="py-4 text-center text-sm font-body text-fg-muted">
                                     No type found.
                                 </CommandEmpty>
                                 <CommandGroup>
@@ -123,12 +123,12 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
                                             key={t.id}
                                             value={t.id}
                                             onSelect={() => selectType(t.id)}
-                                            className="flex items-center gap-2 cursor-pointer text-sm font-body text-mg-ink hover:bg-mg-caramel/8"
+                                            className="flex items-center gap-2 cursor-pointer text-sm font-body text-fg hover:bg-brand-soft/8"
                                         >
                                             <span className="flex-1">{t.name}</span>
                                             <Check
                                                 size={14}
-                                                className={clsx('shrink-0 text-mg-caramel', value.typeId === t.id ? 'opacity-100' : 'opacity-0')}
+                                                className={clsx('shrink-0 text-brand-soft-strong', value.typeId === t.id ? 'opacity-100' : 'opacity-0')}
                                             />
                                         </CommandItem>
                                     ))}
@@ -142,22 +142,22 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
             {/* Sub-type — only visible once a type is chosen */}
             {value.typeId && (
                 <div>
-                    <label className="block text-xs font-label uppercase tracking-widest text-mg-muted mb-1.5">
+                    <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                         Sub-type{' '}
-                        <span className="normal-case font-body tracking-normal text-mg-muted/60">(optional)</span>
+                        <span className="normal-case font-body tracking-normal text-fg-muted/60">(optional)</span>
                     </label>
                     <div className="flex gap-2">
                         <Popover open={subOpen} onOpenChange={setSubOpen} modal>
                             <PopoverTrigger asChild>
                                 <button type="button" role="combobox" aria-controls="subtype-listbox" aria-expanded={subOpen} disabled={disabled} className={`flex-1 ${triggerCls}`}>
-                                    <span className={selectedSub ? 'text-mg-ink' : 'text-mg-muted'}>
+                                    <span className={selectedSub ? 'text-fg' : 'text-fg-muted'}>
                                         {selectedSub ? selectedSub.name : 'Select a sub-type…'}
                                     </span>
-                                    <ChevronsUpDown size={14} className="shrink-0 text-mg-muted" />
+                                    <ChevronsUpDown size={14} className="shrink-0 text-fg-muted" />
                                 </button>
                             </PopoverTrigger>
                             <PopoverContent
-                                className="p-0 rounded-xl border-mg-sand"
+                                className="p-0 rounded-xl border-line"
                                 style={{ width: 'var(--radix-popover-trigger-width)' }}
                                 align="start"
                             >
@@ -168,7 +168,7 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
                                         className="text-sm font-body"
                                     />
                                     <CommandList id="subtype-listbox" className="max-h-60">
-                                        <CommandEmpty className="py-4 text-center text-sm font-body text-mg-muted">
+                                        <CommandEmpty className="py-4 text-center text-sm font-body text-fg-muted">
                                             {ingredientSubTypes.length === 0 && !deferredSubSearch
                                                 ? 'No sub-types for this type.'
                                                 : 'No sub-type found.'}
@@ -179,12 +179,12 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
                                                     key={st.id}
                                                     value={st.id}
                                                     onSelect={() => selectSub(st.id)}
-                                                    className="flex items-center gap-2 cursor-pointer text-sm font-body text-mg-ink hover:bg-mg-caramel/8"
+                                                    className="flex items-center gap-2 cursor-pointer text-sm font-body text-fg hover:bg-brand-soft/8"
                                                 >
                                                     <span className="flex-1">{st.name}</span>
                                                     <Check
                                                         size={14}
-                                                        className={clsx('shrink-0 text-mg-caramel', value.subTypeId === st.id ? 'opacity-100' : 'opacity-0')}
+                                                        className={clsx('shrink-0 text-brand-soft-strong', value.subTypeId === st.id ? 'opacity-100' : 'opacity-0')}
                                                     />
                                                 </CommandItem>
                                             ))}
@@ -199,7 +199,7 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
                                 type="button"
                                 disabled={disabled}
                                 onClick={clearSub}
-                                className="w-9 h-9 flex items-center justify-center rounded-xl border border-mg-sand text-mg-muted hover:bg-mg-sand hover:text-mg-charcoal transition-colors disabled:opacity-40"
+                                className="w-9 h-9 flex items-center justify-center rounded-xl border border-line text-fg-muted hover:bg-line hover:text-fg-secondary transition-colors disabled:opacity-40"
                             >
                                 <X size={14} />
                             </button>

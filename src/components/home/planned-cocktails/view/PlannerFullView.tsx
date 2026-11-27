@@ -68,9 +68,9 @@ interface PlannerFullViewProps {
     isFetchingCollectionsFinished: boolean
 }
 
-const SECTION_TITLE_CLASS = 'font-headline text-2xl text-mg-ink'
-const SUBSECTION_TITLE_CLASS = 'font-headline text-xl text-mg-ink'
-const DANGER_SECTION_TITLE_CLASS = 'font-headline text-2xl text-mg-danger'
+const SECTION_TITLE_CLASS = 'font-headline text-2xl text-fg'
+const SUBSECTION_TITLE_CLASS = 'font-headline text-xl text-fg'
+const DANGER_SECTION_TITLE_CLASS = 'font-headline text-2xl text-danger'
 
 function LoadMoreButton({
     onClick,
@@ -93,14 +93,14 @@ function LoadMoreButton({
 }
 
 function SkeletonLine({ className }: { className: string }) {
-    return <div className={`animate-pulse rounded-full bg-mg-sand/60 ${className}`} />
+    return <div className={`animate-pulse rounded-full bg-line/60 ${className}`} />
 }
 
 function CocktailCardSkeleton() {
     return (
-        <article className="max-w-xl overflow-hidden rounded-2xl bg-white shadow-xs">
+        <article className="max-w-xl overflow-hidden rounded-2xl bg-surface shadow-xs">
             <div className="flex min-h-[148px]">
-                <div className="w-32 shrink-0 animate-pulse bg-mg-sand sm:w-40" />
+                <div className="w-32 shrink-0 animate-pulse bg-line sm:w-40" />
                 <div className="flex min-w-0 flex-1 flex-col gap-3 p-3 pr-8 sm:p-4 sm:pr-14">
                     <div className="flex gap-2">
                         <SkeletonLine className="h-5 w-16" />
@@ -120,8 +120,8 @@ function CocktailCardSkeleton() {
 
 function CollectionCardSkeleton() {
     return (
-        <article className="overflow-hidden rounded-xl bg-white shadow-xs">
-            <div className="h-28 animate-pulse bg-mg-sand" />
+        <article className="overflow-hidden rounded-xl bg-surface shadow-xs">
+            <div className="h-28 animate-pulse bg-line" />
             <div className="space-y-3 p-5">
                 <div className="flex items-start justify-between gap-3">
                     <SkeletonLine className="h-6 w-2/3" />
@@ -140,9 +140,9 @@ function CollectionCardSkeleton() {
 
 function MadeCardSkeleton() {
     return (
-        <article className="rounded-2xl border border-mg-sand bg-white">
+        <article className="rounded-2xl border border-line bg-surface">
             <div className="flex items-start gap-3">
-                <div className="h-24 w-24 shrink-0 animate-pulse rounded-l-xl bg-mg-sand" />
+                <div className="h-24 w-24 shrink-0 animate-pulse rounded-l-xl bg-line" />
                 <div className="min-w-0 flex-1 space-y-3 p-3">
                     <SkeletonLine className="h-6 w-3/4" />
                     <SkeletonLine className="h-4 w-1/2" />
@@ -155,7 +155,7 @@ function MadeCardSkeleton() {
 function CalendarSkeleton() {
     return (
         <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-mg-sand bg-white p-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface p-3">
                 <div className="flex items-center gap-2">
                     <SkeletonLine className="h-8 w-16" />
                     <SkeletonLine className="h-8 w-8" />
@@ -164,8 +164,8 @@ function CalendarSkeleton() {
                 </div>
                 <SkeletonLine className="h-9 w-72" />
             </div>
-            <div className="overflow-hidden rounded-2xl border border-mg-sand bg-white">
-                <div className="grid grid-cols-7 border-b border-mg-sand bg-mg-cream">
+            <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+                <div className="grid grid-cols-7 border-b border-line bg-canvas">
                     {Array.from({ length: 7 }).map((_, i) => (
                         <div key={i} className="py-2">
                             <SkeletonLine className="mx-auto h-3 w-8" />
@@ -174,7 +174,7 @@ function CalendarSkeleton() {
                 </div>
                 <div className="grid grid-cols-7">
                     {Array.from({ length: 35 }).map((_, i) => (
-                        <div key={i} className="min-h-[92px] border-r border-b border-mg-sand p-2">
+                        <div key={i} className="min-h-[92px] border-r border-b border-line p-2">
                             <SkeletonLine className="h-5 w-5" />
                             <SkeletonLine className="mt-3 h-5 w-full" />
                             {i % 3 === 0 && <SkeletonLine className="mt-2 h-5 w-2/3" />}
@@ -241,7 +241,7 @@ function CocktailGroups({
                 return (
                     <section key={group.key} className="p-1 md:p-5">
                         <h3 className={SUBSECTION_TITLE_CLASS}>{formatDayName(group.date)}</h3>
-                        <p className={`mt-1 text-xs ${forceOverdue ? 'text-mg-danger' : 'text-mg-muted'}`}>
+                        <p className={`mt-1 text-xs ${forceOverdue ? 'text-danger' : 'text-fg-muted'}`}>
                             {formatMonthDay(group.date)} - {relativeDateLabel(group.date, now, { eventStyle: true })}
                         </p>
 
@@ -351,20 +351,20 @@ export default function PlannerFullView({
 
     return (
         <>
-        <div className="min-h-screen bg-mg-cream pb-16">
+        <div className="min-h-screen bg-canvas pb-16">
             <div className="mx-auto max-w-6xl px-4 py-8 md:px-8">
                 <div className="mb-5 space-y-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                         <div className="min-w-0 max-w-2xl">
-                            <h1 className="font-headline text-3xl md:text-4xl text-mg-ink">{heading}</h1>
-                            <p className="mt-1 text-sm text-mg-muted">{subtitle}</p>
+                            <h1 className="font-headline text-3xl md:text-4xl text-fg">{heading}</h1>
+                            <p className="mt-1 text-sm text-fg-muted">{subtitle}</p>
                         </div>
 
                         {showAddCollectionAction && (
                             <button
                                 type="button"
                                 onClick={onOpenCreateCollection}
-                                className="inline-flex items-center justify-center gap-2 rounded-full border border-mg-bone bg-white px-4 py-2 text-xs font-label uppercase tracking-widest text-mg-charcoal transition-colors hover:bg-mg-haze"
+                                className="inline-flex items-center justify-center gap-2 rounded-full border border-line-strong bg-surface px-4 py-2 text-xs font-label uppercase tracking-widest text-fg-secondary transition-colors hover:bg-canvas-hover"
                             >
                                 <PlusIcon className="h-4 w-4" />
                                 New event
@@ -437,11 +437,11 @@ export default function PlannerFullView({
                         ) : (
                             <>
                                 <div className="flex items-center justify-between">
-                                    <p className="text-xs text-mg-muted">{madeTotal} entries</p>
+                                    <p className="text-xs text-fg-muted">{madeTotal} entries</p>
                                     <button
                                         type="button"
                                         onClick={() => { setBulkMode(m => !m); setBulkSelected(new Set()) }}
-                                        className="text-xs font-label uppercase tracking-widest text-mg-muted hover:text-mg-brown transition-colors"
+                                        className="text-xs font-label uppercase tracking-widest text-fg-muted hover:text-brand transition-colors"
                                     >
                                         {bulkMode ? 'Cancel' : 'Select'}
                                     </button>
@@ -475,10 +475,10 @@ export default function PlannerFullView({
                         {/* Main events column */}
                         <div className="flex-1 min-w-0 space-y-6">
                             {/* RSVPs collapsible (mobile / tablet) */}
-                            <details className="lg:hidden group rounded-2xl border border-mg-sand bg-white overflow-hidden">
+                            <details className="lg:hidden group rounded-2xl border border-line bg-surface overflow-hidden">
                                 <summary className="cursor-pointer list-none flex items-center justify-between px-5 py-4">
                                     <span className={SUBSECTION_TITLE_CLASS}>My RSVPs</span>
-                                    <ChevronDown size={16} className="text-mg-muted transition-transform group-open:rotate-180" />
+                                    <ChevronDown size={16} className="text-fg-muted transition-transform group-open:rotate-180" />
                                 </summary>
                                 <div className="px-5 pb-4">
                                     <MyRsvpsSection />
@@ -563,12 +563,12 @@ export default function PlannerFullView({
 
         {/* Bulk action bar */}
         {bulkMode && bulkSelected.size > 0 && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 bg-mg-ink text-white rounded-full shadow-xl">
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 bg-surface-inverse text-fg-on-inverse inset-ring-1 inset-ring-fg/40 rounded-full shadow-xl">
                 <span className="text-xs font-label uppercase tracking-widest">{bulkSelected.size} selected</span>
                 <button
                     type="button"
                     onClick={() => void handleBulkRemove()}
-                    className="flex items-center gap-1.5 text-xs font-label uppercase tracking-widest text-mg-danger-light hover:text-red-300 transition-colors"
+                    className="flex items-center gap-1.5 text-xs font-label uppercase tracking-widest text-fg-on-inverse hover:text-fg-on-inverse/80 transition-colors"
                 >
                     <Trash2 size={12} />
                     Delete all
@@ -613,14 +613,14 @@ function PlannerEmptyState({
         <button
             type="button"
             onClick={onOpenCreateCollection}
-            className="mt-2 px-8 py-3 bg-gradient-to-br from-mg-brown to-mg-caramel text-white rounded-full font-label text-xs uppercase tracking-widest hover:scale-[0.98] transition-transform duration-200"
+            className="mt-2 px-8 py-3 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full font-label text-xs uppercase tracking-widest hover:scale-[0.98] transition-transform duration-200"
         >
             New event
         </button>
     ) : (
         <Link
             href="/cocktails"
-            className="mt-2 px-8 py-3 bg-gradient-to-br from-mg-brown to-mg-caramel text-white rounded-full font-label text-xs uppercase tracking-widest hover:scale-[0.98] transition-transform duration-200"
+            className="mt-2 px-8 py-3 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full font-label text-xs uppercase tracking-widest hover:scale-[0.98] transition-transform duration-200"
         >
             Browse cocktails
         </Link>

@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { Prisma } from '@prisma/client'
 import { NotFoundError, ForbiddenError } from '@/utils/errors'
 
-const { mockPantryRepo, mockPrisma, mockTx } = vi.hoisted(() => {
+const { mockPantryRepo, mockPrisma, mockTx, mockInvalidateMakeableCache } = vi.hoisted(() => {
     const mockTx = {
         ingredient: { findUnique: vi.fn() },
         userPantryItem: {},
@@ -21,6 +21,7 @@ const { mockPantryRepo, mockPrisma, mockTx } = vi.hoisted(() => {
             findByUserAndIngredient: vi.fn(),
             findShoppingListItem:   vi.fn(),
             decrementForCocktail:   vi.fn(),
+            importIngredientsIntoEmptyPantry: vi.fn(),
         },
         mockPrisma: {
             $transaction: vi.fn(async (
@@ -29,11 +30,13 @@ const { mockPantryRepo, mockPrisma, mockTx } = vi.hoisted(() => {
             ) => cb(mockTx)),
         },
         mockTx,
+        mockInvalidateMakeableCache: vi.fn(),
     }
 })
 
 vi.mock('@/repositories/pantry.repository', () => ({ pantryRepository: mockPantryRepo }))
 vi.mock('@/lib/db/prisma', () => ({ prisma: mockPrisma }))
+vi.mock('@/lib/cache/makeable-cache', () => ({ invalidateMakeableCache: mockInvalidateMakeableCache }))
 
 import { pantryService } from '@/services/pantry.service'
 
@@ -297,5 +300,46 @@ describe('PantryService.assertOwnership', () => {
 
     it('does not throw for admin regardless of ownership', () => {
         expect(() => pantryService.assertOwnership({ userId: 'other' }, UID, true)).not.toThrow()
+    })
+})
+
+// ════════════════════════════════════════════════════════════════════════════
+describe('PantryService.importDemoBar', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+    })
+
+    it('imports through the repository and invalidates the makeable cache', async () => {
+        mockPantryRepo.importIngredientsIntoEmptyPantry.mockResolvedValue(3)
+
+        const result = await pantryService.importDemoBar(UID, ['gin', 'rum', 'lime'])
+
+        expect(result).toEqual({ imported: 3 })
+        expect(mockPantryRepo.importIngredientsIntoEmptyPantry).toHaveBeenCalledWith(UID, ['gin', 'rum', 'lime'])
+        expect(mockInvalidateMakeableCache).toHaveBeenCalledWith(UID)
+    })
+
+    it('deduplicates ids before importing', async () => {
+        mockPantryRepo.importIngredientsIntoEmptyPantry.mockResolvedValue(2)
+
+        await pantryService.importDemoBar(UID, ['gin', 'gin', 'rum'])
+
+        expect(mockPantryRepo.importIngredientsIntoEmptyPantry).toHaveBeenCalledWith(UID, ['gin', 'rum'])
+    })
+
+    it('leaves the cache alone when nothing was imported', async () => {
+        mockPantryRepo.importIngredientsIntoEmptyPantry.mockResolvedValue(0)
+
+        const result = await pantryService.importDemoBar(UID, ['gin'])
+
+        expect(result).toEqual({ imported: 0 })
+        expect(mockInvalidateMakeableCache).not.toHaveBeenCalled()
+    })
+
+    it('does not touch the repository for an empty list', async () => {
+        const result = await pantryService.importDemoBar(UID, [])
+
+        expect(result).toEqual({ imported: 0 })
+        expect(mockPantryRepo.importIngredientsIntoEmptyPantry).not.toHaveBeenCalled()
     })
 })

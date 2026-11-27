@@ -30,9 +30,9 @@ const TYPE_LABELS: Record<SuggestionType, string> = {
 }
 
 const STATUS_STYLES: Record<SuggestionStatus, string> = {
-    PENDING:  "bg-amber-100 text-amber-800",
-    ACCEPTED: "bg-emerald-100 text-emerald-800",
-    DECLINED: "bg-red-100 text-red-800",
+    PENDING:  "bg-warning-bg text-warning",
+    ACCEPTED: "bg-success-bg text-success",
+    DECLINED: "bg-danger-bg text-danger",
 }
 
 type Tab = "PENDING" | "ACCEPTED" | "DECLINED" | "ALL"
@@ -104,7 +104,7 @@ export default function SuggestionsPage() {
                 id: "type",
                 header: "Type",
                 cell: ({ row }) => (
-                    <span className="text-xs font-medium text-mg-brown">
+                    <span className="text-xs font-medium text-brand">
                         {TYPE_LABELS[row.original.type as SuggestionType] ?? row.original.type}
                     </span>
                 ),
@@ -114,8 +114,8 @@ export default function SuggestionsPage() {
                 id: "target",
                 header: "Target",
                 cell: ({ row }) => row.original.targetName
-                    ? <span className="text-sm text-stone-600">{row.original.targetName}</span>
-                    : <span className="text-stone-400">—</span>,
+                    ? <span className="text-sm text-fg-dim">{row.original.targetName}</span>
+                    : <span className="text-fg-muted">—</span>,
             },
             {
                 id: "user",
@@ -129,7 +129,7 @@ export default function SuggestionsPage() {
                 header: "Status",
                 cell: ({ row }) => {
                     const s = row.original.status as SuggestionStatus
-                    const cls = STATUS_STYLES[s] ?? "bg-stone-100 text-stone-700"
+                    const cls = STATUS_STYLES[s] ?? "bg-surface-hover text-fg-secondary"
                     const Icon = s === "ACCEPTED" ? CheckCircle2 : s === "DECLINED" ? XCircle : Clock
                     return (
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${cls}`}>
@@ -143,7 +143,7 @@ export default function SuggestionsPage() {
                 id: "createdAt",
                 header: "Date",
                 cell: ({ row }) => (
-                    <span className="text-sm text-stone-500">
+                    <span className="text-sm text-fg-muted">
                         {new Date(row.original.createdAt).toLocaleDateString("en-GB", {
                             day: "numeric", month: "short", year: "numeric",
                         })}
@@ -168,8 +168,8 @@ export default function SuggestionsPage() {
                             onClick={() => setParam("status", tab.value)}
                             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
                                 active
-                                    ? "bg-white border-mg-caramel/60 text-mg-brown shadow-sm"
-                                    : "bg-mg-linen border-transparent text-mg-muted hover:border-mg-caramel/30"
+                                    ? "bg-surface border-brand-soft/60 text-brand shadow-sm"
+                                    : "bg-surface-subtle border-transparent text-fg-muted hover:border-brand-soft/30"
                             }`}
                         >
                             <Icon size={14} />
@@ -200,9 +200,9 @@ export default function SuggestionsPage() {
             />
 
             {!loading && suggestions.length === 0 && (
-                <div className="text-center mt-8 p-8 border border-dashed rounded-xl border-mg-sand">
-                    <MessageSquarePlus size={32} className="mx-auto mb-3 text-mg-caramel/50" />
-                    <p className="text-stone-500">No suggestions found.</p>
+                <div className="text-center mt-8 p-8 border border-dashed rounded-xl border-line">
+                    <MessageSquarePlus size={32} className="mx-auto mb-3 text-brand-soft/50" />
+                    <p className="text-fg-muted">No suggestions found.</p>
                 </div>
             )}
         </div>

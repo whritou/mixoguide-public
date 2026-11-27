@@ -29,8 +29,8 @@ function chipCls(active: boolean) {
     return clsx(
         'rounded-full px-3 py-1.5 text-xs font-label cursor-pointer transition-colors',
         active
-            ? 'border border-mg-brown bg-mg-linen text-mg-brown'
-            : 'bg-white text-mg-charcoal border border-mg-bone hover:bg-mg-frost'
+            ? 'border border-brand bg-surface-subtle text-brand'
+            : 'bg-surface text-fg-secondary border border-line-strong hover:bg-surface-hover-alt'
     )
 }
 
@@ -92,42 +92,42 @@ export function MobileFilterSheet({
     if (!open) return null
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm md:hidden" onClick={close}>
+        <div className="fixed inset-0 z-50 bg-overlay/53 backdrop-blur-sm md:hidden" onClick={close}>
             <div
                 onClick={(e) => e.stopPropagation()}
                 className={clsx(
-                    'absolute bottom-0 inset-x-0 bg-white rounded-t-3xl p-6 max-h-[82vh] overflow-y-auto',
+                    'absolute bottom-0 inset-x-0 bg-surface rounded-t-3xl p-6 max-h-[82vh] overflow-y-auto',
                     !dragging && 'transition-transform duration-200'
                 )}
                 style={{ transform: `translateY(${offset}px)` }}
             >
                 <div
-                    className="w-10 h-1.5 bg-stone-200 rounded-full mx-auto mb-5"
+                    className="w-10 h-1.5 bg-line rounded-full mx-auto mb-5"
                     onTouchStart={onTouchStart}
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}
                 />
                 <div className="flex justify-between items-center mb-4">
                     <span className="font-label text-base font-semibold">Filters</span>
-                    <button onClick={close} className="text-sm text-mg-muted">Close</button>
+                    <button onClick={close} className="text-sm text-fg-muted">Close</button>
                 </div>
 
                 <div className="space-y-5">
                     {/* Search */}
                     <div>
-                        <span className="text-[11px] font-label uppercase tracking-widest text-mg-muted">Search</span>
+                        <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Search</span>
                         <div className="relative mt-2">
-                            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-mg-muted" />
+                            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
                             <input
                                 placeholder="Search cocktails..."
                                 value={p.get('search') ?? ''}
                                 onChange={e => filters.setDebounced('search', e.target.value || null)}
-                                className="pl-8 pr-7 py-2 w-full rounded-full bg-mg-sand/50 text-sm text-mg-ink placeholder:text-mg-muted focus:outline-none focus:ring-1 focus:ring-mg-caramel border-none"
+                                className="pl-8 pr-7 py-2 w-full rounded-full bg-line/50 text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring border border-line-control"
                             />
                             {p.get('search') && (
                                 <button
                                     onClick={() => filters.set('search', null)}
-                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mg-muted hover:text-mg-charcoal"
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg-secondary"
                                 >
                                     <X size={13} />
                                 </button>
@@ -142,7 +142,7 @@ export function MobileFilterSheet({
                                 onClick={() => filters.set('onlyMakeable', onlyMakeable ? null : 'true')}
                                 className={clsx(
                                     'rounded-xl border px-3 py-2 text-xs font-label uppercase tracking-wider',
-                                    onlyMakeable ? 'border-mg-brown bg-mg-linen text-mg-brown' : 'border-mg-bone text-mg-charcoal'
+                                    onlyMakeable ? 'border-brand bg-surface-subtle text-brand' : 'border-line-strong text-fg-secondary'
                                 )}
                             >
                                 Ready to mix
@@ -151,7 +151,7 @@ export function MobileFilterSheet({
                                 onClick={() => filters.set('onlyFavorites', onlyFavorites ? null : 'true')}
                                 className={clsx(
                                     'rounded-xl border px-3 py-2 text-xs font-label uppercase tracking-wider',
-                                    onlyFavorites ? 'border-mg-caramel bg-mg-linen text-mg-brown' : 'border-mg-bone text-mg-charcoal'
+                                    onlyFavorites ? 'border-brand-soft bg-surface-subtle text-brand' : 'border-line-strong text-fg-secondary'
                                 )}
                             >
                                 Favorites
@@ -172,7 +172,7 @@ export function MobileFilterSheet({
                                 onClick={() => setOpenSection(prev => prev === key ? null : key)}
                                 className="w-full flex items-center justify-between"
                             >
-                                <span className="text-[11px] font-label uppercase tracking-widest text-mg-muted">{label}</span>
+                                <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">{label}</span>
                                 <ChevronDown size={14} className={clsx('transition-transform', openSection === key && 'rotate-180')} />
                             </button>
                             {openSection === key && (
@@ -197,7 +197,7 @@ export function MobileFilterSheet({
                             onClick={() => setOpenSection(prev => prev === 'ingredient' ? null : 'ingredient')}
                             className="w-full flex items-center justify-between"
                         >
-                            <span className="text-[11px] font-label uppercase tracking-widest text-mg-muted">Ingredient</span>
+                            <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Ingredient</span>
                             <ChevronDown size={14} className={clsx('transition-transform', openSection === 'ingredient' && 'rotate-180')} />
                         </button>
                         {openSection === 'ingredient' && (
@@ -221,7 +221,7 @@ export function MobileFilterSheet({
                             onClick={() => setOpenSection(prev => prev === 'abv' ? null : 'abv')}
                             className="w-full flex items-center justify-between"
                         >
-                            <span className="text-[11px] font-label uppercase tracking-widest text-mg-muted">ABV</span>
+                            <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">ABV</span>
                             <ChevronDown size={14} className={clsx('transition-transform', openSection === 'abv' && 'rotate-180')} />
                         </button>
                         {openSection === 'abv' && (
@@ -249,7 +249,7 @@ export function MobileFilterSheet({
                             onClick={() => setOpenSection(prev => prev === 'sort' ? null : 'sort')}
                             className="w-full flex items-center justify-between"
                         >
-                            <span className="text-[11px] font-label uppercase tracking-widest text-mg-muted">Sort</span>
+                            <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Sort</span>
                             <ChevronDown size={14} className={clsx('transition-transform', openSection === 'sort' && 'rotate-180')} />
                         </button>
                         {openSection === 'sort' && (
@@ -261,8 +261,8 @@ export function MobileFilterSheet({
                                         className={clsx(
                                             'w-full text-left px-3 py-2 rounded-lg text-sm',
                                             currentSort.label === opt.label
-                                                ? 'bg-mg-linen text-mg-brown font-medium'
-                                                : 'text-mg-charcoal hover:bg-mg-frost'
+                                                ? 'bg-surface-subtle text-brand font-medium'
+                                                : 'text-fg-secondary hover:bg-surface-hover-alt'
                                         )}
                                     >
                                         {opt.label}
@@ -281,7 +281,7 @@ export function MobileFilterSheet({
                     >
                         Reset
                     </Button>
-                    <Button className="flex-1 bg-mg-caramel hover:bg-mg-brown" onClick={close}>
+                    <Button className="flex-1 bg-brand-soft hover:bg-brand" onClick={close}>
                         Done
                     </Button>
                 </div>
