@@ -66,19 +66,19 @@ export default async function InvitePage({ params }: Props) {
         .reduce((s, r) => s + r.guestCount, 0)
 
     return (
-        <main className="min-h-screen bg-mg-cream">
+        <main className="min-h-screen bg-canvas">
             {/* Hero header */}
-            <div className="bg-gradient-to-br from-mg-ink via-mg-espresso to-mg-brown px-6 py-12 text-center">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[10px] font-label uppercase tracking-widest text-white/70 mb-4">
+            <div className="bg-gradient-to-br from-surface-inverse via-surface-inverse to-brand-gradient-from px-6 py-12 text-center">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-fg-on-inverse/10 px-3 py-1 text-[10px] font-label uppercase tracking-widest text-fg-on-inverse mb-4">
                     <Sparkles size={10} />
                     You&apos;re invited
                 </div>
-                <h1 className="font-headline text-3xl sm:text-4xl text-white mb-2">{collection.title}</h1>
+                <h1 className="font-headline text-3xl sm:text-4xl text-fg-on-inverse mb-2">{collection.title}</h1>
                 {collection.user?.name && (
-                    <p className="text-mg-caramel text-sm">Hosted by {collection.user.name}</p>
+                    <p className="text-brand-soft-strong text-sm">Hosted by {collection.user.name}</p>
                 )}
 
-                <div className="mt-5 flex flex-wrap justify-center gap-4 text-sm text-white/80">
+                <div className="mt-5 flex flex-wrap justify-center gap-4 text-sm text-fg-on-inverse">
                     <span className="flex items-center gap-1.5">
                         <CalendarDays size={14} />
                         {showTime ? `${formattedDate} at ${formattedTime}` : formattedDate}
@@ -100,7 +100,7 @@ export default async function InvitePage({ params }: Props) {
                         {collection.occasions.map((occ) => (
                             <span
                                 key={occ}
-                                className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-label uppercase tracking-widest text-white/70"
+                                className="rounded-full bg-fg-on-inverse/10 px-2.5 py-0.5 text-[10px] font-label uppercase tracking-widest text-fg-on-inverse"
                             >
                                 {formatLabel(occ)}
                             </span>
@@ -112,9 +112,9 @@ export default async function InvitePage({ params }: Props) {
             <div className="mx-auto max-w-2xl px-4 py-8 space-y-8">
 
                 {collection.guestNote && (
-                    <section className="rounded-2xl border border-mg-sand bg-white p-4">
-                        <p className="flex items-start gap-2 text-sm text-mg-charcoal">
-                            <MessageSquare size={15} className="mt-0.5 shrink-0 text-mg-brown" />
+                    <section className="rounded-2xl border border-line bg-surface p-4">
+                        <p className="flex items-start gap-2 text-sm text-fg-secondary">
+                            <MessageSquare size={15} className="mt-0.5 shrink-0 text-brand" />
                             <span>{collection.guestNote}</span>
                         </p>
                     </section>
@@ -123,7 +123,7 @@ export default async function InvitePage({ params }: Props) {
                 {/* Cocktail list */}
                 {collection.cocktails.length > 0 && (
                     <section>
-                        <h2 className="font-headline text-xl text-mg-ink mb-4">
+                        <h2 className="font-headline text-xl text-fg mb-4">
                             The drink list
                         </h2>
                         <div className="space-y-3">
@@ -132,9 +132,9 @@ export default async function InvitePage({ params }: Props) {
                                 return (
                                     <div
                                         key={c.id}
-                                        className="flex items-center gap-4 rounded-2xl border border-mg-sand bg-white p-3"
+                                        className="flex items-center gap-4 rounded-2xl border border-line bg-surface p-3"
                                     >
-                                        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-mg-sand">
+                                        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-line">
                                             <Image
                                                 src={c.imageUrl ?? '/placeholder.svg'}
                                                 alt={c.name}
@@ -144,14 +144,14 @@ export default async function InvitePage({ params }: Props) {
                                             />
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <p className="font-headline text-base text-mg-ink truncate">{c.name}</p>
-                                            <p className="text-xs text-mg-muted mt-0.5">
+                                            <p className="font-headline text-base text-fg truncate">{c.name}</p>
+                                            <p className="text-xs text-fg-muted mt-0.5">
                                                 {c.ingredients.length} ingredient{c.ingredients.length !== 1 ? 's' : ''}
                                                 {' · '}
                                                 {formatLabel(c.difficulty)}
                                             </p>
                                             {c.ingredients.length > 0 && (
-                                                <p className="text-xs text-mg-muted/80 mt-0.5 truncate">
+                                                <p className="text-xs text-fg-muted/80 mt-0.5 truncate">
                                                     {c.ingredients.map((i) => i.ingredient.name).join(', ')}
                                                 </p>
                                             )}
@@ -164,10 +164,10 @@ export default async function InvitePage({ params }: Props) {
                 )}
 
                 {/* RSVP section */}
-                <section className="rounded-2xl border border-mg-sand bg-white p-6">
-                    <h2 className="font-headline text-xl text-mg-ink mb-1">RSVP</h2>
+                <section className="rounded-2xl border border-line bg-surface p-6">
+                    <h2 className="font-headline text-xl text-fg mb-1">RSVP</h2>
                     {goingCount > 0 && (
-                        <p className="text-xs text-mg-muted mb-5">
+                        <p className="text-xs text-fg-muted mb-5">
                             {goingCount} {goingCount === 1 ? 'person' : 'people'} going
                             {totalGuests > goingCount ? ` (${totalGuests} guests total)` : ''}
                         </p>
@@ -184,27 +184,27 @@ export default async function InvitePage({ params }: Props) {
                 {/* Existing RSVPs */}
                 {collection.rsvps.length > 0 && (
                     <section>
-                        <h2 className="font-headline text-xl text-mg-ink mb-4">Who&apos;s coming</h2>
+                        <h2 className="font-headline text-xl text-fg mb-4">Who&apos;s coming</h2>
                         <div className="space-y-2">
                             {collection.rsvps.map((r) => (
                                 <div
                                     key={r.id}
-                                    className="flex items-center justify-between rounded-xl border border-mg-sand bg-white px-4 py-3"
+                                    className="flex items-center justify-between rounded-xl border border-line bg-surface px-4 py-3"
                                 >
                                     <div className="min-w-0">
-                                        <p className="text-sm font-medium text-mg-ink">{r.name}</p>
+                                        <p className="text-sm font-medium text-fg">{r.name}</p>
                                         {r.note && (
-                                            <p className="text-xs text-mg-muted truncate mt-0.5">{r.note}</p>
+                                            <p className="text-xs text-fg-muted truncate mt-0.5">{r.note}</p>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-3 shrink-0 ml-3">
                                         {r.guestCount > 1 && (
-                                            <span className="flex items-center gap-1 text-xs text-mg-muted">
+                                            <span className="flex items-center gap-1 text-xs text-fg-muted">
                                                 <Users size={11} />
                                                 {r.guestCount}
                                             </span>
                                         )}
-                                        <span className="text-xs text-mg-charcoal">
+                                        <span className="text-xs text-fg-secondary">
                                             {RSVP_LABEL[r.status] ?? r.status}
                                         </span>
                                     </div>
@@ -215,9 +215,9 @@ export default async function InvitePage({ params }: Props) {
                 )}
 
                 {/* Footer */}
-                <p className="text-center text-xs text-mg-muted pb-4">
+                <p className="text-center text-xs text-fg-muted pb-4">
                     Powered by{' '}
-                    <Link href="/" className="text-mg-brown hover:underline">MixoGuide</Link>
+                    <Link href="/" className="text-brand hover:underline">MixoGuide</Link>
                 </p>
             </div>
         </main>

@@ -64,3 +64,11 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# brainstorming mockups
+.superpowers/
+
+# IDE
+.idea/
+coverage/
+.claude/worktrees/

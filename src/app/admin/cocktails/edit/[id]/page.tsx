@@ -105,7 +105,7 @@ export default function EditCocktailPage() {
     if (isCocktailError) {
         return (
             <div className="text-center p-6 border rounded-md">
-                <p className="text-red-500">
+                <p className="text-danger">
                     {cocktailError instanceof Error ? cocktailError.message : 'Error loading cocktai'}
                 </p>
             </div>
@@ -115,7 +115,7 @@ export default function EditCocktailPage() {
     if (isBarToolsError) {
         return (
             <div className="text-center p-6 border rounded-md">
-                <p className="text-red-500">
+                <p className="text-danger">
                     {barToolsError instanceof Error ? barToolsError.message : 'Error loading bar tools'}
                 </p>
             </div>
@@ -125,7 +125,7 @@ export default function EditCocktailPage() {
     if (isGlassesError) {
         return (
             <div className="text-center p-6 border rounded-md">
-                <p className="text-red-500">
+                <p className="text-danger">
                     {glassesError instanceof Error ? glassesError.message : 'Error loading glasses'}
                 </p>
             </div>
@@ -136,7 +136,7 @@ export default function EditCocktailPage() {
     return (
         <div className="container mx-auto py-10">
             <div className="mb-6">
-                <Button variant="outline" onClick={() => router.back()} size="sm" className="h-8 flex rounded-full text-xs font-label uppercase tracking-widest border-mg-sand text-mg-muted hover:bg-mg-linen hover:text-mg-charcoal hover:border-mg-caramel/40">
+                <Button variant="outline" onClick={() => router.back()} size="sm" className="h-8 flex rounded-full text-xs font-label uppercase tracking-widest border-line text-fg-muted hover:bg-surface-subtle hover:text-fg-secondary hover:border-brand-soft/40">
                     <ArrowLeft className="mr-2 h-4 w-4" /> Back
                 </Button>
             </div>

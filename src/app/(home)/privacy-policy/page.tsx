@@ -7,9 +7,9 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
     return (
-        <main className="bg-mg-cream text-mg-ink min-h-screen my-12 px-6 md:px-12 py-16 max-w-4xl mx-auto">
-            <h1 className="font-headline text-4xl italic text-mg-brown mb-2">Privacy Policy</h1>
-            <p className="text-sm text-mg-ink/50 font-body mb-12">Last updated: April 5, 2026</p>
+        <main className="bg-canvas text-fg min-h-screen my-12 px-6 md:px-12 py-16 max-w-4xl mx-auto">
+            <h1 className="font-headline text-4xl italic text-brand mb-2">Privacy Policy</h1>
+            <p className="text-sm text-fg/50 font-body mb-12">Last updated: April 5, 2026</p>
 
             <Section title="1. Who We Are">
                 <p>
@@ -17,7 +17,7 @@ export default function PrivacyPolicyPage() {
                 </p>
                 <p className="mt-3">
                     For any privacy-related enquiries, please contact us at:{" "}
-                    <a href="mailto:contact@mixoguide.com" className="text-mg-caramel hover:underline">
+                    <a href="mailto:contact@mixoguide.com" className="text-brand-soft-strong hover:underline">
                         contact@mixoguide.com
                     </a>
                 </p>
@@ -61,9 +61,9 @@ export default function PrivacyPolicyPage() {
                 <p>We process your personal data under the following legal bases as defined by the General Data Protection Regulation (GDPR):</p>
                 <table className="w-full mt-4 text-sm border-collapse">
                     <thead>
-                        <tr className="bg-mg-smoke">
-                            <th className="text-left p-3 border border-mg-ink/10 font-semibold">Purpose</th>
-                            <th className="text-left p-3 border border-mg-ink/10 font-semibold">Legal basis</th>
+                        <tr className="bg-surface-hover">
+                            <th className="text-left p-3 border border-fg/10 font-semibold">Purpose</th>
+                            <th className="text-left p-3 border border-fg/10 font-semibold">Legal basis</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -74,9 +74,9 @@ export default function PrivacyPolicyPage() {
                             ["Maintaining service security and preventing fraud", "Legitimate interests (Art. 6(1)(f))"],
                             ["Google OAuth sign-in", "Consent (Art. 6(1)(a)) — you initiate the OAuth flow"],
                         ].map(([purpose, basis], i) => (
-                            <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-mg-cream"}>
-                                <td className="p-3 border border-mg-ink/10">{purpose}</td>
-                                <td className="p-3 border border-mg-ink/10">{basis}</td>
+                            <tr key={i} className={i % 2 === 0 ? "bg-surface" : "bg-canvas"}>
+                                <td className="p-3 border border-fg/10">{purpose}</td>
+                                <td className="p-3 border border-fg/10">{basis}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -103,14 +103,14 @@ export default function PrivacyPolicyPage() {
                 <SubSection title="5.2 CDN &amp; DNS — Cloudflare">
                     <p>
                         We use <strong>Cloudflare, Inc.</strong> for DNS, DDoS protection, and CDN services. HTTP requests to MixoGuide pass through Cloudflare&rsquo;s network. Cloudflare may process IP addresses and request metadata in accordance with their{" "}
-                        <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" className="text-mg-caramel hover:underline">Privacy Policy</a>.
+                        <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" className="text-brand-soft-strong hover:underline">Privacy Policy</a>.
                         Cloudflare is certified under the EU–US Data Privacy Framework.
                     </p>
                 </SubSection>
                 <SubSection title="5.3 Google OAuth">
                     <p>
                         If you choose to sign in with Google, your authentication is handled by <strong>Google LLC</strong>. We receive only the basic profile information (name, email, profile picture) you authorise Google to share. Google&rsquo;s data practices are governed by their{" "}
-                        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-mg-caramel hover:underline">Privacy Policy</a>.
+                        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-brand-soft-strong hover:underline">Privacy Policy</a>.
                     </p>
                 </SubSection>
             </Section>
@@ -136,16 +136,16 @@ export default function PrivacyPolicyPage() {
                 </ul>
                 <p className="mt-3">
                     To exercise any of these rights, email us at{" "}
-                    <a href="mailto:contact@mixoguide.com" className="text-mg-caramel hover:underline">contact@mixoguide.com</a>.
+                    <a href="mailto:contact@mixoguide.com" className="text-brand-soft-strong hover:underline">contact@mixoguide.com</a>.
                     We will respond within 30 days. You also have the right to lodge a complaint with the Finnish Data Protection Ombudsman (
-                    <a href="https://tietosuoja.fi/en/home" target="_blank" rel="noopener noreferrer" className="text-mg-caramel hover:underline">tietosuoja.fi</a>).
+                    <a href="https://tietosuoja.fi/en/home" target="_blank" rel="noopener noreferrer" className="text-brand-soft-strong hover:underline">tietosuoja.fi</a>).
                 </p>
             </Section>
 
             <Section title="8. Cookies">
                 <p>
                     We use only essential cookies necessary for authentication and session management. No advertising or tracking cookies are used. Please refer to our{" "}
-                    <a href="/cookie-policy" className="text-mg-caramel hover:underline">Cookie Policy</a> for full details.
+                    <a href="/cookie-policy" className="text-brand-soft-strong hover:underline">Cookie Policy</a> for full details.
                 </p>
             </Section>
 
@@ -158,7 +158,7 @@ export default function PrivacyPolicyPage() {
             <Section title="10. Children">
                 <p>
                     MixoGuide is a platform related to alcoholic beverages and is intended solely for users who are of legal drinking age in their jurisdiction (and at a minimum 18 years of age). We do not knowingly collect data from minors. If you believe a minor has created an account, contact us at{" "}
-                    <a href="mailto:contact@mixoguide.com" className="text-mg-caramel hover:underline">contact@mixoguide.com</a> and we will delete it promptly.
+                    <a href="mailto:contact@mixoguide.com" className="text-brand-soft-strong hover:underline">contact@mixoguide.com</a> and we will delete it promptly.
                 </p>
             </Section>
 
@@ -174,8 +174,8 @@ export default function PrivacyPolicyPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <section className="mb-10">
-            <h2 className="font-headline text-xl text-mg-brown mb-4 pb-2 border-b border-mg-ink/10">{title}</h2>
-            <div className="text-mg-ink/80 font-body leading-relaxed space-y-2">{children}</div>
+            <h2 className="font-headline text-xl text-brand mb-4 pb-2 border-b border-fg/10">{title}</h2>
+            <div className="text-fg/80 font-body leading-relaxed space-y-2">{children}</div>
         </section>
     );
 }
@@ -183,8 +183,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function SubSection({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <div className="mt-4">
-            <h3 className="font-semibold text-mg-ink mb-2">{title}</h3>
-            <div className="text-mg-ink/80">{children}</div>
+            <h3 className="font-semibold text-fg mb-2">{title}</h3>
+            <div className="text-fg/80">{children}</div>
         </div>
     );
 }

@@ -46,18 +46,18 @@ export function LocalIngredientSelect({
           aria-controls="ingredient-list"
           aria-expanded={open}
           disabled={disabled}
-          className="flex-1 min-w-[180px] flex items-center justify-between px-4 py-2 rounded-xl bg-white border border-mg-sand
-                     text-sm font-body text-mg-ink focus:outline-none focus:ring-1 focus:ring-mg-caramel/40
-                     hover:border-mg-caramel/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 min-w-[180px] flex items-center justify-between px-4 py-2 rounded-xl bg-surface border border-line-control
+                     text-sm font-body text-fg focus:outline-none focus:ring-1 focus:ring-ring/40
+                     hover:border-brand-soft/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span className={value ? 'text-mg-ink' : 'text-mg-muted'}>
+          <span className={value ? 'text-fg' : 'text-fg-muted'}>
             {value ? value.name : placeholder}
           </span>
-          <ChevronsUpDown size={14} className="shrink-0 text-mg-muted" />
+          <ChevronsUpDown size={14} className="shrink-0 text-fg-muted" />
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="p-0 rounded-xl border-mg-sand"
+        className="p-0 rounded-xl border-line"
         style={{ width: 'var(--radix-popover-trigger-width)' }}
         align="start"
       >
@@ -68,7 +68,7 @@ export function LocalIngredientSelect({
             className="text-sm font-body"
           />
           <CommandList className="max-h-60">
-            <CommandEmpty className="text-sm font-body text-mg-muted py-4 text-center">
+            <CommandEmpty className="text-sm font-body text-fg-muted py-4 text-center">
               No ingredient found.
             </CommandEmpty>
             <CommandGroup>
@@ -80,12 +80,12 @@ export function LocalIngredientSelect({
                     onChange(ing.id === value?.id ? null : ing)
                     setOpen(false)
                   }}
-                  className="flex items-center gap-2 cursor-pointer text-sm font-body text-mg-ink hover:bg-mg-caramel/8"
+                  className="flex items-center gap-2 cursor-pointer text-sm font-body text-fg hover:bg-brand-soft/8"
                 >
                   <span className="flex-1">{ing.name}</span>
                   <Check
                     size={14}
-                    className={clsx('shrink-0 text-mg-caramel', value?.id === ing.id ? 'opacity-100' : 'opacity-0')}
+                    className={clsx('shrink-0 text-brand-soft-strong', value?.id === ing.id ? 'opacity-100' : 'opacity-0')}
                   />
                 </CommandItem>
               ))}

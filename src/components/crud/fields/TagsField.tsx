@@ -39,9 +39,9 @@ export function TagsField({ field, control, disabled }: TagsFieldProps) {
 
             return (
                 <FormItem>
-                  <FormLabel className="text-xs font-label uppercase tracking-widest text-mg-muted">
+                  <FormLabel className="text-xs font-label uppercase tracking-widest text-fg-muted">
                     {field.label}
-                    {field.required && <span className="text-mg-caramel ml-1">*</span>}
+                    {field.required && <span className="text-brand-soft-strong ml-1">*</span>}
                   </FormLabel>
                   <FormControl>
                     <div className="space-y-2">
@@ -50,13 +50,13 @@ export function TagsField({ field, control, disabled }: TagsFieldProps) {
                             {tags.map((tag, index) => (
                                 <span
                                     key={index}
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-label uppercase tracking-wider bg-mg-caramel/15 text-mg-brown border border-mg-caramel/20"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-label uppercase tracking-wider bg-brand-soft/15 text-brand border border-brand-soft/20"
                                 >
                                   {tag}
                                   {!disabled && !field.readOnly && (
                                       <button
                                           type="button"
-                                          className="text-mg-brown/60 hover:text-mg-brown transition-colors"
+                                          className="text-brand/60 hover:text-brand transition-colors"
                                           onClick={() => removeTag(index)}
                                       >
                                         <X className="h-3 w-3" />
@@ -80,7 +80,7 @@ export function TagsField({ field, control, disabled }: TagsFieldProps) {
                                 }}
                                 placeholder={field.placeholder || "Add a tag…"}
                                 disabled={disabled || field.readOnly}
-                                className="rounded-xl bg-white border-mg-sand text-sm font-body text-mg-ink placeholder:text-mg-muted focus-visible:ring-mg-caramel/40 focus-visible:border-mg-caramel"
+                                className="rounded-xl bg-surface border-line-control text-sm font-body text-fg placeholder:text-fg-muted focus-visible:ring-ring/40 focus-visible:border-brand-soft"
                             />
                           </div>
                       )}
@@ -93,7 +93,7 @@ export function TagsField({ field, control, disabled }: TagsFieldProps) {
                                         key={suggestion}
                                         type="button"
                                         onClick={() => addTag(suggestion)}
-                                        className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-label uppercase tracking-wider border border-mg-sand text-mg-muted hover:border-mg-caramel/40 hover:text-mg-brown hover:bg-mg-caramel/5 transition-colors"
+                                        className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-label uppercase tracking-wider border border-line text-fg-muted hover:border-brand-soft/40 hover:text-brand hover:bg-brand-soft/5 transition-colors"
                                     >
                                       {suggestion}
                                     </button>
@@ -102,7 +102,7 @@ export function TagsField({ field, control, disabled }: TagsFieldProps) {
                       )}
                     </div>
                   </FormControl>
-                  {field.description && <FormDescription className="text-xs text-mg-muted/70 font-body">{field.description}</FormDescription>}
+                  {field.description && <FormDescription className="text-xs text-fg-muted/70 font-body">{field.description}</FormDescription>}
                   <FormMessage className="text-xs" />
                 </FormItem>
             )

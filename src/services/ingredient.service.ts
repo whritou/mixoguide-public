@@ -62,6 +62,13 @@ class IngredientRepository extends BaseRepository<
 
         return QueryBuilder.buildPaginatedResult(data as Ingredient[], total, page, limit)
     }
+
+    async findIdsByNames(names: string[]): Promise<Array<{ id: string; name: string }>> {
+        return prisma.ingredient.findMany({
+            where: { name: { in: names, mode: 'insensitive' } },
+            select: { id: true, name: true },
+        })
+    }
 }
 
 const ingredientRepository = new IngredientRepository()
@@ -93,6 +100,18 @@ class IngredientService {
         })
         if (!ingredient) throw new NotFoundError('Ingredient not found')
         return ingredient
+    }
+
+    async findIdsByNames(names: string[]): Promise<Record<string, string>> {
+        if (names.length === 0) return {}
+        const rows = await ingredientRepository.findIdsByNames(names)
+        const idByLowerName = new Map(rows.map(row => [row.name.toLowerCase(), row.id]))
+        const result: Record<string, string> = {}
+        for (const name of names) {
+            const id = idByLowerName.get(name.toLowerCase())
+            if (id) result[name] = id
+        }
+        return result
     }
 
     async create(data: CreateIngredientInput) {

@@ -46,15 +46,15 @@ export function EmptyState({
             className={[
                 'flex flex-col items-center text-center gap-3',
                 py,
-                bordered ? 'rounded-2xl border border-dashed border-mg-sand/80 bg-mg-cream/60' : '',
+                bordered ? 'rounded-2xl border border-dashed border-line/80 bg-canvas/60' : '',
                 className ?? '',
             ].join(' ')}
         >
-            <div className={`${ring} rounded-full bg-mg-caramel/12 flex items-center justify-center shrink-0`}>
-                <Icon size={iconSize} className="text-mg-brown" />
+            <div className={`${ring} rounded-full bg-brand-soft/12 flex items-center justify-center shrink-0`}>
+                <Icon size={iconSize} className="text-brand" />
             </div>
-            <p className={`font-headline italic ${headingCls} text-mg-ink leading-tight`}>{heading}</p>
-            {body && <p className="text-xs text-mg-muted max-w-xs">{body}</p>}
+            <p className={`font-headline italic ${headingCls} text-fg leading-tight`}>{heading}</p>
+            {body && <p className="text-xs text-fg-muted max-w-xs">{body}</p>}
             {action}
         </div>
     )

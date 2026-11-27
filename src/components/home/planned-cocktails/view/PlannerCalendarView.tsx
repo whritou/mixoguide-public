@@ -329,33 +329,33 @@ export default function PlannerCalendarView({
 
     const isMonth = mode === 'month'
     const eventChipStyle = (e: CalendarEvent) => {
-        if (e.kind === 'made') return 'bg-mg-ink/85 text-white'
+        if (e.kind === 'made') return 'bg-surface-inverse/85 text-fg-on-inverse inset-ring-1 inset-ring-fg/40'
         if (e.kind === 'collection') {
-            if (e.item.status === 'done') return 'bg-mg-ink/85 text-white'
-            return e.overdue ? 'bg-mg-danger-light text-mg-danger' : 'bg-mg-brown/15 text-mg-brown'
+            if (e.item.status === 'done') return 'bg-surface-inverse/85 text-fg-on-inverse inset-ring-1 inset-ring-fg/40'
+            return e.overdue ? 'bg-danger-bg text-danger' : 'bg-brand/15 text-brand'
         }
-        if (e.item.status === 'done') return 'bg-mg-ink/85 text-white'
-        if (e.overdue) return 'bg-mg-danger-light text-mg-danger'
-        if (e.today) return 'bg-mg-brown text-white'
-        return 'bg-white border border-mg-bone text-mg-charcoal'
+        if (e.item.status === 'done') return 'bg-surface-inverse/85 text-fg-on-inverse inset-ring-1 inset-ring-fg/40'
+        if (e.overdue) return 'bg-danger-bg text-danger'
+        if (e.today) return 'bg-brand text-fg-on-brand'
+        return 'bg-surface border border-line-strong text-fg-secondary'
     }
 
     return (
         <div className="space-y-4">
             {/* Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 rounded-2xl border border-mg-sand bg-white p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 rounded-2xl border border-line bg-surface p-3">
                 <div className="flex items-center gap-2">
                     <button
                         type="button"
                         onClick={() => setCursor(today)}
-                        className="px-3 py-1.5 text-xs font-label uppercase tracking-widest rounded-full bg-mg-sand/60 text-mg-charcoal hover:bg-mg-sand transition-colors"
+                        className="px-3 py-1.5 text-xs font-label uppercase tracking-widest rounded-full bg-line/60 text-fg-secondary hover:bg-line transition-colors"
                     >
                         Today
                     </button>
                     <button
                         type="button"
                         onClick={() => shiftCursor(-1)}
-                        className="w-8 h-8 inline-flex items-center justify-center rounded-full border border-mg-bone bg-white text-mg-charcoal hover:bg-mg-haze"
+                        className="w-8 h-8 inline-flex items-center justify-center rounded-full border border-line-strong bg-surface text-fg-secondary hover:bg-canvas-hover"
                         aria-label="Previous"
                     >
                         <ChevronLeft size={14} />
@@ -363,17 +363,17 @@ export default function PlannerCalendarView({
                     <button
                         type="button"
                         onClick={() => shiftCursor(1)}
-                        className="w-8 h-8 inline-flex items-center justify-center rounded-full border border-mg-bone bg-white text-mg-charcoal hover:bg-mg-haze"
+                        className="w-8 h-8 inline-flex items-center justify-center rounded-full border border-line-strong bg-surface text-fg-secondary hover:bg-canvas-hover"
                         aria-label="Next"
                     >
                         <ChevronRight size={14} />
                     </button>
-                    <h3 className="ml-2 font-headline text-lg md:text-xl text-mg-ink">{formatCalendarHeader(cursor, mode)}</h3>
+                    <h3 className="ml-2 font-headline text-lg md:text-xl text-fg">{formatCalendarHeader(cursor, mode)}</h3>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <div
-                        className="flex rounded-full bg-mg-sand/50 p-1 gap-1"
+                        className="flex rounded-full bg-line/50 p-1 gap-1"
                         title="Drag events to reschedule"
                     >
                         {(['month', 'week'] as const).map((m) => (
@@ -381,7 +381,7 @@ export default function PlannerCalendarView({
                                 key={m}
                                 type="button"
                                 onClick={() => setMode(m)}
-                                className={`px-4 py-1.5 text-xs font-label uppercase tracking-widest rounded-full transition-all ${mode === m ? 'bg-white shadow-sm text-mg-brown font-bold' : 'text-mg-muted hover:text-mg-charcoal'}`}
+                                className={`px-4 py-1.5 text-xs font-label uppercase tracking-widest rounded-full transition-all ${mode === m ? 'bg-surface shadow-sm text-brand font-bold' : 'text-fg-muted hover:text-fg-secondary'}`}
                             >
                                 {m}
                             </button>
@@ -390,7 +390,7 @@ export default function PlannerCalendarView({
                     <button
                         type="button"
                         onClick={() => router.push('/cocktails')}
-                        className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-mg-bone bg-white text-mg-charcoal text-xs font-label uppercase tracking-widest hover:bg-mg-haze"
+                        className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line-strong bg-surface text-fg-secondary text-xs font-label uppercase tracking-widest hover:bg-canvas-hover"
                     >
                         <Plus size={13} />
                         <span className="hidden sm:inline">Browse cocktails</span>
@@ -398,7 +398,7 @@ export default function PlannerCalendarView({
                     <button
                         type="button"
                         onClick={onOpenCreateCollection}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-br from-mg-brown to-mg-caramel text-white text-xs font-label uppercase tracking-widest hover:opacity-80"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand text-xs font-label uppercase tracking-widest hover:opacity-80"
                     >
                         <Sparkles size={13} />
                         <span className="inline">New event</span>
@@ -407,10 +407,10 @@ export default function PlannerCalendarView({
             </div>
 
             {/* Grid */}
-            <div className="rounded-2xl border border-mg-sand bg-white overflow-hidden">
-                <div className={`${isMonth ? 'grid grid-cols-7' : 'hidden md:grid md:grid-cols-7'} bg-mg-cream border-b border-mg-sand`}>
+            <div className="rounded-2xl border border-line bg-surface overflow-hidden">
+                <div className={`${isMonth ? 'grid grid-cols-7' : 'hidden md:grid md:grid-cols-7'} bg-canvas border-b border-line`}>
                     {WEEKDAYS.map((w) => (
-                        <div key={w} className="py-2 text-center text-[10px] font-label uppercase tracking-widest text-mg-muted">
+                        <div key={w} className="py-2 text-center text-[10px] font-label uppercase tracking-widest text-fg-muted">
                             {w}
                         </div>
                     ))}
@@ -445,25 +445,25 @@ export default function PlannerCalendarView({
                                         onClickEmptyCell(k)
                                     }
                                 }}
-                                className={`relative p-1.5 transition-colors ${isMonth ? 'border-r border-b last:border-r-0' : 'border-b md:border-r md:last:border-r-0'} ${isMonth ? 'min-h-[70px] sm:min-h-[110px]' : 'md:min-h-[400px]'} ${inMonth ? 'bg-white' : 'bg-mg-cream/60'} ${isDropTarget ? 'bg-mg-caramel/15 border-mg-caramel ring-1 ring-mg-caramel ring-inset' : dragId ? 'border-dashed border-mg-bone/80' : 'border-mg-sand'} ${!dragId && events.length === 0 && onClickEmptyCell ? 'cursor-pointer hover:bg-mg-caramel/5' : ''}`}
+                                className={`relative p-1.5 transition-colors ${isMonth ? 'border-r border-b last:border-r-0' : 'border-b md:border-r md:last:border-r-0'} ${isMonth ? 'min-h-[70px] sm:min-h-[110px]' : 'md:min-h-[400px]'} ${inMonth ? 'bg-surface' : 'bg-canvas/60'} ${isDropTarget ? 'bg-brand-soft/15 border-brand-soft ring-1 ring-ring ring-inset' : dragId ? 'border-dashed border-line-strong/80' : 'border-line'} ${!dragId && events.length === 0 && onClickEmptyCell ? 'cursor-pointer hover:bg-brand-soft/5' : ''}`}
                             >
                                 {/* Day number — always in month mode; desktop-only in week mode */}
                                 <div className={`flex items-center justify-between mb-1 ${!isMonth ? 'hidden md:flex' : ''}`}>
-                                    <span className={`inline-flex items-center justify-center text-xs font-medium ${isToday ? 'h-6 w-6 rounded-full bg-mg-brown text-white' : inMonth ? 'text-mg-ink' : 'text-mg-muted'}`}>
+                                    <span className={`inline-flex items-center justify-center text-xs font-medium ${isToday ? 'h-6 w-6 rounded-full bg-brand text-fg-on-brand' : inMonth ? 'text-fg' : 'text-fg-muted'}`}>
                                         {day.getDate()}
                                     </span>
                                     {events.length > 3 && isMonth && (
-                                        <span className="text-[10px] text-mg-muted">{events.length}</span>
+                                        <span className="text-[10px] text-fg-muted">{events.length}</span>
                                     )}
                                 </div>
 
                                 {/* Mobile-only week label: "Mon 5" — replaces the hidden header row */}
                                 {!isMonth && (
                                     <div className="flex md:hidden items-center gap-2 mb-2">
-                                        <span className="text-xs font-label uppercase tracking-widest text-mg-muted">
+                                        <span className="text-xs font-label uppercase tracking-widest text-fg-muted">
                                             {WEEKDAYS[day.getDay() === 0 ? 6 : day.getDay() - 1]}
                                         </span>
-                                        <span className={`inline-flex items-center justify-center text-sm font-medium ${isToday ? 'h-6 w-6 rounded-full bg-mg-brown text-white' : 'text-mg-ink'}`}>
+                                        <span className={`inline-flex items-center justify-center text-sm font-medium ${isToday ? 'h-6 w-6 rounded-full bg-brand text-fg-on-brand' : 'text-fg'}`}>
                                             {day.getDate()}
                                         </span>
                                     </div>
@@ -561,7 +561,7 @@ export default function PlannerCalendarView({
                                         <button
                                             type="button"
                                             onClick={() => { setMode('week'); setCursor(day) }}
-                                            className="text-[10px] text-mg-brown hover:underline px-1 text-left"
+                                            className="text-[10px] text-brand hover:underline px-1 text-left"
                                         >
                                             +{events.length - 3} more
                                         </button>
@@ -574,53 +574,53 @@ export default function PlannerCalendarView({
             </div>
 
             {/* Legend */}
-            <div className="flex flex-wrap items-center gap-3 text-xs text-mg-muted">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-fg-muted">
                 <span className="inline-flex items-center gap-1.5">
-                    <span className="h-3 w-3 rounded bg-white border border-mg-bone" /> Planned
+                    <span className="h-3 w-3 rounded bg-surface border border-line-strong" /> Planned
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                    <span className="h-3 w-3 rounded bg-mg-brown" /> Today
+                    <span className="h-3 w-3 rounded bg-brand" /> Today
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                    <span className="h-3 w-3 rounded bg-mg-danger-light border border-mg-danger/30" /> Overdue
+                    <span className="h-3 w-3 rounded bg-danger-bg border border-danger/30" /> Overdue
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                    <span className="h-3 w-3 rounded bg-mg-brown/15 border border-mg-brown/30" /> Collection
+                    <span className="h-3 w-3 rounded bg-brand/15 border border-brand/30" /> Collection
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                    <span className="h-3 w-3 rounded bg-mg-ink/85" /> Done / Made
+                    <span className="h-3 w-3 rounded bg-surface-inverse/85 inset-ring-1 inset-ring-fg/40" /> Done / Made
                 </span>
             </div>
 
             {/* Selected event popover */}
             {selected && (
-                <div className="fixed inset-0 z-[160] flex items-center justify-center overflow-y-auto p-4 bg-mg-ink/40 backdrop-blur-sm">
+                <div className="fixed inset-0 z-[160] flex items-center justify-center overflow-y-auto p-4 bg-overlay/53 backdrop-blur-sm">
                     <div
                         ref={popoverRef}
-                        className="w-full max-w-md bg-mg-cream rounded-2xl shadow-2xl flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden"
+                        className="w-full max-w-md bg-canvas rounded-2xl shadow-2xl flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden"
                     >
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-mg-sand">
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-line">
                             <div className="flex items-center gap-2 min-w-0">
                                 {selected.kind === 'collection' ? (
-                                    <Sparkles size={16} className="text-mg-caramel shrink-0" />
+                                    <Sparkles size={16} className="text-brand-soft shrink-0" />
                                 ) : selected.kind === 'made' ? (
-                                    <CheckCheck size={16} className="text-mg-brown shrink-0" />
+                                    <CheckCheck size={16} className="text-brand shrink-0" />
                                 ) : (
-                                    <CalendarDays size={16} className="text-mg-caramel shrink-0" />
+                                    <CalendarDays size={16} className="text-brand-soft shrink-0" />
                                 )}
-                                <h3 className="font-headline text-lg text-mg-ink truncate">{selected.title}</h3>
+                                <h3 className="font-headline text-lg text-fg truncate">{selected.title}</h3>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setSelected(null)}
-                                className="text-mg-muted text-xs px-2 py-1 rounded hover:bg-mg-sand"
+                                className="text-fg-muted text-xs px-2 py-1 rounded hover:bg-line"
                             >
                                 Close
                             </button>
                         </div>
 
-                        <div className="px-5 py-4 space-y-2 text-sm text-mg-charcoal">
-                            <p className="flex items-center gap-2 text-xs text-mg-muted">
+                        <div className="px-5 py-4 space-y-2 text-sm text-fg-secondary">
+                            <p className="flex items-center gap-2 text-xs text-fg-muted">
                                 <CalendarDays size={12} />
                                 {selected.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
                             </p>
@@ -628,12 +628,12 @@ export default function PlannerCalendarView({
                                 const stock = stockSummary(selected.item as PlannedCocktail)
                                 return (
                                     <>
-                                        <p className="text-xs text-mg-muted">
+                                        <p className="text-xs text-fg-muted">
                                             {selected.item.quantity} serving{selected.item.quantity > 1 ? 's' : ''} ·{' '}
                                             {selected.item.status === 'done' ? 'Completed' : selected.overdue ? 'Overdue' : 'Planned'}
                                         </p>
                                         {stock && (
-                                            <p className={`text-xs font-medium ${stock.ok === stock.total ? 'text-mg-brown' : stock.ok === 0 ? 'text-mg-danger' : 'text-mg-caramel'}`}>
+                                            <p className={`text-xs font-medium ${stock.ok === stock.total ? 'text-brand' : stock.ok === 0 ? 'text-danger' : 'text-brand-soft-strong'}`}>
                                                 {stock.ok}/{stock.total} ingredients in stock
                                             </p>
                                         )}
@@ -641,18 +641,18 @@ export default function PlannerCalendarView({
                                 )
                             })()}
                             {selected.kind === 'collection' && (
-                                <p className="text-xs text-mg-muted">
+                                <p className="text-xs text-fg-muted">
                                     {selected.item.cocktails?.length ?? 0} cocktail
                                     {(selected.item.cocktails?.length ?? 0) === 1 ? '' : 's'} ·{' '}
                                     {selected.item.status === 'done' ? 'Completed' : selected.overdue ? 'Overdue' : 'Planned'}
                                 </p>
                             )}
                             {selected.kind === 'made' && (
-                                <p className="text-xs text-mg-muted">{selected.item.quantity} made</p>
+                                <p className="text-xs text-fg-muted">{selected.item.quantity} made</p>
                             )}
                         </div>
 
-                        <div className="px-5 py-3 border-t border-mg-sand flex flex-wrap gap-2">
+                        <div className="px-5 py-3 border-t border-line flex flex-wrap gap-2">
                             {selected.kind === 'planned' && (
                                 <>
                                     <button
@@ -661,7 +661,7 @@ export default function PlannerCalendarView({
                                             router.push(`/cocktails/${selected.item.cocktailId}`)
                                             setSelected(null)
                                         }}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-mg-bone bg-white text-xs font-label uppercase tracking-widest text-mg-charcoal hover:bg-mg-haze"
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line-strong bg-surface text-xs font-label uppercase tracking-widest text-fg-secondary hover:bg-canvas-hover"
                                     >
                                         <ExternalLink size={12} />
                                         Open
@@ -672,7 +672,7 @@ export default function PlannerCalendarView({
                                             setReschedItem(selected.item as PlannedCocktail)
                                             setSelected(null)
                                         }}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-mg-bone bg-white text-xs font-label uppercase tracking-widest text-mg-charcoal hover:bg-mg-haze"
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line-strong bg-surface text-xs font-label uppercase tracking-widest text-fg-secondary hover:bg-canvas-hover"
                                     >
                                         <CalendarDays size={12} />
                                         Edit
@@ -684,7 +684,7 @@ export default function PlannerCalendarView({
                                                 setIngredientsItem(selected.item as PlannedCocktail)
                                                 setSelected(null)
                                             }}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-mg-bone bg-white text-xs font-label uppercase tracking-widest text-mg-charcoal hover:bg-mg-haze"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line-strong bg-surface text-xs font-label uppercase tracking-widest text-fg-secondary hover:bg-canvas-hover"
                                         >
                                             <ShoppingCart size={12} />
                                             Manage
@@ -694,7 +694,7 @@ export default function PlannerCalendarView({
                                         <button
                                             type="button"
                                             onClick={() => void markPlannedDone(selected.item as PlannedCocktail)}
-                                            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mg-brown text-white text-xs font-label uppercase tracking-widest hover:bg-mg-brown/80"
+                                            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand text-fg-on-brand text-xs font-label uppercase tracking-widest hover:bg-brand/80"
                                         >
                                             <CheckCheck size={12} />
                                             Done
@@ -703,7 +703,7 @@ export default function PlannerCalendarView({
                                         <button
                                             type="button"
                                             onClick={() => void undoPlannedDone(selected.item as PlannedCocktail)}
-                                            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mg-sand/70 text-mg-charcoal text-xs font-label uppercase tracking-widest hover:bg-mg-sand"
+                                            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-line/70 text-fg-secondary text-xs font-label uppercase tracking-widest hover:bg-line"
                                         >
                                             <RotateCcw size={12} />
                                             Undo
@@ -712,7 +712,7 @@ export default function PlannerCalendarView({
                                     <button
                                         type="button"
                                         onClick={() => { setPendingDelete(selected); setSelected(null) }}
-                                        className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-mg-bone bg-white text-mg-danger hover:bg-mg-danger-light"
+                                        className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-line-strong bg-surface text-danger hover:bg-danger-bg"
                                         aria-label="Delete"
                                     >
                                         <Trash2 size={13} />
@@ -727,7 +727,7 @@ export default function PlannerCalendarView({
                                             router.push('/planner?view=collections')
                                             setSelected(null)
                                         }}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-mg-bone bg-white text-xs font-label uppercase tracking-widest text-mg-charcoal hover:bg-mg-haze"
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line-strong bg-surface text-xs font-label uppercase tracking-widest text-fg-secondary hover:bg-canvas-hover"
                                     >
                                         <ExternalLink size={12} />
                                         Open
@@ -739,7 +739,7 @@ export default function PlannerCalendarView({
                                                 setReschedCollectionItem(selected.item as PlannedCollection)
                                                 setSelected(null)
                                             }}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-mg-bone bg-white text-xs font-label uppercase tracking-widest text-mg-charcoal hover:bg-mg-haze"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line-strong bg-surface text-xs font-label uppercase tracking-widest text-fg-secondary hover:bg-canvas-hover"
                                         >
                                             <CalendarDays size={12} />
                                             Reschedule
@@ -749,7 +749,7 @@ export default function PlannerCalendarView({
                                         <button
                                             type="button"
                                             onClick={() => void markCollectionDone(selected.item as PlannedCollection)}
-                                            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mg-brown text-white text-xs font-label uppercase tracking-widest hover:bg-mg-brown/80"
+                                            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand text-fg-on-brand text-xs font-label uppercase tracking-widest hover:bg-brand/80"
                                         >
                                             <CheckCheck size={12} />
                                             Done
@@ -767,7 +767,7 @@ export default function PlannerCalendarView({
                                                     toast.error('Could not update status')
                                                 }
                                             }}
-                                            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mg-sand/70 text-mg-charcoal text-xs font-label uppercase tracking-widest hover:bg-mg-sand"
+                                            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-line/70 text-fg-secondary text-xs font-label uppercase tracking-widest hover:bg-line"
                                         >
                                             <RotateCcw size={12} />
                                             Undo
@@ -776,7 +776,7 @@ export default function PlannerCalendarView({
                                     <button
                                         type="button"
                                         onClick={() => { setPendingDelete(selected); setSelected(null) }}
-                                        className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-mg-bone bg-white text-mg-danger hover:bg-mg-danger-light"
+                                        className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-line-strong bg-surface text-danger hover:bg-danger-bg"
                                         aria-label="Delete collection"
                                     >
                                         <Trash2 size={13} />
@@ -792,20 +792,20 @@ export default function PlannerCalendarView({
                                                 router.push(`/cocktails/${selected.item.cocktailId}`)
                                                 setSelected(null)
                                             }}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-mg-bone bg-white text-xs font-label uppercase tracking-widest text-mg-charcoal hover:bg-mg-haze"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line-strong bg-surface text-xs font-label uppercase tracking-widest text-fg-secondary hover:bg-canvas-hover"
                                         >
                                             <ExternalLink size={12} />
                                             Open
                                         </button>
                                     ) : (
-                                        <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-mg-bone bg-mg-sand/60 text-xs font-label uppercase tracking-widest text-mg-muted">
+                                        <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-line-strong bg-line/60 text-xs font-label uppercase tracking-widest text-fg-muted">
                                             Archived
                                         </span>
                                     )}
                                     <button
                                         type="button"
                                         onClick={() => { setPendingDelete(selected); setSelected(null) }}
-                                        className="ml-auto inline-flex items-center justify-center w-8 h-8 rounded-full border border-mg-bone bg-white text-mg-danger hover:bg-mg-danger-light"
+                                        className="ml-auto inline-flex items-center justify-center w-8 h-8 rounded-full border border-line-strong bg-surface text-danger hover:bg-danger-bg"
                                         aria-label="Delete log"
                                     >
                                         <Trash2 size={13} />

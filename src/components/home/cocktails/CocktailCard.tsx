@@ -9,10 +9,10 @@ import { StarRatingDisplay } from '@/components/StarRating'
 import type { Cocktail, MakeableCocktail, MakeableStatus } from '@/types/models/cocktail'
 
 const STATUS_BADGE: Record<MakeableStatus, { dot: string; label: (c: MakeableCocktail) => string }> = {
-    full:            { dot: 'bg-emerald-400', label: () => 'MAKEABLE' },
-    withSubstitutes: { dot: 'bg-amber-400',   label: () => 'MAKEABLE' },
-    withDerivates:   { dot: 'bg-amber-400',   label: () => 'MAKEABLE' },
-    missing:         { dot: 'bg-orange-400',  label: (c) => c.missingIngredients[0] ? `NEED ${c.missingIngredients[0].name.toUpperCase()}` : 'MISSING' },
+    full:            { dot: 'bg-status-ready-dot', label: () => 'MAKEABLE' },
+    withSubstitutes: { dot: 'bg-status-partial-dot',   label: () => 'MAKEABLE' },
+    withDerivates:   { dot: 'bg-status-partial-dot',   label: () => 'MAKEABLE' },
+    missing:         { dot: 'bg-status-missing-dot',  label: (c) => c.missingIngredients[0] ? `NEED ${c.missingIngredients[0].name.toUpperCase()}` : 'MISSING' },
 }
 
 interface Props {
@@ -49,7 +49,7 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
     return (
         <Link
             href={`/cocktails/${cocktail.id}`}
-            className="group bg-white rounded-2xl overflow-hidden cursor-pointer shadow-xs hover:shadow-md transition-all duration-300 block"
+            className="group bg-surface rounded-2xl overflow-hidden cursor-pointer shadow-xs hover:shadow-md transition-all duration-300 block"
         >
             {/* Image */}
             <div className="relative aspect-[4/3] overflow-hidden">
@@ -65,7 +65,7 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
                 {/* Status badge */}
                 {badge && (
                     <div className="absolute top-3 left-3">
-                        <span className="inline-flex items-center gap-1.5 bg-mg-ink/75 backdrop-blur-sm text-white text-[10px] font-label uppercase tracking-widest px-2.5 py-1.5 rounded-full">
+                        <span className="inline-flex items-center gap-1.5 bg-overlay backdrop-blur-sm text-fg-on-image text-[10px] font-label uppercase tracking-widest px-2.5 py-1.5 rounded-full">
                             <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
                             {badge.label(makeable!)}
                         </span>
@@ -78,11 +78,11 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
                     onClick={handleFav}
                     aria-label={fav ? `Remove ${cocktail.name} from favorites` : `Add ${cocktail.name} to favorites`}
                     aria-pressed={fav}
-                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface/85 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-surface transition-colors"
                 >
                     <Star
                         size={14}
-                        className={fav ? 'text-mg-caramel' : 'text-mg-muted'}
+                        className={fav ? 'text-brand-soft-strong' : 'text-fg-muted'}
                         fill={fav ? 'currentColor' : 'none'}
                     />
                 </button>
@@ -90,13 +90,13 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
 
             {/* Info */}
             <div className="p-4 space-y-1.5">
-                <h3 className="font-headline text-lg text-mg-ink leading-tight line-clamp-1">
+                <h3 className="font-headline text-lg text-fg leading-tight line-clamp-1">
                     {cocktail.name}
                 </h3>
 
-                <div className="flex items-center gap-2 text-xs text-mg-muted flex-wrap">
+                <div className="flex items-center gap-2 text-xs text-fg-muted flex-wrap">
                     {showIngCount && (
-                        <span className={missingAny ? 'text-mg-caramel font-medium' : ''}>
+                        <span className={missingAny ? 'text-brand-soft-strong font-medium' : ''}>
                             {makeable
                                 ? `${satisfiedCount} / ${requiredCount}`
                                 : requiredCount
@@ -104,15 +104,15 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
                         </span>
                     )}
                     {showIngCount && cocktail.preparationTime != null && (
-                        <span className="text-mg-bone">·</span>
+                        <span className="text-line-strong">·</span>
                     )}
                     {cocktail.preparationTime != null && (
                         <span>{cocktail.preparationTime} min</span>
                     )}
                     {isNeverTried && makeable?.makeableStatus === 'full' && (
                         <>
-                            <span className="text-mg-bone">·</span>
-                            <span className="flex items-center gap-1 text-mg-brown font-medium">
+                            <span className="text-line-strong">·</span>
+                            <span className="flex items-center gap-1 text-brand font-medium">
                                 <Sparkles size={11} />
                                 Never tried
                             </span>
@@ -127,7 +127,7 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
                         {cocktail.flavors.slice(0, 3).map((f) => (
                             <span
                                 key={f}
-                                className="text-[10px] font-label uppercase tracking-wider text-mg-brown bg-mg-caramel/10 px-2 py-0.5 rounded-full"
+                                className="text-[10px] font-label uppercase tracking-wider text-brand bg-brand-soft/10 px-2 py-0.5 rounded-full"
                             >
                                 {f}
                             </span>

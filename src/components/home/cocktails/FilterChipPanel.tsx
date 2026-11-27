@@ -18,8 +18,8 @@ function chipCls(active: boolean) {
     return clsx(
         'rounded-full px-3 py-1.5 text-xs font-label cursor-pointer transition-colors',
         active
-            ? 'border border-mg-brown bg-mg-linen text-mg-brown'
-            : 'bg-white text-mg-charcoal border border-mg-bone hover:bg-mg-frost'
+            ? 'border border-brand bg-surface-subtle text-brand'
+            : 'bg-surface text-fg-secondary border border-line-strong hover:bg-surface-hover-alt'
     )
 }
 
@@ -35,7 +35,7 @@ export function FilterChipPanel({ openPanel, filters, ingredientOpts }: FilterCh
     const p = filters.params
 
     return (
-        <div className="hidden md:block px-4 md:px-12 py-4 bg-mg-dusk border-t border-mg-sand">
+        <div className="hidden md:block px-4 md:px-12 py-4 bg-canvas-hover-alt border-t border-line">
             {openPanel === 'flavor' && (
                 <div className="flex flex-wrap gap-2">
                     {[...COCKTAIL_FLAVORS].sort().map(fl => (

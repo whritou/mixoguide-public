@@ -39,8 +39,8 @@ function toList(v: unknown): RepeaterIngredient[] {
   return Array.isArray(v) ? (v as RepeaterIngredient[]) : []
 }
 
-const inputCls  = "rounded-xl bg-white border border-mg-sand px-3 py-2 text-sm font-body text-mg-ink placeholder:text-mg-muted focus:outline-none focus:ring-1 focus:ring-mg-caramel/40 focus:border-mg-caramel disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-const selectCls = "rounded-xl bg-white border border-mg-sand px-3 py-2 text-sm font-body text-mg-ink focus:outline-none focus:ring-1 focus:ring-mg-caramel/40 focus:border-mg-caramel disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+const inputCls  = "rounded-xl bg-surface border border-line-control px-3 py-2 text-sm font-body text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring/40 focus:border-brand-soft disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+const selectCls = "rounded-xl bg-surface border border-line-control px-3 py-2 text-sm font-body text-fg focus:outline-none focus:ring-1 focus:ring-ring/40 focus:border-brand-soft disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 
 export default function IngredientRepeater({ value, onChange, disabled, error }: Props) {
   const [items, setItems] = useState<RepeaterIngredient[]>(toList(value))
@@ -93,7 +93,7 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
   return (
     <div className="space-y-3">
       {items.map((ing, rowIdx) => (
-        <div key={rowIdx} className="rounded-xl border border-mg-sand bg-white overflow-hidden">
+        <div key={rowIdx} className="rounded-xl border border-line bg-surface overflow-hidden">
 
           {/* ── main ingredient line ── */}
           <div className="flex flex-wrap gap-2 items-end p-4">
@@ -130,27 +130,27 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
                 type="checkbox"
                 checked={!!ing.optional}
                 disabled={disabled}
-                className="w-4 h-4 rounded border-mg-sand accent-mg-brown"
+                className="w-4 h-4 rounded border-line-control accent-brand"
                 onChange={e => patchRow(rowIdx, { optional: e.target.checked })}
               />
-              <span className="text-xs font-label uppercase tracking-widest text-mg-muted">Optional</span>
+              <span className="text-xs font-label uppercase tracking-widest text-fg-muted">Optional</span>
             </label>
 
             <button
               type="button"
               disabled={disabled}
               onClick={() => rmRow(rowIdx)}
-              className="ml-auto w-7 h-7 flex items-center justify-center rounded-full bg-red-50 border border-red-200 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="ml-auto w-7 h-7 flex items-center justify-center rounded-full bg-danger-bg/30 border border-danger/30 text-danger hover:bg-danger-bg/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <X size={13} />
             </button>
           </div>
 
           {/* ── substitutes tray ── */}
-          <div className="border-t border-mg-sand bg-mg-cream px-4 py-3 space-y-2">
+          <div className="border-t border-line bg-canvas px-4 py-3 space-y-2">
             {ing.substitutes.map((sub, subIdx) => (
               <div key={subIdx} className="flex flex-wrap gap-2 items-end">
-                <span className="text-xs font-label uppercase tracking-widest text-mg-caramel/70 self-center">↳</span>
+                <span className="text-xs font-label uppercase tracking-widest text-brand-soft/70 self-center">↳</span>
                 <LocalIngredientSelect
                   value={sub.ingredient}
                   onChange={v => patchSub(rowIdx, subIdx, { ingredient: v })}
@@ -194,7 +194,7 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
                   type="button"
                   disabled={disabled}
                   onClick={() => rmSub(rowIdx, subIdx)}
-                  className="w-7 h-7 flex items-center justify-center rounded-full border border-mg-sand text-mg-muted hover:bg-mg-sand hover:text-mg-charcoal transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-7 h-7 flex items-center justify-center rounded-full border border-line text-fg-muted hover:bg-line hover:text-fg-secondary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Minus size={13} />
                 </button>
@@ -205,7 +205,7 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
               type="button"
               disabled={disabled}
               onClick={() => addSub(rowIdx)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-label uppercase tracking-widest border border-mg-sand text-mg-muted hover:border-mg-caramel/40 hover:text-mg-brown hover:bg-mg-caramel/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-label uppercase tracking-widest border border-line text-fg-muted hover:border-brand-soft/40 hover:text-brand hover:bg-brand-soft/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Plus size={11} />
               Add substitute
@@ -218,13 +218,13 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
         type="button"
         disabled={disabled}
         onClick={addRow}
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-label uppercase tracking-widest bg-gradient-to-br from-mg-brown to-mg-caramel text-white hover:scale-[0.98] transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-label uppercase tracking-widest bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand hover:scale-[0.98] transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
       >
         <Plus size={13} />
         Add ingredient
       </button>
 
-      {error && <p className="text-xs font-body text-red-500">{error}</p>}
+      {error && <p className="text-xs font-body text-danger">{error}</p>}
     </div>
   )
 }

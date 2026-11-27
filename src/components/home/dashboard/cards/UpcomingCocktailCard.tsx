@@ -24,12 +24,12 @@ interface UpcomingCocktailCardProps {
 }
 
 function statusBadge(item: PlannedCocktail, isReady: boolean, missingCount: number, inListCount: number) {
-    if (isReady) return { label: 'READY', dot: 'bg-emerald-400' }
-    if (missingCount === 0 && inListCount > 0) return { label: 'IN LIST', dot: 'bg-amber-400' }
+    if (isReady) return { label: 'READY', dot: 'bg-status-ready-dot' }
+    if (missingCount === 0 && inListCount > 0) return { label: 'IN LIST', dot: 'bg-status-partial-dot' }
     if (item.cocktail?.ingredients?.[0]?.ingredient?.name) {
-        return { label: `NEED ${item.cocktail.ingredients[0].ingredient.name.toUpperCase()}`, dot: 'bg-orange-400' }
+        return { label: `NEED ${item.cocktail.ingredients[0].ingredient.name.toUpperCase()}`, dot: 'bg-status-missing-dot' }
     }
-    return { label: 'MISSING', dot: 'bg-orange-400' }
+    return { label: 'MISSING', dot: 'bg-status-missing-dot' }
 }
 
 export default function UpcomingCocktailCard({
@@ -85,7 +85,7 @@ export default function UpcomingCocktailCard({
 
     return (
         <article
-            className="group relative min-h-[112px] overflow-hidden rounded-2xl border border-[#e8e3dc] bg-white cursor-pointer"
+            className="group relative min-h-[112px] overflow-hidden rounded-2xl border border-line bg-surface cursor-pointer"
         >
             <Link href="/planner?view=planned" className="absolute inset-0 z-10" aria-label="View planned cocktails" />
             <div className="absolute inset-y-0 right-0 w-[38%] overflow-hidden">
@@ -96,32 +96,32 @@ export default function UpcomingCocktailCard({
                     sizes="(max-width: 1024px) 40vw, 18vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-l from-mg-ink/25 via-mg-ink/5 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-l from-overlay/33 via-overlay/7 to-transparent" />
             </div>
 
             <div className="relative z-10 flex h-full flex-col justify-between p-5 pr-[40%]">
                 <div className="flex items-start justify-between gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-mg-ink/75 px-2.5 py-1 text-[10px] font-label uppercase tracking-widest text-white backdrop-blur-sm">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-inverse/75 px-2.5 py-1 text-[10px] font-label uppercase tracking-widest text-fg-on-inverse inset-ring-1 inset-ring-fg/40 backdrop-blur-sm">
                         <span className={`h-1.5 w-1.5 rounded-full ${badge.dot}`} />
                         {badge.label}
                     </span>
                     {overdue && (
-                        <span className="rounded-full bg-mg-danger-light px-2 py-0.5 text-[10px] font-label uppercase tracking-wider text-mg-danger">
+                        <span className="rounded-full bg-danger-bg px-2 py-0.5 text-[10px] font-label uppercase tracking-wider text-danger">
                             Overdue
                         </span>
                     )}
                 </div>
 
                 <div className="mt-2">
-                    <h3 className="line-clamp-1 font-headline text-lg leading-tight text-mg-ink">
+                    <h3 className="line-clamp-1 font-headline text-lg leading-tight text-fg">
                         {item.cocktail?.name ?? '-'}
                     </h3>
-                    <p className="mt-1 flex items-center gap-1.5 text-xs text-mg-muted">
+                    <p className="mt-1 flex items-center gap-1.5 text-xs text-fg-muted">
                         <CalendarDays size={12} />
                         {formatMonthDay(plannedDate)} - {relativeDateLabel(plannedDate, now, { eventStyle: true })}
                     </p>
                     {item.quantity > 1 && (
-                        <p className="mt-1 text-[11px] text-mg-muted">
+                        <p className="mt-1 text-[11px] text-fg-muted">
                             {item.quantity} servings
                         </p>
                     )}
@@ -132,7 +132,7 @@ export default function UpcomingCocktailCard({
                 type="button"
                 onClick={openConfirm}
                 disabled={removing}
-                className="absolute right-2 top-2 z-30 rounded-full bg-white/85 p-1.5 text-mg-muted backdrop-blur-sm transition-colors hover:bg-mg-danger-light hover:text-mg-danger disabled:opacity-50"
+                className="absolute right-2 top-2 z-30 rounded-full bg-surface/85 p-1.5 text-fg-muted backdrop-blur-sm transition-colors hover:bg-danger-bg hover:text-danger disabled:opacity-50"
                 aria-label="Remove from planner"
             >
                 {removing ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}

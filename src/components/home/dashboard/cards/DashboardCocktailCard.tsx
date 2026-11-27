@@ -5,11 +5,11 @@ import { Clock } from 'lucide-react'
 import { StarRatingDisplay } from '@/components/StarRating'
 
 function badgeForCocktail(c: MakeableCocktail): { label: string; dot: string } {
-    if (c.makeableStatus === 'full') return { label: 'MAKEABLE', dot: 'bg-emerald-400' }
+    if (c.makeableStatus === 'full') return { label: 'MAKEABLE', dot: 'bg-status-ready-dot' }
     if (c.makeableStatus === 'withSubstitutes' || c.makeableStatus === 'withDerivates')
-        return { label: 'MAKEABLE', dot: 'bg-amber-400' }
+        return { label: 'MAKEABLE', dot: 'bg-status-partial-dot' }
     const missing = c.missingIngredients?.[0]?.name
-    return { label: missing ? `NEED ${missing.toUpperCase()}` : 'MISSING', dot: 'bg-orange-400' }
+    return { label: missing ? `NEED ${missing.toUpperCase()}` : 'MISSING', dot: 'bg-status-missing-dot' }
 }
 
 /* ── Small cocktail card ─────────────────────────────────────── */
@@ -27,7 +27,7 @@ export function DashboardCocktailCard({ cocktail }: { cocktail: MakeableCocktail
     return (
         <Link
             href={`/cocktails/${cocktail.id}`}
-            className="rounded-2xl overflow-hidden bg-white cursor-pointer hover:shadow-sm transition-all duration-300 group block"
+            className="rounded-2xl overflow-hidden bg-surface cursor-pointer hover:shadow-sm transition-all duration-300 group block"
         >
             <div className="relative aspect-[1] overflow-hidden">
                 <Image
@@ -39,18 +39,18 @@ export function DashboardCocktailCard({ cocktail }: { cocktail: MakeableCocktail
                     loading="lazy"
                 />
                 <div className="absolute top-3 left-3">
-                    <span className="inline-flex items-center gap-1.5 bg-mg-ink/75 backdrop-blur-sm text-white text-[10px] font-label uppercase tracking-widest px-2.5 py-1.5 rounded-full">
+                    <span className="inline-flex items-center gap-1.5 bg-overlay backdrop-blur-sm text-fg-on-image text-[10px] font-label uppercase tracking-widest px-2.5 py-1.5 rounded-full">
                         <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
                         {badge.label}
                     </span>
                 </div>
             </div>
             <div className="p-3">
-                <h3 className="font-headline text-md text-mg-ink leading-tight mb-1 line-clamp-1">
+                <h3 className="font-headline text-md text-fg leading-tight mb-1 line-clamp-1">
                     {cocktail.name}
                 </h3>
                 <StarRatingDisplay avg={cocktail.avgRating} count={cocktail.ratingCount} size={11} />
-                <div className="flex gap-4 mt-1  text-xs text-mg-muted">
+                <div className="flex gap-4 mt-1  text-xs text-fg-muted">
                     {cocktail.preparationTime && (
                         <span className="flex items-center gap-1">
                             <Clock size={14} /> {cocktail.preparationTime} min {" | "}

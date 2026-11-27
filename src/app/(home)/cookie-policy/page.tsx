@@ -7,9 +7,9 @@ export const metadata: Metadata = {
 
 export default function CookiePolicyPage() {
     return (
-        <main className="bg-mg-cream text-mg-ink min-h-screen my-12 md:px-12 py-16 max-w-4xl mx-auto">
-            <h1 className="font-headline text-4xl italic text-mg-brown mb-2">Cookie Policy</h1>
-            <p className="text-sm text-mg-ink/50 font-body mb-12">Last updated: April 5, 2026</p>
+        <main className="bg-canvas text-fg min-h-screen my-12 md:px-12 py-16 max-w-4xl mx-auto">
+            <h1 className="font-headline text-4xl italic text-brand mb-2">Cookie Policy</h1>
+            <p className="text-sm text-fg/50 font-body mb-12">Last updated: April 5, 2026</p>
 
             <Section title="1. What Are Cookies?">
                 <p>
@@ -23,12 +23,12 @@ export default function CookiePolicyPage() {
                 <div className="mt-6 overflow-x-auto">
                     <table className="w-full text-sm border-collapse">
                         <thead>
-                            <tr className="bg-mg-smoke">
-                                <th className="text-left p-3 border border-mg-ink/10 font-semibold">Cookie name</th>
-                                <th className="text-left p-3 border border-mg-ink/10 font-semibold">Provider</th>
-                                <th className="text-left p-3 border border-mg-ink/10 font-semibold">Purpose</th>
-                                <th className="text-left p-3 border border-mg-ink/10 font-semibold">Duration</th>
-                                <th className="text-left p-3 border border-mg-ink/10 font-semibold">Type</th>
+                            <tr className="bg-surface-hover">
+                                <th className="text-left p-3 border border-fg/10 font-semibold">Cookie name</th>
+                                <th className="text-left p-3 border border-fg/10 font-semibold">Provider</th>
+                                <th className="text-left p-3 border border-fg/10 font-semibold">Purpose</th>
+                                <th className="text-left p-3 border border-fg/10 font-semibold">Duration</th>
+                                <th className="text-left p-3 border border-fg/10 font-semibold">Type</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -62,12 +62,12 @@ export default function CookiePolicyPage() {
                                     "Strictly necessary",
                                 ],
                             ].map(([name, provider, purpose, duration, type], i) => (
-                                <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-mg-cream"}>
-                                    <td className="p-3 border border-mg-ink/10 font-mono text-xs">{name}</td>
-                                    <td className="p-3 border border-mg-ink/10">{provider}</td>
-                                    <td className="p-3 border border-mg-ink/10">{purpose}</td>
-                                    <td className="p-3 border border-mg-ink/10 whitespace-nowrap">{duration}</td>
-                                    <td className="p-3 border border-mg-ink/10 whitespace-nowrap">{type}</td>
+                                <tr key={i} className={i % 2 === 0 ? "bg-surface" : "bg-canvas"}>
+                                    <td className="p-3 border border-fg/10 font-mono text-xs">{name}</td>
+                                    <td className="p-3 border border-fg/10">{provider}</td>
+                                    <td className="p-3 border border-fg/10">{purpose}</td>
+                                    <td className="p-3 border border-fg/10 whitespace-nowrap">{duration}</td>
+                                    <td className="p-3 border border-fg/10 whitespace-nowrap">{type}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -75,14 +75,14 @@ export default function CookiePolicyPage() {
                 </div>
 
                 <p className="mt-4 text-sm">
-                    All session cookies are set with the <code className="bg-mg-smoke px-1 rounded text-xs">HttpOnly</code> and <code className="bg-mg-smoke px-1 rounded text-xs">Secure</code> flags, meaning they cannot be accessed by JavaScript and are only transmitted over HTTPS. The <code className="bg-mg-smoke px-1 rounded text-xs">SameSite</code> attribute is set to <code className="bg-mg-smoke px-1 rounded text-xs">Lax</code> to help prevent CSRF attacks.
+                    All session cookies are set with the <code className="bg-surface-hover px-1 rounded text-xs">HttpOnly</code> and <code className="bg-surface-hover px-1 rounded text-xs">Secure</code> flags, meaning they cannot be accessed by JavaScript and are only transmitted over HTTPS. The <code className="bg-surface-hover px-1 rounded text-xs">SameSite</code> attribute is set to <code className="bg-surface-hover px-1 rounded text-xs">Lax</code> to help prevent CSRF attacks.
                 </p>
             </Section>
 
             <Section title="3. Cloudflare Cookies">
                 <p>
-                    Because our domain uses Cloudflare for DNS and network delivery, Cloudflare may set its own cookies (such as <code className="bg-mg-smoke px-1 rounded text-xs">__cf_bm</code> for bot management) on your device as part of their service. These cookies are necessary for Cloudflare to provide DDoS protection and performance optimisation. They are classified as strictly necessary and are governed by{" "}
-                    <a href="https://www.cloudflare.com/cookie-policy/" target="_blank" rel="noopener noreferrer" className="text-mg-caramel hover:underline">Cloudflare&rsquo;s Cookie Policy</a>.
+                    Because our domain uses Cloudflare for DNS and network delivery, Cloudflare may set its own cookies (such as <code className="bg-surface-hover px-1 rounded text-xs">__cf_bm</code> for bot management) on your device as part of their service. These cookies are necessary for Cloudflare to provide DDoS protection and performance optimisation. They are classified as strictly necessary and are governed by{" "}
+                    <a href="https://www.cloudflare.com/cookie-policy/" target="_blank" rel="noopener noreferrer" className="text-brand-soft-strong hover:underline">Cloudflare&rsquo;s Cookie Policy</a>.
                 </p>
             </Section>
 
@@ -107,10 +107,10 @@ export default function CookiePolicyPage() {
                     You can control and delete cookies through your browser settings. Please be aware that disabling session cookies will prevent you from signing in to MixoGuide. Below are links to cookie management guides for common browsers:
                 </p>
                 <ul className="list-disc list-inside space-y-1 mt-2">
-                    <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer" className="text-mg-caramel hover:underline">Google Chrome</a></li>
-                    <li><a href="https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox" target="_blank" rel="noopener noreferrer" className="text-mg-caramel hover:underline">Mozilla Firefox</a></li>
-                    <li><a href="https://support.apple.com/en-gb/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer" className="text-mg-caramel hover:underline">Apple Safari</a></li>
-                    <li><a href="https://support.microsoft.com/en-us/windows/delete-and-manage-cookies-168dab11-0753-043d-7c16-ede5947fc64d" target="_blank" rel="noopener noreferrer" className="text-mg-caramel hover:underline">Microsoft Edge</a></li>
+                    <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer" className="text-brand-soft-strong hover:underline">Google Chrome</a></li>
+                    <li><a href="https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox" target="_blank" rel="noopener noreferrer" className="text-brand-soft-strong hover:underline">Mozilla Firefox</a></li>
+                    <li><a href="https://support.apple.com/en-gb/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer" className="text-brand-soft-strong hover:underline">Apple Safari</a></li>
+                    <li><a href="https://support.microsoft.com/en-us/windows/delete-and-manage-cookies-168dab11-0753-043d-7c16-ede5947fc64d" target="_blank" rel="noopener noreferrer" className="text-brand-soft-strong hover:underline">Microsoft Edge</a></li>
                 </ul>
             </Section>
 
@@ -123,7 +123,7 @@ export default function CookiePolicyPage() {
             <Section title="8. Contact">
                 <p>
                     For questions about our use of cookies, contact us at{" "}
-                    <a href="mailto:contact@mixoguide.com" className="text-mg-caramel hover:underline">contact@mixoguide.com</a>.
+                    <a href="mailto:contact@mixoguide.com" className="text-brand-soft-strong hover:underline">contact@mixoguide.com</a>.
                 </p>
             </Section>
         </main>
@@ -133,8 +133,8 @@ export default function CookiePolicyPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <section className="mb-10">
-            <h2 className="font-headline text-xl text-mg-brown mb-4 pb-2 border-b border-mg-ink/10">{title}</h2>
-            <div className="text-mg-ink/80 font-body leading-relaxed space-y-2">{children}</div>
+            <h2 className="font-headline text-xl text-brand mb-4 pb-2 border-b border-fg/10">{title}</h2>
+            <div className="text-fg/80 font-body leading-relaxed space-y-2">{children}</div>
         </section>
     );
 }

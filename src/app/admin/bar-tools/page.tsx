@@ -110,7 +110,7 @@ export default function BarToolsPage() {
     if (isError) {
         return (
             <div className="text-center mt-8 p-4 border rounded-md">
-                <p className="text-red-500">
+                <p className="text-danger">
                     {error instanceof Error ? error.message : 'Error loading bar tools'}
                 </p>
             </div>

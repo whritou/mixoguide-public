@@ -32,7 +32,7 @@ export default function PlannerViewTabs({
 
     return (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex rounded-full bg-mg-sand/50 p-1 gap-1 overflow-x-auto">
+            <div className="flex rounded-full bg-line/50 p-1 gap-1 overflow-x-auto">
                 {tabs.map((tab) => {
                     const isActive = activeView === tab.key
 
@@ -44,13 +44,13 @@ export default function PlannerViewTabs({
                                 px-2 sm:px-5 py-2 text-xs font-label uppercase tracking-widest rounded-full transition-all duration-200
                                 flex items-center gap-2 whitespace-nowrap shrink-0
                                 ${isActive
-                                    ? 'bg-white shadow-sm text-mg-brown font-bold'
-                                    : 'text-mg-muted hover:text-mg-charcoal'}
+                                    ? 'bg-surface shadow-sm text-brand font-bold'
+                                    : 'text-fg-muted hover:text-fg-secondary'}
                             `}
                         >
                             {tab.label}
                             {typeof tab.count === 'number' && tab.count > 0 && (
-                                <span className="text-[10px] font-label bg-mg-caramel/15 text-mg-brown rounded-full px-1.5 py-0.5">
+                                <span className="text-[10px] font-label bg-brand-soft/15 text-brand rounded-full px-1.5 py-0.5">
                                     {tab.count}
                                 </span>
                             )}

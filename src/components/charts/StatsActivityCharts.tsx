@@ -23,8 +23,8 @@ type ActivityChartProps = {
 
 function ActivityChart({ title, data, gradientId, stroke, stopColor }: ActivityChartProps) {
     return (
-        <div className="bg-white rounded-2xl shadow-xs p-6 mb-8">
-            <h2 className="font-headline text-lg text-mg-ink mb-6">{title}</h2>
+        <div className="bg-surface rounded-2xl shadow-xs p-6 mb-8">
+            <h2 className="font-headline text-lg text-fg mb-6">{title}</h2>
             <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                     <defs>
@@ -33,14 +33,17 @@ function ActivityChart({ title, data, gradientId, stroke, stopColor }: ActivityC
                             <stop offset="95%" stopColor={stopColor} stopOpacity={0.02} />
                         </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e4e2df" />
-                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#81756a' }} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#81756a' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--fg-muted)' }} tickLine={false} axisLine={{ stroke: 'var(--line-strong)' }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--fg-muted)' }} tickLine={false} axisLine={{ stroke: 'var(--line-strong)' }} />
                     <Tooltip
-                        contentStyle={{ borderRadius: '8px', border: '1px solid #e4e2df', fontSize: 12 }}
+                        cursor={{ stroke: 'var(--line-strong)' }}
+                        contentStyle={{ borderRadius: '8px', background: 'var(--surface)', color: 'var(--fg)', border: '1px solid var(--line)', fontSize: 12 }}
+                        labelStyle={{ color: 'var(--fg)' }}
+                        itemStyle={{ color: 'var(--fg-secondary)' }}
                         formatter={(v) => [v ?? 0, 'drinks']}
                     />
-                    <Area type="monotone" dataKey="drinks" stroke={stroke} strokeWidth={2} fill={`url(#${gradientId})`} />
+                    <Area type="monotone" dataKey="drinks" stroke={stroke} strokeWidth={2} activeDot={{ stroke: 'var(--surface)', fill: 'var(--brand)' }} fill={`url(#${gradientId})`} />
                 </AreaChart>
             </ResponsiveContainer>
         </div>
@@ -57,15 +60,15 @@ export default function StatsActivityCharts({
                 title="Weekly activity"
                 data={weeklyTrend}
                 gradientId="drinkGrad"
-                stroke="#7a5830"
-                stopColor="#bc9366"
+                stroke="var(--brand)"
+                stopColor="var(--brand-soft)"
             />
             <ActivityChart
                 title="Monthly activity"
                 data={monthlyTrend}
                 gradientId="monthGrad"
-                stroke="#bc9366"
-                stopColor="#7a5830"
+                stroke="var(--brand-soft)"
+                stopColor="var(--brand)"
             />
         </>
     )

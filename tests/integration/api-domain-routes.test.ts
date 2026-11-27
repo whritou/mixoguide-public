@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ForbiddenError, ValidationError } from '@/utils/errors'
+import { ForbiddenError, TooManyRequestsError, ValidationError } from '@/utils/errors'
 import {
     csrfHeaders,
     jsonBody,
@@ -17,6 +17,7 @@ const {
     mockFavoriteService,
     mockIngredientService,
     mockMailService,
+    mockPantryService,
     mockPlannedCollectionService,
     mockPrisma,
     mockRateLimit,
@@ -31,6 +32,7 @@ const {
     mockCheckRateLimit: vi.fn(),
     mockCocktailService: {
         getMakeable: vi.fn(),
+        previewMakeable: vi.fn(),
     },
     mockDeviceRepository: {
         deleteByToken: vi.fn(),
@@ -41,10 +43,14 @@ const {
         remove: vi.fn(),
     },
     mockIngredientService: {
+        findIdsByNames: vi.fn(),
         getAll: vi.fn(),
     },
     mockMailService: {
         sendCollectionInvite: vi.fn(),
+    },
+    mockPantryService: {
+        importDemoBar: vi.fn(),
     },
     mockPlannedCollectionService: {
         addRsvp: vi.fn(),
@@ -97,6 +103,7 @@ vi.mock('@/services/cocktail.service', () => ({ cocktailService: mockCocktailSer
 vi.mock('@/services/favorite.service', () => ({ favoriteService: mockFavoriteService }))
 vi.mock('@/services/ingredient.service', () => ({ ingredientService: mockIngredientService }))
 vi.mock('@/services/mail.service', () => ({ mailService: mockMailService }))
+vi.mock('@/services/pantry.service', () => ({ pantryService: mockPantryService }))
 vi.mock('@/services/planned-collection.service', () => ({ plannedCollectionService: mockPlannedCollectionService }))
 vi.mock('@/services/rating.service', () => ({ ratingService: mockRatingService }))
 vi.mock('@/services/recommendation.service', () => ({ recommendationService: mockRecommendationService }))
@@ -130,6 +137,7 @@ import { GET as listIngredients } from '@/app/api/ingredients/route'
 import { GET as readInvite } from '@/app/api/invite/[token]/route'
 import { POST as createInviteRsvp } from '@/app/api/invite/[token]/rsvp/route'
 import { POST as sendCollectionInvite } from '@/app/api/planned-collections/[id]/invite/route'
+import { GET as readCollectionMenuPdf } from '@/app/api/planned-collections/[id]/menu/pdf/route'
 import { GET as readCollectionGrocery } from '@/app/api/planned-collections/[id]/grocery/route'
 import { POST as enableCollectionShare, DELETE as disableCollectionShare } from '@/app/api/planned-collections/[id]/share/route'
 import { GET as listRatings } from '@/app/api/ratings/route'
@@ -139,6 +147,9 @@ import { GET as listSuggestions, POST as createSuggestion } from '@/app/api/sugg
 import { GET as readSuggestion, PUT as updateSuggestion, DELETE as deleteSuggestion } from '@/app/api/suggestions/[id]/route'
 import { POST as uploadAvatar } from '@/app/api/upload/route'
 import { GET as listMakeableCocktails } from '@/app/api/cocktails/makeable/route'
+import { GET as listDemoBottles, POST as previewMakeable } from '@/app/api/cocktails/makeable-preview/route'
+import { DEMO_BOTTLES } from '@/lib/demo-bar/demo-bottles'
+import { POST as importDemoBar } from '@/app/api/user-pantry-items/import-demo-bar/route'
 import { GET as listRecommendations } from '@/app/api/cocktails/recommendations/route'
 import { GET as favoriteExists, DELETE as removeFavorite } from '@/app/api/user-favorites-cocktail/[cocktailId]/route'
 
@@ -149,6 +160,7 @@ beforeEach(() => {
     mockRequireUser.mockResolvedValue(makeSession())
     mockRequireAdmin.mockResolvedValue(makeAdminSession())
     mockRateLimit.mockResolvedValue(undefined)
+    mockPantryService.importDemoBar.mockResolvedValue({ imported: 2 })
     mockCheckRateLimit.mockResolvedValue(undefined)
 
     mockPrisma.$queryRaw.mockResolvedValue([{}])
@@ -503,5 +515,209 @@ describe('invite/share/upload and priority coverage routes', () => {
         )
 
         expect(response.status).toBe(422)
+    })
+})
+
+describe('makeable preview route', () => {
+    const post = (body: unknown) => previewMakeable(
+        nextRequest({ method: 'POST', path: '/api/cocktails/makeable-preview', body }),
+        routeContext(),
+    )
+
+    beforeEach(() => {
+        mockCocktailService.previewMakeable.mockResolvedValue({ makeableCount: 3, cocktails: [] })
+        mockIngredientService.findIdsByNames.mockResolvedValue({})
+    })
+
+    it('returns the preview for ticked ingredient ids without a session', async () => {
+        mockRequireUser.mockResolvedValue(null)
+
+        const response = await post({ ingredientIds: ['a', 'b', 'c'] })
+        const body = await jsonBody<{ data: { makeableCount: number } }>(response)
+
+        expect(response.status).toBe(200)
+        expect(body.data.makeableCount).toBe(3)
+        expect(mockCocktailService.previewMakeable).toHaveBeenCalledWith(['a', 'b', 'c'], undefined, undefined)
+        expect(mockRateLimit).toHaveBeenCalledWith('makeable-preview', expect.anything())
+    })
+
+    it('forwards maxMissing', async () => {
+        await post({ ingredientIds: ['a'], maxMissing: 0 })
+
+        expect(mockCocktailService.previewMakeable).toHaveBeenCalledWith(['a'], 0, undefined)
+    })
+
+    it('forwards cocktailId and returns the target coverage', async () => {
+        const target = { requiredCount: 3, missing: [] }
+        mockCocktailService.previewMakeable.mockResolvedValue({ makeableCount: 1, top: [], oneBottleAway: null, target })
+
+        const response = await post({ ingredientIds: ['a'], cocktailId: 'daiquiri' })
+        const body = await jsonBody<{ data: { target: typeof target } }>(response)
+
+        expect(response.status).toBe(200)
+        expect(body.data.target).toEqual(target)
+        expect(mockCocktailService.previewMakeable).toHaveBeenCalledWith(['a'], undefined, 'daiquiri')
+    })
+
+    it.each([
+        ['an empty list', { ingredientIds: [] }],
+        ['more than 40 ids', { ingredientIds: Array.from({ length: 41 }, (_, i) => `id-${i}`) }],
+        ['non-string ids', { ingredientIds: [1, 2] }],
+        ['an invalid maxMissing', { ingredientIds: ['a'], maxMissing: 2 }],
+        ['an empty cocktailId', { ingredientIds: ['a'], cocktailId: '' }],
+        ['a cocktailId over 64 characters', { ingredientIds: ['a'], cocktailId: 'x'.repeat(65) }],
+    ])('rejects %s', async (_label, payload) => {
+        const response = await post(payload)
+
+        expect(response.status).toBe(422)
+        expect(mockCocktailService.previewMakeable).not.toHaveBeenCalled()
+    })
+
+    it('lists the demo bottles with ids resolved from the catalogue and a public cache header', async () => {
+        mockIngredientService.findIdsByNames.mockResolvedValue({ Bourbon: 'ing-bourbon', Gin: 'ing-gin' })
+
+        const response = await listDemoBottles(
+            nextRequest({ path: '/api/cocktails/makeable-preview' }),
+            routeContext(),
+        )
+        const body = await jsonBody<{ data: Array<{ key: string; ingredientId: string | null }> }>(response)
+
+        expect(response.status).toBe(200)
+        expect(response.headers.get('Cache-Control')).toBe('public, max-age=3600')
+        expect(body.data).toHaveLength(15)
+        expect(body.data.find(b => b.key === 'bourbon')?.ingredientId).toBe('ing-bourbon')
+        expect(body.data.find(b => b.key === 'gin')?.ingredientId).toBe('ing-gin')
+        expect(body.data.find(b => b.key === 'vodka')?.ingredientId).toBeNull()
+        expect(mockIngredientService.findIdsByNames).toHaveBeenCalledWith(DEMO_BOTTLES.map(b => b.ingredientName))
+    })
+
+    it('answers 429 once the per-IP limit is exhausted', async () => {
+        let calls = 0
+        mockRateLimit.mockImplementation(async () => {
+            calls++
+            if (calls > 120) throw new TooManyRequestsError()
+        })
+
+        let last: Response | undefined
+        for (let i = 0; i < 121; i++) last = await post({ ingredientIds: ['a'] })
+
+        expect(last?.status).toBe(429)
+        expect(mockCocktailService.previewMakeable).toHaveBeenCalledTimes(120)
+    })
+})
+
+describe('import demo bar route', () => {
+    const post = (body: unknown, headers: Record<string, string> = csrfHeaders()) =>
+        importDemoBar(
+            nextRequest({ method: 'POST', path: '/api/user-pantry-items/import-demo-bar', headers, body }),
+            routeContext(),
+        )
+
+    it('imports the ids for the signed-in user', async () => {
+        const response = await post({ ingredientIds: ['gin', 'rum'] })
+        const body = await jsonBody<{ data: { imported: number } }>(response)
+
+        expect(response.status).toBe(200)
+        expect(body.data.imported).toBe(2)
+        expect(mockPantryService.importDemoBar).toHaveBeenCalledWith('user-1', ['gin', 'rum'])
+        expect(mockRateLimit).toHaveBeenCalledWith('bulk-add', expect.anything(), expect.anything())
+    })
+
+    it('answers 401 without a session', async () => {
+        mockRequireUser.mockResolvedValueOnce(null)
+
+        const response = await post({ ingredientIds: ['gin'] })
+
+        expect(response.status).toBe(401)
+        expect(mockPantryService.importDemoBar).not.toHaveBeenCalled()
+    })
+
+    it('answers 403 when the origin headers are missing', async () => {
+        const response = await post({ ingredientIds: ['gin'] }, { host: 'localhost:3000' })
+
+        expect(response.status).toBe(403)
+        expect(mockPantryService.importDemoBar).not.toHaveBeenCalled()
+    })
+
+    it('rejects a body that is not a list of ids', async () => {
+        const response = await post({ ingredientIds: 'gin' })
+
+        expect(response.status).toBe(422)
+        expect(mockPantryService.importDemoBar).not.toHaveBeenCalled()
+    })
+
+    it('rejects more than 40 ids', async () => {
+        const response = await post({ ingredientIds: Array.from({ length: 41 }, (_, i) => `ing-${i}`) })
+
+        expect(response.status).toBe(422)
+        expect(mockPantryService.importDemoBar).not.toHaveBeenCalled()
+    })
+})
+
+describe('party menu pdf route', () => {
+    const get = () =>
+        readCollectionMenuPdf(
+            nextRequest({ path: '/api/planned-collections/collection-1/menu/pdf' }),
+            routeContext({ id: 'collection-1' }),
+        )
+
+    beforeEach(() => {
+        mockPlannedCollectionService.getById.mockResolvedValue({
+            id: 'collection-1',
+            userId: 'user-1',
+            title: 'Winter Soirée',
+            plannedFor: new Date('2026-12-14T18:00:00.000Z'),
+            cocktails: [
+                {
+                    cocktail: {
+                        name: 'Boulevardier',
+                        ingredients: [
+                            { optional: false, ingredient: { name: 'Bourbon' } },
+                            { optional: false, ingredient: { name: 'Campari' } },
+                            { optional: true, ingredient: { name: 'Orange peel' } },
+                        ],
+                    },
+                },
+            ],
+        })
+    })
+
+    it('streams the menu as a pdf attachment named after the collection', async () => {
+        const response = await get()
+
+        expect(response.status).toBe(200)
+        expect(response.headers.get('content-type')).toBe('application/pdf')
+        expect(response.headers.get('content-disposition')).toBe('attachment; filename="winter-soiree-menu.pdf"')
+        expect(mockRateLimit).toHaveBeenCalledWith('pdf-export', expect.anything(), expect.anything())
+        const bytes = new Uint8Array(await response.arrayBuffer())
+        expect(String.fromCharCode(...bytes.slice(0, 4))).toBe('%PDF')
+    })
+
+    it('answers 401 without a session', async () => {
+        mockRequireUser.mockResolvedValueOnce(null)
+
+        const response = await get()
+
+        expect(response.status).toBe(401)
+        expect(mockPlannedCollectionService.getById).not.toHaveBeenCalled()
+    })
+
+    it('answers 403 for a collection owned by someone else', async () => {
+        mockPlannedCollectionService.assertOwnership.mockImplementationOnce(() => {
+            throw new ForbiddenError('Forbidden')
+        })
+
+        const response = await get()
+
+        expect(response.status).toBe(403)
+    })
+
+    it('answers 429 when the pdf-export limit is exhausted', async () => {
+        mockRateLimit.mockRejectedValueOnce(new TooManyRequestsError())
+
+        const response = await get()
+
+        expect(response.status).toBe(429)
+        expect(mockPlannedCollectionService.getById).not.toHaveBeenCalled()
     })
 })

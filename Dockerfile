@@ -21,6 +21,12 @@ COPY . .
 # generate targeting linux-musl (Alpine).
 RUN npx prisma generate
 
+# Why: NEXT_PUBLIC_* values are inlined into the client bundle at build time.
+ARG NEXT_PUBLIC_DARK_MODE=
+ARG NEXT_PUBLIC_BASE_URL=
+ENV NEXT_PUBLIC_DARK_MODE=$NEXT_PUBLIC_DARK_MODE
+ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
+
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 

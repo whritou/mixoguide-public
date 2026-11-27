@@ -12,6 +12,7 @@ const { mockCocktailRepo, mockGetDerivationMap } = vi.hoisted(() => {
             findWithFullDetails: vi.fn(),
             findPantryItemsForMakeable: vi.fn(),
             findMakeable:        vi.fn(),
+            findMakeableTarget:  vi.fn(),
             create:              vi.fn(),
             update:              vi.fn(),
             hardDelete:          vi.fn(),
@@ -209,6 +210,77 @@ describe('CocktailService.getBestMakeable', () => {
         expect(result).toHaveLength(10)
         // First item should have the lowest missingCount
         expect(result[0].missingCount).toBeLessThanOrEqual(result[result.length - 1].missingCount)
+    })
+})
+
+// ════════════════════════════════════════════════════════════════════════════
+describe('CocktailService.previewMakeable', () => {
+    const C = { id: 'campari', name: 'Campari' }
+    const V = { id: 'vodka', name: 'Vodka' }
+    const mk = (id: string, missingCount: number, avgRating: number, missingIngredients: { id: string; name: string }[] = []) =>
+        ({ id, name: id, missingCount, avgRating, ratingCount: 10, missingIngredients })
+
+    beforeEach(() => {
+        vi.clearAllMocks()
+        mockGetDerivationMap.mockResolvedValue(new Map())
+    })
+
+    it('counts only fully makeable cocktails and sorts them like getBestMakeable', async () => {
+        mockCocktailRepo.findMakeable.mockResolvedValue([
+            mk('a', 0, 4.1), mk('b', 1, 5, [C]), mk('c', 0, 4.8),
+        ])
+        const r = await cocktailService.previewMakeable(['gin', 'lime'])
+        expect(r.makeableCount).toBe(2)
+        expect(r.top.map(c => c.id)).toEqual(['c', 'a'])
+        expect(mockCocktailRepo.findMakeable).toHaveBeenCalledWith(['gin', 'lime'], 1, expect.anything(), 200)
+    })
+
+    it('picks the missing ingredient that unlocks the most cocktails', async () => {
+        mockCocktailRepo.findMakeable.mockResolvedValue([
+            mk('n', 1, 4, [C]), mk('b', 1, 4, [C]), mk('x', 1, 4, [V]),
+        ])
+        const r = await cocktailService.previewMakeable(['gin'])
+        expect(r.oneBottleAway).toEqual({ ingredient: C, unlocks: [{ id: 'n', name: 'n' }, { id: 'b', name: 'b' }] })
+    })
+
+    it('returns an empty preview when nothing matches', async () => {
+        mockCocktailRepo.findMakeable.mockResolvedValue([])
+        expect(await cocktailService.previewMakeable(['lime'])).toEqual({ makeableCount: 0, top: [], oneBottleAway: null })
+    })
+
+    it('dedupes ids before querying', async () => {
+        mockCocktailRepo.findMakeable.mockResolvedValue([])
+        await cocktailService.previewMakeable(['gin', 'gin'])
+        expect(mockCocktailRepo.findMakeable).toHaveBeenCalledWith(['gin'], 1, expect.anything(), 200)
+    })
+
+    it('omits target and skips the target lookup without a cocktailId', async () => {
+        mockCocktailRepo.findMakeable.mockResolvedValue([])
+        const r = await cocktailService.previewMakeable(['lime'])
+        expect(r).not.toHaveProperty('target')
+        expect(mockCocktailRepo.findMakeableTarget).not.toHaveBeenCalled()
+    })
+
+    it('scores the target cocktail with the same derivation map as the preview (Lime covers Lime Juice)', async () => {
+        const derivationMap = new Map([
+            ['lime-juice', [{ baseIngredientId: 'lime', yieldAmount: 3, yieldUnit: 'cl', requiresTool: null }]],
+        ])
+        mockGetDerivationMap.mockResolvedValue(derivationMap)
+        mockCocktailRepo.findMakeable.mockResolvedValue([mk('daiquiri', 0, 4.5)])
+        mockCocktailRepo.findMakeableTarget.mockResolvedValue({ requiredCount: 3, missing: [] })
+
+        const r = await cocktailService.previewMakeable(['rum', 'lime', 'syrup', 'lime'], 1, 'daiquiri')
+
+        expect(r.target).toEqual({ requiredCount: 3, missing: [] })
+        expect(mockCocktailRepo.findMakeableTarget).toHaveBeenCalledWith('daiquiri', ['rum', 'lime', 'syrup'], derivationMap)
+        expect(mockCocktailRepo.findMakeable).toHaveBeenCalledWith(['rum', 'lime', 'syrup'], 1, derivationMap, 200)
+    })
+
+    it('returns a null target for an unknown cocktail', async () => {
+        mockCocktailRepo.findMakeable.mockResolvedValue([])
+        mockCocktailRepo.findMakeableTarget.mockResolvedValue(null)
+        const r = await cocktailService.previewMakeable(['lime'], 1, 'nope')
+        expect(r.target).toBeNull()
     })
 })
 

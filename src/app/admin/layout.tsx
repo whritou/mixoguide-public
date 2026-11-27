@@ -52,7 +52,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                   </div>
               </div>
           </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 pt-0 bg-[#faf9f8]">{children}</main>
+        <main className="flex flex-1 flex-col gap-4 p-4 pt-0 bg-canvas">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )

@@ -111,6 +111,21 @@ export interface MakeableCocktail extends Cocktail {
     derivedIngredients:   { id: string; name: string; fromId: string; fromName: string }[]
 }
 
+export interface MakeablePreview {
+    makeableCount: number
+    top:           MakeableCocktail[]
+    oneBottleAway: {
+        ingredient: { id: string; name: string }
+        unlocks:    { id: string; name: string }[]
+    } | null
+    target?: MakeableTarget | null
+}
+
+export interface MakeableTarget {
+    requiredCount: number
+    missing:       { id: string; name: string }[]
+}
+
 export interface CocktailBarTool {
     barTool: {
         id: string

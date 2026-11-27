@@ -55,23 +55,23 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-mg-ink/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-overlay/67 backdrop-blur-sm"
             style={{ zIndex: 9999 }}
         >
-            <div className="w-full max-w-sm bg-mg-cream rounded-2xl shadow-2xl flex flex-col">
+            <div className="w-full max-w-sm bg-canvas rounded-2xl shadow-2xl flex flex-col">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-mg-sand">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-line">
                     <div className="flex items-center gap-2">
-                        <CalendarDays size={18} className="text-mg-caramel" />
-                        <h2 className="font-headline text-xl text-mg-ink">Reschedule</h2>
+                        <CalendarDays size={18} className="text-brand-soft" />
+                        <h2 className="font-headline text-xl text-fg">Reschedule</h2>
                     </div>
                     <button
                         onClick={() => onOpenChange(false)}
                         aria-label="Close"
-                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-mg-sand transition-colors"
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-line transition-colors"
                     >
-                        <X size={16} className="text-mg-muted" />
+                        <X size={16} className="text-fg-muted" />
                     </button>
                 </div>
 
@@ -79,14 +79,14 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
                 <form onSubmit={handleSubmit} className="flex flex-col">
                     <div className="px-6 py-5 space-y-5">
 
-                        <p className="text-sm text-mg-muted">
+                        <p className="text-sm text-fg-muted">
                             When do you want to make{' '}
-                            <span className="font-medium text-mg-ink">{item.cocktail?.name ?? 'this cocktail'}</span>?
+                            <span className="font-medium text-fg">{item.cocktail?.name ?? 'this cocktail'}</span>?
                         </p>
 
                         {/* Date */}
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-mg-muted mb-1.5">
+                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 New date *
                             </label>
                             <input
@@ -94,14 +94,14 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
                                 value={date}
                                 min={today}
                                 onChange={e => setDate(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-xl bg-white border border-mg-bone text-sm text-mg-ink
-                                           focus:outline-none focus:ring-1 focus:ring-mg-caramel"
+                                className="w-full px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm text-fg
+                                           focus:outline-none focus:ring-1 focus:ring-ring"
                             />
                         </div>
 
                         {/* Servings */}
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-mg-muted mb-1.5">
+                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 Servings
                             </label>
                             <div className="flex items-center gap-3">
@@ -110,12 +110,12 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
                                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
                                     disabled={quantity <= 1}
                                     aria-label="Decrease servings"
-                                    className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-mg-bone
-                                               hover:bg-mg-sand transition-colors text-mg-charcoal disabled:opacity-40"
+                                    className="w-9 h-9 flex items-center justify-center rounded-full bg-surface border border-line-strong
+                                               hover:bg-line transition-colors text-fg-secondary disabled:opacity-40"
                                 >
                                     <Minus size={14} />
                                 </button>
-                                <span className="w-8 text-center text-sm font-medium text-mg-ink">
+                                <span className="w-8 text-center text-sm font-medium text-fg">
                                     {quantity}
                                 </span>
                                 <button
@@ -123,8 +123,8 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
                                     onClick={() => setQuantity(q => Math.min(50, q + 1))}
                                     disabled={quantity >= 50}
                                     aria-label="Increase servings"
-                                    className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-mg-bone
-                                               hover:bg-mg-sand transition-colors text-mg-charcoal disabled:opacity-40"
+                                    className="w-9 h-9 flex items-center justify-center rounded-full bg-surface border border-line-strong
+                                               hover:bg-line transition-colors text-fg-secondary disabled:opacity-40"
                                 >
                                     <Plus size={14} />
                                 </button>
@@ -133,12 +133,12 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
                     </div>
 
                     {/* Footer */}
-                    <div className="flex gap-3 px-6 py-4 border-t border-mg-sand rounded-b-2xl">
+                    <div className="flex gap-3 px-6 py-4 border-t border-line rounded-b-2xl">
                         <button
                             type="button"
                             onClick={() => onOpenChange(false)}
                             className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full
-                                       bg-mg-sand/60 text-mg-charcoal hover:bg-mg-sand transition-colors"
+                                       bg-line/60 text-fg-secondary hover:bg-line transition-colors"
                         >
                             Cancel
                         </button>
@@ -146,7 +146,7 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
                             type="submit"
                             disabled={submitting || !date}
                             className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full
-                                       bg-gradient-to-br from-mg-brown to-mg-caramel text-white hover:opacity-80 transition-opacity
+                                       bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand hover:opacity-80 transition-opacity
                                        disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                             {submitting ? 'Saving…' : 'Confirm'}

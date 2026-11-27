@@ -3,6 +3,7 @@ import { BaseRepository, RepositoryConfig, toDelegate } from './base.repository'
 import { QueryBuilder } from '@/lib/query/QueryBuilder'
 import { getDerivationMap, convertUnit } from '@/lib/derivations/derivation-cache'
 import { isNonBlockingCocktailIngredient } from '@/utils/cocktailIngredientImportance'
+import { resolveIngredientUnitFallback } from '@/utils/ingredientUnitFallback'
 import { Prisma, type UserPantryItem, type MeasureUnit } from '@prisma/client'
 import type { QueryParams, PaginatedResult } from '@/lib/query/types'
 
@@ -393,6 +394,41 @@ class PantryRepository extends BaseRepository<
             },
             include: { ingredient: { select: INGREDIENT_SELECT } },
         })
+    }
+
+    async importIngredientsIntoEmptyPantry(userId: string, ingredientIds: string[]): Promise<number> {
+        return prisma.$transaction(async (tx) => {
+            const existing = await tx.userPantryItem.count({ where: { userId } })
+            if (existing > 0) return 0
+
+            const ingredients = await tx.ingredient.findMany({
+                where:  { id: { in: ingredientIds } },
+                select: {
+                    id: true, name: true, isAlcoholic: true,
+                    type:    { select: { name: true } },
+                    subType: { select: { name: true } },
+                },
+            })
+            if (ingredients.length === 0) return 0
+
+            const result = await tx.userPantryItem.createMany({
+                data: ingredients.map((ingredient) => ({
+                    userId,
+                    ingredientId: ingredient.id,
+                    quantity:     0,
+                    unitLeft:     resolveIngredientUnitFallback({
+                        ingredientName: ingredient.name,
+                        typeName:       ingredient.type?.name,
+                        subTypeName:    ingredient.subType?.name,
+                        isAlcoholic:    ingredient.isAlcoholic,
+                    }) as MeasureUnit,
+                    isInPantry:   true,
+                    isInfinite:   true,
+                })),
+                skipDuplicates: true,
+            })
+            return result.count
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
     }
 }
 

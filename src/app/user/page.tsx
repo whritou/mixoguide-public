@@ -33,12 +33,12 @@ export default function UserPage() {
     if (!profile) return null
 
     return (
-        <div className="bg-mg-cream min-h-screen px-4 my-10 md:px-12 py-12 max-w-3xl mx-auto space-y-8">
+        <div className="bg-canvas min-h-screen px-4 my-10 md:px-12 py-12 max-w-3xl mx-auto space-y-8">
             <ProfileHeader profile={profile} onUpdate={setProfile} />
             <StatsRow stats={profile.stats} />
             <Link
                 href="/stats"
-                className="flex items-center gap-2 text-xs text-mg-muted hover:text-mg-brown transition-colors w-fit -mt-4"
+                className="flex items-center gap-2 text-xs text-fg-muted hover:text-brand transition-colors w-fit -mt-4"
             >
                 <BarChart2 size={13} />
                 View your drink history &amp; streaks

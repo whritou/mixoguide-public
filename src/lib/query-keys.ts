@@ -98,6 +98,8 @@ export const queryKeys = {
     derivations: {
         all: ['derivations'] as const,
     },
+    makeablePreview: (ids: string[], cocktailId?: string) => ['makeable-preview', [...ids].sort(), cocktailId ?? null] as const,
+    demoBottles: ['demo-bottles'] as const,
     rsvps: {
         mine: ['rsvps', 'mine'] as const,
     },

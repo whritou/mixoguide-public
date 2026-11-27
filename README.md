@@ -126,6 +126,14 @@ pnpm dev
 
 The app will be available at `http://localhost:3000`.
 
+### Optional environment variables
+
+| Variable | Values | Default | Effect |
+|---|---|---|---|
+| `NEXT_PUBLIC_DARK_MODE` | `off` \| `preview` \| `on` | `on` | `on` enables the Velvet Room dark theme and the Light/Dark/System switch. `preview` enables it outside production only. `off` forces the light theme and hides the switch. |
+
+`NEXT_PUBLIC_DARK_MODE` and `NEXT_PUBLIC_BASE_URL` are inlined at **build time**, so on Coolify they must be set as build variables (Dockerfile build args), not only runtime variables. Changing them requires a rebuild.
+
 ---
 
 ## Environment Setup

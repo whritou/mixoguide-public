@@ -24,9 +24,9 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-    going:     'bg-mg-brown/10 text-mg-brown',
-    maybe:     'bg-mg-caramel/15 text-mg-charcoal',
-    not_going: 'bg-mg-sand text-mg-muted',
+    going:     'bg-brand/10 text-brand',
+    maybe:     'bg-brand-soft/15 text-fg-secondary',
+    not_going: 'bg-line text-fg-muted',
 }
 
 interface Props {
@@ -171,53 +171,53 @@ export default function ShareCollectionModal({
     return createPortal(
         <>
         <div
-            className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-mg-ink/50 backdrop-blur-sm cursor-default"
+            className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-overlay/67 backdrop-blur-sm cursor-default"
             style={{ zIndex: 9999 }}
             onClick={(e) => e.stopPropagation()}
         >
-            <div className="w-full max-w-md bg-mg-cream rounded-2xl shadow-2xl flex flex-col max-h-[calc(100dvh-2rem)] overflow-hidden cursor-default">
+            <div className="w-full max-w-md bg-canvas rounded-2xl shadow-2xl flex flex-col max-h-[calc(100dvh-2rem)] overflow-hidden cursor-default">
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
                     <div className="flex items-center gap-2">
-                        <Link2 size={16} className="text-mg-brown" />
-                        <h3 className="font-headline text-lg text-mg-ink">Invite guests</h3>
+                        <Link2 size={16} className="text-brand" />
+                        <h3 className="font-headline text-lg text-fg">Invite guests</h3>
                     </div>
                     <button
                         onClick={onClose}
                         aria-label="Close"
-                        className="p-1.5 rounded-full text-mg-muted hover:text-mg-ink hover:bg-mg-sand/60 transition-colors"
+                        className="p-1.5 rounded-full text-fg-muted hover:text-fg hover:bg-line/60 transition-colors"
                     >
                         <X size={15} />
                     </button>
                 </div>
 
                 <div className="px-6 pb-6 space-y-5 overflow-y-auto">
-                    <p className="text-sm text-mg-muted">
-                        Share{' '}<span className="font-medium text-mg-ink">{collectionTitle}</span>{' '}with your guests.{' '}
+                    <p className="text-sm text-fg-muted">
+                        Share{' '}<span className="font-medium text-fg">{collectionTitle}</span>{' '}with your guests.{' '}
                         They&apos;ll see the cocktail list and can RSVP - no account needed.
                     </p>
 
                     {inviteUrl ? (
                         <>
                             {/* Link display + copy */}
-                            <div className="flex items-center gap-2 rounded-full border border-mg-bone bg-white px-3 py-2">
+                            <div className="flex items-center gap-2 rounded-full border border-line-control bg-surface px-3 py-2">
                                 <input
                                     readOnly
                                     value={inviteUrl}
                                     onClick={(e) => e.currentTarget.select()}
                                     onFocus={(e) => e.currentTarget.select()}
                                     aria-label="Invite URL"
-                                    className="min-w-0 flex-1 bg-transparent text-xs text-mg-charcoal font-mono outline-none"
+                                    className="min-w-0 flex-1 bg-transparent text-xs text-fg-secondary font-mono outline-none"
                                 />
                                 <button
                                     type="button"
                                     onClick={copy}
-                                    className="shrink-0 p-1.5 rounded-lg text-mg-muted hover:text-mg-brown hover:bg-mg-sand/60 transition-colors"
+                                    className="shrink-0 p-1.5 rounded-lg text-fg-muted hover:text-brand hover:bg-line/60 transition-colors"
                                     title="Copy link"
                                     aria-label="Copy invite link"
                                 >
-                                    {copied ? <Check size={14} className="text-mg-brown" /> : <Copy size={14} />}
+                                    {copied ? <Check size={14} className="text-brand" /> : <Copy size={14} />}
                                 </button>
                             </div>
 
@@ -226,7 +226,7 @@ export default function ShareCollectionModal({
                                     type="button"
                                     onClick={copy}
                                     disabled={loading}
-                                    className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full bg-mg-brown text-white hover:bg-mg-brown/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full bg-brand text-fg-on-brand hover:bg-brand/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {copied ? <Check size={13} /> : <Copy size={13} />}
                                     {copied ? 'Copied!' : 'Copy link'}
@@ -236,7 +236,7 @@ export default function ShareCollectionModal({
                                         type="button"
                                         onClick={() => void shareInvite()}
                                         disabled={loading}
-                                        className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full border border-mg-bone bg-white text-mg-charcoal hover:bg-mg-haze transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                        className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full border border-line-strong bg-surface text-fg-secondary hover:bg-canvas-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                                     >
                                         <Share2 size={13} />
                                         Share
@@ -251,13 +251,13 @@ export default function ShareCollectionModal({
                                     value={emailTo}
                                     onChange={(e) => setEmailTo(e.target.value)}
                                     placeholder="guest@example.com"
-                                    className="flex-1 min-w-0 px-3 py-2 rounded-full border border-mg-bone bg-white text-xs text-mg-ink placeholder:text-mg-muted focus:outline-none focus:ring-1 focus:ring-mg-caramel"
+                                    className="flex-1 min-w-0 px-3 py-2 rounded-full border border-line-control bg-surface text-xs text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring"
                                 />
                                 <button
                                     type="button"
                                     onClick={sendByEmail}
                                     disabled={!emailTo.trim() || sendingEmail}
-                                    className="shrink-0 px-4 py-2 text-xs font-label uppercase tracking-widest rounded-full border border-mg-bone bg-white text-mg-charcoal hover:bg-mg-haze transition-colors disabled:opacity-40"
+                                    className="shrink-0 px-4 py-2 text-xs font-label uppercase tracking-widest rounded-full border border-line-strong bg-surface text-fg-secondary hover:bg-canvas-hover transition-colors disabled:opacity-40"
                                 >
                                     {sendingEmail ? 'Sending…' : 'Send'}
                                 </button>
@@ -265,7 +265,7 @@ export default function ShareCollectionModal({
 
                             {qrCodeUrl && (
                                 <div className="flex justify-center">
-                                    <div className="rounded-2xl border border-mg-sand bg-white p-3">
+                                    <div className="rounded-2xl border border-line bg-surface p-3">
                                         <Image
                                             src={qrCodeUrl}
                                             alt="Invite QR code"
@@ -281,13 +281,13 @@ export default function ShareCollectionModal({
                             {rsvps.length > 0 && (
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <h4 className="text-xs font-label uppercase tracking-widest text-mg-muted">
+                                        <h4 className="text-xs font-label uppercase tracking-widest text-fg-muted">
                                             RSVPs
                                         </h4>
                                         <button
                                             onClick={() => token && void fetchRsvps(token)}
                                             disabled={loadingRsvps}
-                                            className="text-[10px] text-mg-muted hover:text-mg-brown transition-colors flex items-center gap-1"
+                                            className="text-[10px] text-fg-muted hover:text-brand transition-colors flex items-center gap-1"
                                         >
                                             <RefreshCw size={10} className={loadingRsvps ? 'animate-spin' : ''} />
                                             Refresh
@@ -297,19 +297,19 @@ export default function ShareCollectionModal({
                                     {/* Summary pills */}
                                     <div className="flex gap-2 flex-wrap">
                                         {counts.going > 0 && (
-                                            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-mg-brown/10 text-mg-brown text-xs font-label uppercase tracking-widest">
+                                            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-brand/10 text-brand text-xs font-label uppercase tracking-widest">
                                                 <Users size={10} />
                                                 {counts.going} going
                                                 {totalGuests > counts.going && ` · ${totalGuests} guests`}
                                             </span>
                                         )}
                                         {counts.maybe > 0 && (
-                                            <span className="px-2.5 py-1 rounded-full bg-mg-caramel/15 text-mg-charcoal text-xs font-label uppercase tracking-widest">
+                                            <span className="px-2.5 py-1 rounded-full bg-brand-soft/15 text-fg-secondary text-xs font-label uppercase tracking-widest">
                                                 {counts.maybe} maybe
                                             </span>
                                         )}
                                         {counts.not_going > 0 && (
-                                            <span className="px-2.5 py-1 rounded-full bg-mg-sand text-mg-muted text-xs font-label uppercase tracking-widest">
+                                            <span className="px-2.5 py-1 rounded-full bg-line text-fg-muted text-xs font-label uppercase tracking-widest">
                                                 {counts.not_going} can&apos;t make it
                                             </span>
                                         )}
@@ -318,16 +318,16 @@ export default function ShareCollectionModal({
                                     {/* Name list */}
                                     <div className="space-y-1.5 max-h-40 overflow-y-auto">
                                         {rsvps.map(r => (
-                                            <div key={r.id} className="flex items-center justify-between rounded-xl bg-white border border-mg-sand px-3 py-2">
+                                            <div key={r.id} className="flex items-center justify-between rounded-xl bg-surface border border-line px-3 py-2">
                                                 <div className="min-w-0">
-                                                    <p className="text-sm text-mg-ink font-medium truncate">{r.name}</p>
+                                                    <p className="text-sm text-fg font-medium truncate">{r.name}</p>
                                                     {r.note && (
-                                                        <p className="text-xs text-mg-muted truncate mt-0.5">{r.note}</p>
+                                                        <p className="text-xs text-fg-muted truncate mt-0.5">{r.note}</p>
                                                     )}
                                                 </div>
                                                 <div className="flex items-center gap-2 shrink-0 ml-2">
                                                     {r.guestCount > 1 && (
-                                                        <span className="text-xs text-mg-muted flex items-center gap-1">
+                                                        <span className="text-xs text-fg-muted flex items-center gap-1">
                                                             <Users size={10} />{r.guestCount}
                                                         </span>
                                                     )}
@@ -350,7 +350,7 @@ export default function ShareCollectionModal({
                                     type="button"
                                     onClick={() => setConfirmAction('regenerate')}
                                     disabled={loading}
-                                    className="flex-1 py-2 text-xs font-label uppercase tracking-widest rounded-full bg-mg-sand/60 text-mg-charcoal hover:bg-mg-sand transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                                    className="flex-1 py-2 text-xs font-label uppercase tracking-widest rounded-full bg-line/60 text-fg-secondary hover:bg-line transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
                                 >
                                     <RefreshCw size={12} />
                                     Regenerate
@@ -359,7 +359,7 @@ export default function ShareCollectionModal({
                                     type="button"
                                     onClick={() => setConfirmAction('revoke')}
                                     disabled={loading}
-                                    className="flex-1 py-2 text-xs font-label uppercase tracking-widest rounded-full bg-mg-danger-light text-mg-danger hover:bg-mg-danger/20 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                                    className="flex-1 py-2 text-xs font-label uppercase tracking-widest rounded-full bg-danger-bg text-danger hover:bg-danger/20 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
                                 >
                                     <Link2Off size={12} />
                                     Revoke link
@@ -371,7 +371,7 @@ export default function ShareCollectionModal({
                             type="button"
                             onClick={generate}
                             disabled={loading}
-                            className="w-full py-3 text-xs font-label uppercase tracking-widest rounded-full bg-mg-brown text-white hover:bg-mg-brown/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                            className="w-full py-3 text-xs font-label uppercase tracking-widest rounded-full bg-brand text-fg-on-brand hover:bg-brand/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             <Link2 size={13} />
                             {loading ? 'Generating…' : 'Generate invite link'}

@@ -28,9 +28,9 @@ export type Technique = {
 }
 
 export const DIFFICULTY_COLORS: Record<Difficulty, string> = {
-    Beginner:     'bg-emerald-50 text-emerald-700',
-    Intermediate: 'bg-amber-50 text-amber-700',
-    Advanced:     'bg-rose-50 text-rose-700',
+    Beginner:     'bg-success-bg text-success',
+    Intermediate: 'bg-warning-bg text-warning',
+    Advanced:     'bg-missing-bg text-missing',
 }
 
 export const cardVariants = {

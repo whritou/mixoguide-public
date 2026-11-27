@@ -268,6 +268,15 @@ class PantryService {
         return { addedToShopping, addedToPantry }
     }
 
+    async importDemoBar(userId: string, ingredientIds: string[]): Promise<{ imported: number }> {
+        const uniqueIds = [...new Set(ingredientIds)]
+        if (uniqueIds.length === 0) return { imported: 0 }
+
+        const imported = await pantryRepository.importIngredientsIntoEmptyPantry(userId, uniqueIds)
+        if (imported > 0) await invalidateMakeableCache(userId)
+        return { imported }
+    }
+
     assertOwnership(item: { userId: string }, userId: string, isAdmin: boolean) {
         if (item.userId !== userId && !isAdmin) {
             throw new ForbiddenError('You can only access your own pantry items')

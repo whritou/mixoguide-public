@@ -39,23 +39,23 @@ export default function RequestResetPassword() {
 
     return (
         <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-mg-caramel/15 flex items-center justify-center mx-auto mb-6">
-                <KeyRound size={28} className="text-mg-brown" />
+            <div className="w-16 h-16 rounded-full bg-brand-soft/15 flex items-center justify-center mx-auto mb-6">
+                <KeyRound size={28} className="text-brand" />
             </div>
 
-            <h1 className="font-headline text-3xl text-mg-ink mb-2">Forgot password?</h1>
-            <p className="text-mg-charcoal font-body text-sm mb-8">
+            <h1 className="font-headline text-3xl text-fg mb-2">Forgot password?</h1>
+            <p className="text-fg-secondary font-body text-sm mb-8">
                 No worries. Enter your email and we&apos;ll send you a reset link.
             </p>
 
             {status === "sent" ? (
                 <div>
-                    <p className="text-sm text-mg-brown bg-mg-caramel/10 rounded-xl px-4 py-4 font-body mb-6">
+                    <p className="text-sm text-brand bg-brand-soft/10 rounded-xl px-4 py-4 font-body mb-6">
                         Check your email for a password reset link.
                     </p>
                     <Link
                         href="/signin"
-                        className="text-mg-brown font-semibold text-sm hover:underline"
+                        className="text-brand font-semibold text-sm hover:underline"
                     >
                         Back to sign in
                     </Link>
@@ -63,7 +63,7 @@ export default function RequestResetPassword() {
             ) : (
                 <form onSubmit={handleSubmit} className="space-y-4 text-left">
                     <div>
-                        <label className="block text-xs font-label uppercase tracking-widest text-mg-charcoal mb-1.5">
+                        <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                             Email
                         </label>
                         <input
@@ -71,9 +71,9 @@ export default function RequestResetPassword() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full px-4 py-3 rounded-xl bg-mg-sand/50 text-sm font-body text-mg-ink
-                                       placeholder:text-mg-muted border-none
-                                       focus:outline-none focus:ring-1 focus:ring-mg-caramel"
+                            className="w-full px-4 py-3 rounded-xl bg-line/50 text-sm font-body text-fg
+                                       placeholder:text-fg-muted border border-line-control
+                                       focus:outline-none focus:ring-1 focus:ring-ring"
                             placeholder="you@example.com"
                         />
                     </div>
@@ -81,7 +81,7 @@ export default function RequestResetPassword() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 bg-gradient-to-br from-mg-brown to-mg-caramel text-white rounded-full
+                        className="w-full py-3 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full
                                    font-label text-sm uppercase tracking-widest
                                    hover:scale-[0.98] transition-transform duration-200
                                    disabled:opacity-60 disabled:cursor-not-allowed"
@@ -90,13 +90,13 @@ export default function RequestResetPassword() {
                     </button>
 
                     {error && (
-                        <p className="text-sm text-center text-mg-danger bg-mg-danger-light rounded-xl px-4 py-3 font-body">
+                        <p className="text-sm text-center text-danger bg-danger-bg rounded-xl px-4 py-3 font-body">
                             {error}
                         </p>
                     )}
 
-                    <p className="text-center text-sm text-mg-charcoal font-body pt-4">
-                        <Link href="/signin" className="text-mg-brown font-semibold hover:underline">
+                    <p className="text-center text-sm text-fg-secondary font-body pt-4">
+                        <Link href="/signin" className="text-brand font-semibold hover:underline">
                             Back to sign in
                         </Link>
                     </p>

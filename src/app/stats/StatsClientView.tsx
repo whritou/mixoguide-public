@@ -19,7 +19,7 @@ export default function StatsClientView() {
 
     if (status === 'loading' || isLoading) {
         return (
-            <div className="min-h-screen bg-mg-cream flex items-center justify-center">
+            <div className="min-h-screen bg-canvas flex items-center justify-center">
                 <Loader />
             </div>
         )
@@ -30,13 +30,13 @@ export default function StatsClientView() {
     const hasActivity = stats.allTime > 0
 
     return (
-        <div className="min-h-screen bg-mg-cream pb-20">
+        <div className="min-h-screen bg-canvas pb-20">
             <div className="max-w-4xl mx-auto px-6 md:px-12 py-12">
 
                 {/* Header */}
                 <div className="text-center mb-10">
-                    <h1 className="font-headline text-4xl text-mg-ink mb-2">My Stats</h1>
-                    <p className="text-mg-charcoal font-body text-sm">Your cocktail-making history at a glance.</p>
+                    <h1 className="font-headline text-4xl text-fg mb-2">My Stats</h1>
+                    <p className="text-fg-secondary font-body text-sm">Your cocktail-making history at a glance.</p>
                 </div>
 
                 {!hasActivity ? (
@@ -60,13 +60,13 @@ export default function StatsClientView() {
 
                         {/* ── Top cocktails ───────────────────────────── */}
                         {stats.topCocktails.length > 0 && (
-                            <div className="bg-white rounded-2xl shadow-xs p-6">
-                                <h2 className="font-headline text-lg text-mg-ink mb-6">Most made</h2>
+                            <div className="bg-surface rounded-2xl shadow-xs p-6">
+                                <h2 className="font-headline text-lg text-fg mb-6">Most made</h2>
                                 <div className="space-y-3">
                                     {stats.topCocktails.map((c, i) => {
                                         const content = (
                                             <>
-                                                <span className="text-sm font-label text-mg-caramel w-5 text-center">
+                                                <span className="text-sm font-label text-brand-soft-strong w-5 text-center">
                                                     {i + 1}
                                                 </span>
                                                 <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
@@ -77,15 +77,15 @@ export default function StatsClientView() {
                                                         className="object-cover w-full h-full"
                                                     />
                                                 </div>
-                                                <span className="flex-1 font-body text-mg-ink group-hover:text-mg-brown transition-colors">
+                                                <span className="flex-1 font-body text-fg group-hover:text-brand transition-colors">
                                                     {c.name}
                                                 </span>
                                                 {c.archived && (
-                                                    <span className="rounded-full bg-mg-sand px-2 py-0.5 text-[10px] font-label uppercase tracking-widest text-mg-muted">
+                                                    <span className="rounded-full bg-line px-2 py-0.5 text-[10px] font-label uppercase tracking-widest text-fg-muted">
                                                         Archived
                                                     </span>
                                                 )}
-                                                <span className="text-sm font-label text-mg-muted">
+                                                <span className="text-sm font-label text-fg-muted">
                                                     ×{c.count}
                                                 </span>
                                             </>
@@ -102,7 +102,7 @@ export default function StatsClientView() {
                                             <Link
                                                 key={c.cocktailId}
                                                 href={`/cocktails/${c.cocktailId}`}
-                                                className="flex items-center gap-4 p-3 rounded-xl hover:bg-mg-smoke transition-colors group"
+                                                className="flex items-center gap-4 p-3 rounded-xl hover:bg-surface-hover transition-colors group"
                                             >
                                                 {content}
                                             </Link>
@@ -122,23 +122,23 @@ export default function StatsClientView() {
 
 function KpiCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
     return (
-        <div className="bg-white rounded-2xl shadow-xs p-5 flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-mg-caramel">{icon}</div>
-            <p className="text-2xl font-headline text-mg-ink">{value}</p>
-            <p className="text-xs font-label uppercase tracking-widest text-mg-muted">{label}</p>
+        <div className="bg-surface rounded-2xl shadow-xs p-5 flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-brand-soft-strong">{icon}</div>
+            <p className="text-2xl font-headline text-fg">{value}</p>
+            <p className="text-xs font-label uppercase tracking-widest text-fg-muted">{label}</p>
         </div>
     )
 }
 
 function StreakCard({ label, days, highlight }: { label: string; days: number; highlight?: boolean }) {
     return (
-        <div className={`rounded-2xl shadow-xs p-5 flex items-center gap-4 ${highlight ? 'bg-gradient-to-br from-mg-brown to-mg-caramel text-white' : 'bg-white'}`}>
-            <Flame size={28} className={highlight ? 'text-white/80' : 'text-mg-caramel'} />
+        <div className={`rounded-2xl shadow-xs p-5 flex items-center gap-4 ${highlight ? 'bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand' : 'bg-surface'}`}>
+            <Flame size={28} className={highlight ? 'text-fg-on-brand/80' : 'text-brand-soft-strong'} />
             <div>
-                <p className={`text-2xl font-headline ${highlight ? 'text-white' : 'text-mg-ink'}`}>
+                <p className={`text-2xl font-headline ${highlight ? 'text-fg-on-brand' : 'text-fg'}`}>
                     {days} {days === 1 ? 'day' : 'days'}
                 </p>
-                <p className={`text-xs font-label uppercase tracking-widest ${highlight ? 'text-white/70' : 'text-mg-muted'}`}>
+                <p className={`text-xs font-label uppercase tracking-widest ${highlight ? 'text-fg-on-brand/80' : 'text-fg-muted'}`}>
                     {label}
                 </p>
             </div>
@@ -149,13 +149,13 @@ function StreakCard({ label, days, highlight }: { label: string; days: number; h
 function ChartFallback() {
     return (
         <>
-            <div className="bg-white rounded-2xl shadow-xs p-6 mb-8">
-                <div className="h-5 w-36 rounded bg-mg-sand mb-6" />
-                <div className="h-[200px] rounded-xl bg-mg-smoke" />
+            <div className="bg-surface rounded-2xl shadow-xs p-6 mb-8">
+                <div className="h-5 w-36 rounded bg-line mb-6" />
+                <div className="h-[200px] rounded-xl bg-surface-hover" />
             </div>
-            <div className="bg-white rounded-2xl shadow-xs p-6 mb-8">
-                <div className="h-5 w-36 rounded bg-mg-sand mb-6" />
-                <div className="h-[200px] rounded-xl bg-mg-smoke" />
+            <div className="bg-surface rounded-2xl shadow-xs p-6 mb-8">
+                <div className="h-5 w-36 rounded bg-line mb-6" />
+                <div className="h-[200px] rounded-xl bg-surface-hover" />
             </div>
         </>
     )
@@ -164,13 +164,13 @@ function ChartFallback() {
 function EmptyState() {
     return (
         <div className="flex flex-col items-center py-24 gap-4">
-            <div className="w-16 h-16 rounded-full bg-mg-sand flex items-center justify-center">
-                <GlassWater size={28} className="text-mg-muted" />
+            <div className="w-16 h-16 rounded-full bg-line flex items-center justify-center">
+                <GlassWater size={28} className="text-fg-muted" />
             </div>
-            <p className="text-mg-ink font-body font-medium">No cocktails logged yet.</p>
+            <p className="text-fg font-body font-medium">No cocktails logged yet.</p>
             <Link
                 href="/makeable"
-                className="mt-2 px-8 py-3 bg-gradient-to-br from-mg-brown to-mg-caramel text-white rounded-full
+                className="mt-2 px-8 py-3 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full
                            font-label text-xs uppercase tracking-widest hover:scale-[0.98] transition-transform"
             >
                 Find something to make

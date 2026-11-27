@@ -36,10 +36,10 @@ function stockStatus(item: UserPantryItem): StockStatus {
 }
 
 const DOT_CLS: Record<StockStatus, string> = {
-    ok:  'bg-emerald-500',
-    low: 'bg-amber-400',
-    out: 'bg-red-500',
-    inf: 'bg-green-500'
+    ok:  'bg-status-ready-dot',
+    low: 'bg-status-partial-dot',
+    out: 'bg-danger',
+    inf: 'bg-status-ready-dot'
 }
 
 function greeting(name?: string | null) {
@@ -120,23 +120,23 @@ export function TonightDashboard() {
 
     if (isLoading || makeableListLoading) {
         return (
-            <div className="min-h-screen bg-mg-cream px-4 md:px-12 py-10">
+            <div className="min-h-screen bg-canvas px-4 md:px-12 py-10">
                 <Loader/>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-mg-cream">
+        <div className="min-h-screen bg-canvas">
             <MobileTopSearchBar />
             <div className="px-4 md:px-12 py-8 md:py-10">
             {/* Greeting row */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between max-w-screen-xl mx-auto mb-10 gap-4">
                 <div>
-                    <h1 className="font-headline text-3xl lg:text-4xl text-mg-ink leading-tight">
-                        Good {tod}{first ? <>, <em className="text-mg-caramel not-italic">{first}.</em></> : '.'}
+                    <h1 className="font-headline text-3xl lg:text-4xl text-fg leading-tight">
+                        Good {tod}{first ? <>, <em className="text-brand-soft-strong not-italic">{first}.</em></> : '.'}
                     </h1>
-                    <p className="text-mg-muted text-sm mt-1.5">
+                    <p className="text-fg-muted text-sm mt-1.5">
                         {makeables.length > 0
                             ? `${makeables.length} cocktail${makeables.length > 1 ? 's are' : ' is'} makeable with what you have tonight.`
                             : 'Add ingredients to your pantry to see what you can make.'}
@@ -145,7 +145,7 @@ export function TonightDashboard() {
                 <div className="flex gap-3 shrink-0">
                     <Link
                         href="/cocktails?onlyMakeable=true"
-                        className="px-5 py-2.5 bg-gradient-to-br from-mg-brown to-mg-caramel text-white rounded-full text-sm font-label hover:opacity-80 transition-opacity"
+                        className="px-5 py-2.5 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full text-sm font-label hover:opacity-80 transition-opacity"
                     >
                         Browse cocktails
                     </Link>
@@ -159,12 +159,12 @@ export function TonightDashboard() {
                 <aside className="flex flex-col gap-4">
 
                     {/* Pantry Pulse */}
-                    <div className="bg-white rounded-2xl p-5">
+                    <div className="bg-surface rounded-2xl p-5">
                         <div className="flex justify-between items-center mb-4">
-                            <span className="font-label text-[10px] uppercase tracking-widest text-stone-800">
+                            <span className="font-label text-[10px] uppercase tracking-widest text-fg">
                                 Pantry Pulse
                             </span>
-                            <Link href="/pantry" className="text-xs text-mg-brown hover:text-mg-caramel font-medium transition-colors">
+                            <Link href="/pantry" className="text-xs text-brand hover:text-brand-soft-strong font-medium transition-colors">
                                 Manage →
                             </Link>
                         </div>
@@ -178,11 +178,11 @@ export function TonightDashboard() {
                                         <div key={item.id} className="flex items-center justify-between gap-2">
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <span className={`w-2 h-2 rounded-full shrink-0 ${DOT_CLS[status]}`} />
-                                                <span className="text-sm text-mg-ink truncate">
+                                                <span className="text-sm text-fg truncate">
                                                     {item.ingredient?.name}
                                                 </span>
                                             </div>
-                                            <span className="text-xs text-mg-muted shrink-0 font-mono">
+                                            <span className="text-xs text-fg-muted shrink-0 font-mono">
                                                 {status === 'out'
                                                     ? '· out'
                                                   : status === 'inf'
@@ -200,20 +200,20 @@ export function TonightDashboard() {
                     </div>
 
                     {/* Streak card */}
-                    <div className="bg-mg-ink rounded-2xl p-5 flex flex-col">
-                        <span className="font-label text-[10px] uppercase tracking-widest text-white/70 mb-3">
+                    <div className="bg-surface-inverse rounded-2xl p-5 flex flex-col inset-ring-1 inset-ring-fg/40">
+                        <span className="font-label text-[10px] uppercase tracking-widest text-fg-on-inverse/70 mb-3">
                             Current streak
                         </span>
                         <div className="flex items-baseline gap-2">
-                            <span className="font-headline text-5xl text-mg-caramel italic leading-none">
+                            <span className="font-headline text-5xl text-brand-soft italic leading-none">
                                 {stats?.currentStreak ?? '—'}
                             </span>
-                            <span className="font-headline text-2xl text-white leading-none">
+                            <span className="font-headline text-2xl text-fg-on-inverse leading-none">
                                 nights
                             </span>
                         </div>
                         {stats && stats.longestStreak > 0 && (
-                            <p className="text-xs text-white/70 mt-3">
+                            <p className="text-xs text-fg-on-inverse/70 mt-3">
                                 Longest this year · {stats.longestStreak} nights
                             </p>
                         )}
@@ -221,17 +221,17 @@ export function TonightDashboard() {
 
                     {/* Next up */}
                     {nextEvent && (
-                        <div className="bg-white rounded-2xl p-5 shadow-xs">
+                        <div className="bg-surface rounded-2xl p-5 shadow-xs">
                             <div className="flex justify-between items-center mb-3">
-                                <span className="font-label text-[10px] uppercase tracking-widest text-mg-muted">
+                                <span className="font-label text-[10px] uppercase tracking-widest text-fg-muted">
                                     Next Up
                                 </span>
-                                <Link href="/planner" className="text-xs text-mg-caramel hover:text-mg-brown font-medium transition-colors">
+                                <Link href="/planner" className="text-xs text-brand-soft-strong hover:text-brand font-medium transition-colors">
                                     Planner
                                 </Link>
                             </div>
                             <Link href="/planner" className="flex items-center gap-3 group">
-                                <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 bg-[#eae8e5]">
+                                <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 bg-line">
                                     {nextEvent.cocktails?.[0]?.cocktail?.imageUrl && (
                                         <Image
                                             src={nextEvent.cocktails[0].cocktail.imageUrl}
@@ -243,10 +243,10 @@ export function TonightDashboard() {
                                     )}
                                 </div>
                                 <div className="min-w-0">
-                                    <div className="text-sm font-headline text-mg-ink truncate group-hover:text-mg-brown transition-colors">
+                                    <div className="text-sm font-headline text-fg truncate group-hover:text-brand transition-colors">
                                         {nextEvent.title}
                                     </div>
-                                    <div className="text-[11px] text-mg-muted mt-0.5">
+                                    <div className="text-[11px] text-fg-muted mt-0.5">
                                         {new Date(nextEvent.plannedFor).toLocaleDateString('en-US', { weekday: 'long' })}
                                         {nextEvent.cocktails?.length > 0 && (
                                             <> · {nextEvent.cocktails.length} cocktail{nextEvent.cocktails.length > 1 ? 's' : ''}</>
@@ -257,47 +257,47 @@ export function TonightDashboard() {
                         </div>
                     )}
 
-                    <div className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[#fffdf9] via-[#f9f4ec] to-[#f3ece2] p-4">
-                        <div className="absolute -right-8 -top-10 h-24 w-24 rounded-full bg-mg-caramel/10 blur-2xl" />
+                    <div className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-br from-surface via-canvas to-surface-muted p-4">
+                        <div className="absolute -right-8 -top-10 h-24 w-24 rounded-full bg-brand-soft/10 blur-2xl" />
                         <div className="relative">
                             <div className="flex items-center justify-between gap-2">
                                 <div>
-                                    <span className="font-label text-[10px] uppercase tracking-widest text-stone-800">
+                                    <span className="font-label text-[10px] uppercase tracking-widest text-fg">
                                         Planner hub
                                     </span>
                                 </div>
-                                <Link href="/planner" className="text-xs text-mg-brown hover:text-mg-caramel font-medium transition-colors">
+                                <Link href="/planner" className="text-xs text-brand hover:text-brand-soft-strong font-medium transition-colors">
                                     Open →
                                 </Link>
                             </div>
                             <div className="mt-3 grid grid-cols-2 gap-2">
                                 <Link
                                     href="/planner?view=planned"
-                                    className="group rounded-xl border border-[#e6d8c7] bg-white/85 px-3 py-2.5 hover:bg-white transition-colors"
+                                    className="group rounded-xl border border-line bg-surface/85 px-3 py-2.5 hover:bg-surface transition-colors"
                                 >
                                     <div className="flex items-center justify-between">
-                                        <p className="text-[10px] uppercase tracking-widest text-mg-muted">Planned</p>
-                                        <span className="h-1.5 w-1.5 rounded-full bg-mg-caramel" />
+                                        <p className="text-[10px] uppercase tracking-widest text-fg-muted">Planned</p>
+                                        <span className="h-1.5 w-1.5 rounded-full bg-brand-soft" />
                                     </div>
-                                    <p className="mt-1 font-headline text-2xl leading-none text-mg-ink">
+                                    <p className="mt-1 font-headline text-2xl leading-none text-fg">
                                         {plannedCocktailsCount}
                                     </p>
-                                    <p className="mt-1 text-[10px] text-mg-muted">
+                                    <p className="mt-1 text-[10px] text-fg-muted">
                                         Cocktails
                                     </p>
                                 </Link>
                                 <Link
                                     href="/planner?view=collections"
-                                    className="group rounded-xl border border-[#e6d8c7] bg-white/85 px-3 py-2.5 hover:bg-white transition-colors"
+                                    className="group rounded-xl border border-line bg-surface/85 px-3 py-2.5 hover:bg-surface transition-colors"
                                 >
                                     <div className="flex items-center justify-between">
-                                        <p className="text-[10px] uppercase tracking-widest text-mg-muted">Events</p>
-                                        <span className="h-1.5 w-1.5 rounded-full bg-mg-brown" />
+                                        <p className="text-[10px] uppercase tracking-widest text-fg-muted">Events</p>
+                                        <span className="h-1.5 w-1.5 rounded-full bg-brand" />
                                     </div>
-                                    <p className="mt-1 font-headline text-2xl leading-none text-mg-ink">
+                                    <p className="mt-1 font-headline text-2xl leading-none text-fg">
                                         {plannedCollectionsCount}
                                     </p>
-                                    <p className="mt-1 text-[10px] text-mg-muted">
+                                    <p className="mt-1 text-[10px] text-fg-muted">
                                         Not done
                                     </p>
                                 </Link>
@@ -312,13 +312,13 @@ export function TonightDashboard() {
                     {ready.length > 0 && (
                         <section>
                             <div className="flex justify-between items-baseline mb-5">
-                                <h2 className="font-headline text-xl lg:text-2xl text-mg-ink">
+                                <h2 className="font-headline text-xl lg:text-2xl text-fg">
                                     Ready right now
-                                    <span className="ml-2 font-label text-[11px] text-mg-muted uppercase tracking-widest font-normal">
+                                    <span className="ml-2 font-label text-[11px] text-fg-muted uppercase tracking-widest font-normal">
                                         · {makeables.length} {makeables.length === 1 ? 'drink' : 'drinks'}
                                     </span>
                                 </h2>
-                                <Link href="/cocktails?onlyMakeable=true" className="text-xs text-mg-brown hover:text-mg-caramel font-medium transition-colors">
+                                <Link href="/cocktails?onlyMakeable=true" className="text-xs text-brand hover:text-brand-soft-strong font-medium transition-colors">
                                     View all →
                                 </Link>
                             </div>
@@ -339,13 +339,13 @@ export function TonightDashboard() {
                     {almostThere.length > 0 && (
                         <section>
                             <div className="flex justify-between items-baseline mb-5">
-                                <h2 className="font-headline text-xl lg:text-2xl text-mg-ink">
+                                <h2 className="font-headline text-xl lg:text-2xl text-fg">
                                     Almost there
-                                    <span className="ml-2 font-label text-[11px] text-mg-muted uppercase tracking-widest font-normal">
+                                    <span className="ml-2 font-label text-[11px] text-fg-muted uppercase tracking-widest font-normal">
                                         · 1-2 ingredients away
                                     </span>
                                 </h2>
-                                <Link href="/cocktails" className="text-xs text-mg-brown hover:text-mg-caramel font-medium transition-colors">
+                                <Link href="/cocktails" className="text-xs text-brand hover:text-brand-soft-strong font-medium transition-colors">
                                     View all →
                                 </Link>
                             </div>
@@ -359,13 +359,13 @@ export function TonightDashboard() {
                     {unlockData.length > 0 && (
                         <section>
                             <div className="flex justify-between items-baseline mb-5">
-                                <h2 className="font-headline text-xl lg:text-2xl text-mg-ink">
+                                <h2 className="font-headline text-xl lg:text-2xl text-fg">
                                     Unlock more drinks
-                                    <span className="ml-2 font-label text-[11px] text-mg-muted uppercase tracking-widest font-normal">
+                                    <span className="ml-2 font-label text-[11px] text-fg-muted uppercase tracking-widest font-normal">
                                         · add one ingredient
                                     </span>
                                 </h2>
-                                <Link href="/pantry" className="text-xs text-mg-brown hover:text-mg-caramel font-medium transition-colors">
+                                <Link href="/pantry" className="text-xs text-brand hover:text-brand-soft-strong font-medium transition-colors">
                                     Go to pantry →
                                 </Link>
                             </div>
@@ -374,22 +374,22 @@ export function TonightDashboard() {
                                     <Link
                                         key={ing.id}
                                         href={`/ingredients/${ing.id}`}
-                                        className="group bg-white rounded-2xl p-5 border border-[#e6d8c7] hover:shadow-md transition-shadow"
+                                        className="group bg-surface rounded-2xl p-5 border border-line hover:shadow-md transition-shadow"
                                     >
                                         <div className="flex items-center justify-between mb-3">
-                                            <div className="w-10 h-10 rounded-xl bg-[#f9f4ec] flex items-center justify-center shrink-0">
-                                                <span className="font-headline italic text-lg text-mg-caramel">
+                                            <div className="w-10 h-10 rounded-xl bg-surface-muted flex items-center justify-center shrink-0">
+                                                <span className="font-headline italic text-lg text-brand-soft">
                                                     {ing.name.charAt(0)}
                                                 </span>
                                             </div>
-                                            <span className="font-label text-[10px] uppercase tracking-widest text-mg-caramel bg-[#f9f4ec] px-2.5 py-1 rounded-full">
+                                            <span className="font-label text-[10px] uppercase tracking-widest text-brand-soft-strong bg-surface-muted px-2.5 py-1 rounded-full">
                                                 +{ing.count} {ing.count === 1 ? 'drink' : 'drinks'}
                                             </span>
                                         </div>
-                                        <p className="font-semibold text-mg-ink text-sm group-hover:text-mg-brown transition-colors">
+                                        <p className="font-semibold text-fg text-sm group-hover:text-brand transition-colors">
                                             {ing.name}
                                         </p>
-                                        <p className="text-xs text-mg-muted mt-1">
+                                        <p className="text-xs text-fg-muted mt-1">
                                             Unlocks {ing.count} new {ing.count === 1 ? 'cocktail' : 'cocktails'}
                                         </p>
                                     </Link>
@@ -404,7 +404,7 @@ export function TonightDashboard() {
                             heading="Nothing to make tonight"
                             body="Add ingredients to your pantry to discover what you can make."
                             action={
-                                <Link href="/pantry" className="mt-2 px-8 py-3 bg-gradient-to-br from-mg-brown to-mg-caramel text-white text-sm font-label rounded-full hover:opacity-80 transition-opacity">
+                                <Link href="/pantry" className="mt-2 px-8 py-3 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand text-sm font-label rounded-full hover:opacity-80 transition-opacity">
                                     Go to pantry
                                 </Link>
                             }

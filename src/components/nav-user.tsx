@@ -18,6 +18,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ThemeRadioItems } from "@/components/layout/ThemeToggle"
+import { isDarkModeAvailable } from "@/lib/env"
+import { useTheme } from "next-themes"
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -36,6 +39,7 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const { theme, setTheme } = useTheme()
 
   return (
     <SidebarMenu>
@@ -76,6 +80,13 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            {isDarkModeAvailable() && (
+              <>
+                <DropdownMenuLabel className="text-xs font-normal">Theme</DropdownMenuLabel>
+                <ThemeRadioItems theme={theme} onChange={setTheme} />
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem onClick={() => signOut()}>
               <LogOut/>
               Log out

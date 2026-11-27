@@ -24,6 +24,16 @@ type MakeableCocktailRow = {
     }[]
 }
 
+type IngredientMeta = {
+    id: string
+    name: string
+    isAlcoholic: boolean | null
+    type: { name: string } | null
+    subType: { name: string } | null
+}
+
+type PantryQuantities = Map<string, { quantity: number; unit: string; isInfinite?: boolean }>
+
 type PantryMakeableRow = {
     ingredientId: string
     quantity: number | null
@@ -98,6 +108,28 @@ class CocktailRepository extends BaseRepository<
         preparationTime: true,
         flavors: true,
         mainAlcoholId: true,
+    } as const
+
+    static readonly makeableSelect = {
+        ...CocktailRepository.defaultSelect,
+        ingredients: {
+            select: {
+                ingredientId: true,
+                amount: true,
+                unit: true,
+                optional: true,
+                substitutes: true,
+                ingredient: {
+                    select: {
+                        id: true,
+                        name: true,
+                        isAlcoholic: true,
+                        type: { select: { name: true } },
+                        subType: { select: { name: true } },
+                    },
+                },
+            },
+        },
     } as const
 
     async findPantryItemsForMakeable(userId: string): Promise<PantryMakeableRow[]> {
@@ -261,7 +293,7 @@ class CocktailRepository extends BaseRepository<
       maxMissing = 3,
       derivationMap?: DerivationMap,
       resultLimit = 200,
-      pantryQuantities?: Map<string, { quantity: number; unit: string; isInfinite?: boolean }>,
+      pantryQuantities?: PantryQuantities,
   ) {
     // Short-circuit: empty pantry can never produce makeable cocktails
     if (userIngredientIds.length === 0) return []
@@ -288,27 +320,7 @@ class CocktailRepository extends BaseRepository<
           some: { ingredientId: { in: Array.from(satisfiableIds) } },
         },
       },
-      select: {
-        ...CocktailRepository.defaultSelect,
-        ingredients: {
-          select: {
-            ingredientId: true,
-            amount: true,
-            unit: true,
-            optional: true,
-            substitutes: true,
-            ingredient: {
-                select: {
-                    id: true,
-                    name: true,
-                    isAlcoholic: true,
-                    type: { select: { name: true } },
-                    subType: { select: { name: true } },
-                },
-            },
-          },
-        },
-      },
+      select: CocktailRepository.makeableSelect,
       // Safety cap before JS filtering — pre-filter above should already keep this small
       take: Math.min(resultLimit * 4, 800),
     })) as MakeableCocktailRow[]
@@ -335,21 +347,52 @@ class CocktailRepository extends BaseRepository<
               type: { select: { name: true } },
               subType: { select: { name: true } },
           },
-        })) as {
-            id: string
-            name: string
-            isAlcoholic: boolean | null
-            type: { name: string } | null
-            subType: { name: string } | null
-        }[]
+        })) as IngredientMeta[]
       : []
     const ingredientMetaMap = new Map(nameRows.map((i) => [i.id, i]))
     const nameMap = new Map(nameRows.map((i) => [i.id, i.name]))
-    const subMap = nameMap
-    const baseNameMap = nameMap
 
     return cocktails
-      .map((cocktail) => {
+      .map((cocktail) => this.evaluateCoverage(cocktail, userIdSet, dm, nameMap, ingredientMetaMap, pantryQuantities))
+        .filter((c) =>
+            c.missingCount <= maxMissing &&
+            c.requiredCount > 0 &&
+            c.satisfiedCount > 0
+        )
+      .sort((a, b) => {
+        const order: Record<string, number> = { full: 0, withDerivates: 1, withSubstitutes: 2, missing: 3 }
+        if (order[a.makeableStatus] !== order[b.makeableStatus]) {
+          return order[a.makeableStatus] - order[b.makeableStatus]
+        }
+        return a.missingCount - b.missingCount
+      })
+      .slice(0, resultLimit)
+  }
+
+  async findMakeableTarget(
+      cocktailId: string,
+      userIngredientIds: string[],
+      derivationMap: DerivationMap,
+  ): Promise<{ requiredCount: number; missing: { id: string; name: string }[] } | null> {
+    const cocktail = (await prisma.cocktail.findUnique({
+      where: { id: cocktailId },
+      select: CocktailRepository.makeableSelect,
+    })) as MakeableCocktailRow | null
+    if (!cocktail) return null
+    const coverage = this.evaluateCoverage(cocktail, new Set(userIngredientIds), derivationMap)
+    return { requiredCount: coverage.requiredCount, missing: coverage.missingIngredients }
+  }
+
+  private evaluateCoverage(
+      cocktail: MakeableCocktailRow,
+      userIdSet: Set<string>,
+      dm: DerivationMap,
+      nameMap: Map<string, string> = new Map(),
+      ingredientMetaMap: Map<string, IngredientMeta> = new Map(),
+      pantryQuantities?: PantryQuantities,
+  ) {
+    const subMap = nameMap
+    const baseNameMap = nameMap
           const required = cocktail.ingredients.filter(isBlockingCocktailIngredient)
           const requiredCount = required.length
           let missingCount = 0
@@ -530,20 +573,6 @@ class CocktailRepository extends BaseRepository<
               substituteIngredients,
               derivedIngredients,
           }
-      })
-        .filter((c) =>
-            c.missingCount <= maxMissing &&
-            c.requiredCount > 0 &&
-            c.satisfiedCount > 0
-        )
-      .sort((a, b) => {
-        const order: Record<string, number> = { full: 0, withDerivates: 1, withSubstitutes: 2, missing: 3 }
-        if (order[a.makeableStatus] !== order[b.makeableStatus]) {
-          return order[a.makeableStatus] - order[b.makeableStatus]
-        }
-        return a.missingCount - b.missingCount
-      })
-      .slice(0, resultLimit)
   }
 }
 

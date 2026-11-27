@@ -10,6 +10,7 @@ import {
     Layers,
     GitBranch,
     MessageSquarePlus,
+    Palette,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -110,6 +111,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 { title: "All suggestions", url: "/admin/suggestions?status=ALL" },
             ],
         },
+        {
+            title: "Design system",
+            url: "/admin/design-system",
+            icon: Palette,
+            items: [
+                { title: "Design system", url: "/admin/design-system" },
+            ],
+        },
     ],
   };
 
@@ -120,17 +129,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           collapsible="icon"
           {...props}
       >
-        <SidebarHeader onClick={() => router.push("/admin")} className="border-b border-mg-sand">
+        <SidebarHeader onClick={() => router.push("/admin")} className="border-b border-line">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild className="hover:bg-mg-caramel/10 rounded-xl transition-colors">
+              <SidebarMenuButton size="lg" asChild className="hover:bg-brand-soft/10 rounded-xl transition-colors">
                 <a href="#">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-mg-brown to-mg-caramel text-white shrink-0">
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand shrink-0">
                     <Martini className="size-4" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-headline text-mg-ink">MixoGuide</span>
-                    <span className="truncate text-[10px] font-label uppercase tracking-widest text-mg-muted">Admin</span>
+                    <span className="truncate font-headline text-fg">MixoGuide</span>
+                    <span className="truncate text-[10px] font-label uppercase tracking-widest text-fg-muted">Admin</span>
                   </div>
                 </a>
               </SidebarMenuButton>

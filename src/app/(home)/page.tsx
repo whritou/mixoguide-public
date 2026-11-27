@@ -1,28 +1,26 @@
 ﻿import { getServerSession } from 'next-auth'
 
 import { options } from '@/lib/auth/authOptions'
-import { HeroSection } from '@/components/home/homepage/HeroSection'
-import { InstagramHomepageBanner } from '@/components/home/homepage/InstagramHomepageBanner'
-import { KpiDashboard } from '@/components/home/homepage/KpiDashboard'
-import { HomePageBody } from '@/components/home/homepage/HomePageBody'
 import { TonightDashboard } from '@/components/home/dashboard/TonightDashboard'
-import { MobileTopSearchBar } from '@/components/home/MobileTopSearchBar'
+import { DemoBarImporter } from '@/components/home/DemoBarImporter'
+import { decodeBarParam } from '@/lib/demo-bar/bar-param'
+import { LandingPage } from '@/components/home/landing/LandingPage'
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ bar?: string | string[] }> }) {
     const session = await getServerSession(options)
     const isAuthenticated = !!session?.user
 
     if (isAuthenticated) {
-        return <TonightDashboard />
+        return (
+            <>
+                <DemoBarImporter />
+                <TonightDashboard />
+            </>
+        )
     }
 
-    return (
-        <div className="bg-mg-cream text-mg-ink min-h-screen">
-            <MobileTopSearchBar />
-            <HeroSection/>
-            <KpiDashboard/>
-            <InstagramHomepageBanner />
-            <HomePageBody/>
-        </div>
-    )
+    const { bar } = await searchParams
+    const sharedIds = decodeBarParam(Array.isArray(bar) ? bar[0] : bar)
+
+    return <LandingPage sharedIds={sharedIds} />
 }

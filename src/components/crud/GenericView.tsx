@@ -25,8 +25,8 @@ function ActionButtons({ actions }: { actions: GenericViewConfig<FieldValues>["a
                 variant={action.variant || "default"}
                 onClick={action.onClick}
                 className={isPrimary
-                    ? "rounded-full text-xs font-label uppercase tracking-widest bg-gradient-to-br from-mg-brown to-mg-caramel text-white hover:scale-[0.98] transition-transform duration-200 border-0"
-                    : "rounded-full text-xs font-label uppercase tracking-widest border-mg-sand bg-mg-sand/60 text-mg-charcoal hover:bg-mg-sand hover:text-mg-ink transition-colors"
+                    ? "rounded-full text-xs font-label uppercase tracking-widest bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand hover:scale-[0.98] transition-transform duration-200 border-0"
+                    : "rounded-full text-xs font-label uppercase tracking-widest border-line bg-line/60 text-fg-secondary hover:bg-line hover:text-fg transition-colors"
                 }
             >
               {action.icon && <span className="mr-2">{action.icon}</span>}
@@ -64,7 +64,7 @@ export function GenericView<
     }
 
     if (value === null || value === undefined) {
-      return <p className="text-sm font-body text-mg-muted/60 italic">Not defined</p>;
+      return <p className="text-sm font-body text-fg-muted/60 italic">Not defined</p>;
     }
 
     switch (field.type) {
@@ -74,15 +74,15 @@ export function GenericView<
       case "password":
       case "url":
       case "number":
-        return <p className="text-sm font-body text-mg-ink break-words">{value}</p>;
+        return <p className="text-sm font-body text-fg break-words">{value}</p>;
       case "date":
       case "time":
       case "datetime":
-        return <p className="text-sm font-body text-mg-ink">{new Date(value).toLocaleString()}</p>;
+        return <p className="text-sm font-body text-fg">{new Date(value).toLocaleString()}</p>;
       case "select":
       case "radio": {
         const option = (field.options || []).find((opt) => opt.value === value);
-        return <p className="text-sm font-body text-mg-ink">{option ? option.label : value}</p>;
+        return <p className="text-sm font-body text-fg">{option ? option.label : value}</p>;
       }
       case "multiselect": {
         const options = field.options || [];
@@ -92,7 +92,7 @@ export function GenericView<
                   value.map((val, index: number) => {
                     const option = options.find((opt) => opt.value === val);
                     return (
-                        <span key={index} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-label uppercase tracking-wider bg-mg-caramel/15 text-mg-brown border border-mg-caramel/20">
+                        <span key={index} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-label uppercase tracking-wider bg-brand-soft/15 text-brand border border-brand-soft/20">
                           {option ? option.label : val}
                         </span>
                     );
@@ -105,15 +105,15 @@ export function GenericView<
         return (
             <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-label uppercase tracking-wider border ${
                 value
-                    ? "bg-mg-caramel/15 text-mg-brown border-mg-caramel/20"
-                    : "bg-mg-sand/60 text-mg-muted border-mg-sand"
+                    ? "bg-brand-soft/15 text-brand border-brand-soft/20"
+                    : "bg-line/60 text-fg-muted border-line"
             }`}>
               {value ? "Yes" : "No"}
             </span>
         );
       case "image":
         return value ? (
-            <div className="relative w-full h-48 border border-mg-sand rounded-xl overflow-hidden">
+            <div className="relative w-full h-48 border border-line rounded-xl overflow-hidden">
               <Image
                   src={value || "/placeholder.svg"}
                   alt={field.label}
@@ -122,22 +122,22 @@ export function GenericView<
               />
             </div>
         ) : (
-            <p className="text-sm font-body text-mg-muted/60 italic">No image</p>
+            <p className="text-sm font-body text-fg-muted/60 italic">No image</p>
         );
       case "file":
         return value ? (
-            <p className="text-sm font-body text-mg-brown underline">
+            <p className="text-sm font-body text-brand underline">
               {typeof value === "string" ? value : "Uploaded file"}
             </p>
         ) : (
-            <p className="text-sm font-body text-mg-muted/60 italic">No file</p>
+            <p className="text-sm font-body text-fg-muted/60 italic">No file</p>
         );
       case "tags":
         return (
             <div className="flex flex-wrap gap-1.5">
               {Array.isArray(value) &&
                   value.map((tag, index: number) => (
-                      <span key={index} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-label uppercase tracking-wider bg-mg-caramel/15 text-mg-brown border border-mg-caramel/20">
+                      <span key={index} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-label uppercase tracking-wider bg-brand-soft/15 text-brand border border-brand-soft/20">
                         {tag}
                       </span>
                   ))}
@@ -146,7 +146,7 @@ export function GenericView<
       case "json":
       default:
         return (
-            <pre className="bg-mg-linen border border-mg-sand p-3 rounded-xl text-xs font-body text-mg-charcoal overflow-auto max-h-40 w-full">
+            <pre className="bg-surface-subtle border border-line p-3 rounded-xl text-xs font-body text-fg-secondary overflow-auto max-h-40 w-full">
               {typeof value === "string" ? value : JSON.stringify(value, null, 2)}
             </pre>
         );
@@ -155,7 +155,7 @@ export function GenericView<
 
   if (isLoading) {
     return (
-        <Card className="bg-mg-cream border-mg-sand">
+        <Card className="bg-canvas border-line">
           <CardContent className="pt-6">
             <Loader variant="card" />
           </CardContent>
@@ -165,20 +165,20 @@ export function GenericView<
 
   if (layout === "custom" && customLayout) {
     return (
-        <Card className="bg-mg-cream border-mg-sand shadow-sm">
+        <Card className="bg-canvas border-line shadow-sm">
           {(title || description) && (
-              <CardHeader className="border-b border-mg-sand pb-5">
+              <CardHeader className="border-b border-line pb-5">
                 {title && (
-                    <CardTitle className="font-headline text-mg-ink text-lg md:text-2xl">{title}</CardTitle>
+                    <CardTitle className="font-headline text-fg text-lg md:text-2xl">{title}</CardTitle>
                 )}
-                {description && <CardDescription className="text-mg-muted font-body text-sm">{description}</CardDescription>}
+                {description && <CardDescription className="text-fg-muted font-body text-sm">{description}</CardDescription>}
               </CardHeader>
           )}
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-24">
               {/* Left column */}
               <div>
-                <h3 className="text-xs font-label uppercase tracking-widest text-mg-muted mb-4">Informations</h3>
+                <h3 className="text-xs font-label uppercase tracking-widest text-fg-muted mb-4">Informations</h3>
                 <div className="space-y-5">
                   {customLayout.leftColumn.map((fieldName) => {
                     const field = fields.find((f) => f.name === fieldName);
@@ -186,7 +186,7 @@ export function GenericView<
 
                     return (
                         <div key={fieldName} className="space-y-1.5">
-                          <p className="text-xs font-label uppercase tracking-widest text-mg-muted">
+                          <p className="text-xs font-label uppercase tracking-widest text-fg-muted">
                             {field.label}
                           </p>
                           {renderFieldValue(field, data[fieldName])}
@@ -198,8 +198,8 @@ export function GenericView<
 
               {customLayout.rightColumn === "image" && imageField && (
                   <div>
-                    <h3 className="text-xs font-label uppercase tracking-widest text-mg-muted mb-4">{imageField.label}</h3>
-                    <div className="relative aspect-square max-w-[300px] border border-mg-sand rounded-xl overflow-hidden">
+                    <h3 className="text-xs font-label uppercase tracking-widest text-fg-muted mb-4">{imageField.label}</h3>
+                    <div className="relative aspect-square max-w-[300px] border border-line rounded-xl overflow-hidden">
                         <Image
                             src={(data[imageField.name] as string) || "/placeholder.svg?height=300&width=300"}
                             alt={imageField.alt || imageField.label}
@@ -212,7 +212,7 @@ export function GenericView<
             </div>
           </CardContent>
           {actions && actions.length > 0 && (
-              <CardFooter className="flex justify-between border-t border-mg-sand bg-mg-cream pt-5 rounded-b-xl gap-3">
+              <CardFooter className="flex justify-between border-t border-line bg-canvas pt-5 rounded-b-xl gap-3">
                 <ActionButtons actions={actions} />
               </CardFooter>
           )}
@@ -221,11 +221,11 @@ export function GenericView<
   }
 
   return (
-      <Card className="bg-mg-cream border-mg-sand shadow-sm">
+      <Card className="bg-canvas border-line shadow-sm">
         {(title || description) && (
-            <CardHeader className="border-b border-mg-sand pb-5">
-              {title && <CardTitle className="font-headline text-mg-ink text-lg">{title}</CardTitle>}
-              {description && <CardDescription className="text-mg-muted font-body text-sm">{description}</CardDescription>}
+            <CardHeader className="border-b border-line pb-5">
+              {title && <CardTitle className="font-headline text-fg text-lg">{title}</CardTitle>}
+              {description && <CardDescription className="text-fg-muted font-body text-sm">{description}</CardDescription>}
             </CardHeader>
         )}
         <CardContent className="pt-6">
@@ -234,7 +234,7 @@ export function GenericView<
                 .filter((field) => !field.hidden)
                 .map((field) => (
                     <div key={field.name} className="space-y-1.5">
-                      <p className="text-xs font-label uppercase tracking-widest text-mg-muted">
+                      <p className="text-xs font-label uppercase tracking-widest text-fg-muted">
                         {field.label}
                       </p>
                       {renderFieldValue(field, data[field.name])}
@@ -243,7 +243,7 @@ export function GenericView<
           </div>
         </CardContent>
         {actions && actions.length > 0 && (
-            <CardFooter className="flex justify-between border-t border-mg-sand bg-mg-cream pt-5 rounded-b-xl gap-3">
+            <CardFooter className="flex justify-between border-t border-line bg-canvas pt-5 rounded-b-xl gap-3">
               <ActionButtons actions={actions} />
             </CardFooter>
         )}

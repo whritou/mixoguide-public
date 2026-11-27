@@ -16,20 +16,20 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import type { AdminDashboardStats } from '@/services/admin-stats.service'
 
-const PRIMARY_ACCENT = '#7a5830'
+const PRIMARY_ACCENT = 'var(--chart-1)'
 const CHART_COLORS = [
     PRIMARY_ACCENT,
-    '#9a7b56',
-    '#4a3b2c',
-    '#bda588',
-    '#6a7062',
+    'var(--chart-4)',
+    'var(--chart-5)',
+    'var(--brand-soft)',
+    'var(--chart-2)',
 ]
 
 const DIFFICULTY_COLORS: Record<string, string> = {
-    easy: '#bda588',
+    easy: 'var(--chart-2)',
     medium: PRIMARY_ACCENT,
-    hard: '#4a3b2c',
-    unknown: '#d6d3d1',
+    hard: 'var(--chart-3)',
+    unknown: 'var(--chart-5)',
 }
 
 type TooltipPayload = {
@@ -45,9 +45,9 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
     if (!active || !payload?.length) return null
     const d = payload[0].payload
     return (
-        <div className="bg-white border border-stone-200 rounded-lg px-4 py-3 shadow-lg">
-            <p className="text-sm font-semibold text-stone-900">{d.fullName || d.name || d.stars}</p>
-            <p className="text-stone-600 text-xs mt-1">
+        <div className="bg-surface border border-line rounded-lg px-4 py-3 shadow-lg">
+            <p className="text-sm font-semibold text-fg">{d.fullName || d.name || d.stars}</p>
+            <p className="text-fg-secondary text-xs mt-1">
                 {d.rating
                     ? `${d.rating} / 5 - ${d.reviews} review${d.reviews !== 1 ? 's' : ''}`
                     : d.count
@@ -61,7 +61,7 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
 export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardStats }) {
     const alcoholData = [
         { name: 'Alcoholic', value: stats.alcoholDistribution.alcoholic, fill: CHART_COLORS[0] },
-        { name: 'Non-Alcoholic', value: stats.alcoholDistribution.nonAlcoholic, fill: CHART_COLORS[3] },
+        { name: 'Non-Alcoholic', value: stats.alcoholDistribution.nonAlcoholic, fill: CHART_COLORS[4] },
     ]
 
     const difficultyData = stats.difficultyDistribution.map((d) => ({
@@ -90,26 +90,26 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
     return (
         <>
             {bestRatedData.length > 0 && (
-                <Card className="lg:col-span-2 border-stone-200 shadow-sm">
+                <Card className="lg:col-span-2 border-line shadow-sm">
                     <CardHeader>
-                        <CardTitle className="text-stone-900">Best Rated Cocktails</CardTitle>
-                        <CardDescription className="text-stone-500">Top 10 by average rating (min. 1 review)</CardDescription>
+                        <CardTitle className="text-fg">Best Rated Cocktails</CardTitle>
+                        <CardDescription className="text-fg-muted">Top 10 by average rating (min. 1 review)</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[340px] pt-4">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={bestRatedData} margin={{ bottom: 60 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e7e5e4" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--line)" />
                                 <XAxis
                                     dataKey="name"
                                     angle={-35}
                                     textAnchor="end"
                                     interval={0}
-                                    tick={{ fill: '#78716c', fontSize: 12 }}
+                                    tick={{ fill: 'var(--fg-muted)', fontSize: 12 }}
                                     tickLine={false}
-                                    axisLine={{ stroke: '#d6d3d1' }}
+                                    axisLine={{ stroke: 'var(--line-strong)' }}
                                 />
-                                <YAxis domain={[0, 5]} tick={{ fill: '#78716c' }} tickLine={false} axisLine={false} />
-                                <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f5f5f4' }} />
+                                <YAxis domain={[0, 5]} tick={{ fill: 'var(--fg-muted)' }} tickLine={false} axisLine={false} />
+                                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--surface-hover)' }} />
                                 <Bar dataKey="rating" fill={PRIMARY_ACCENT} radius={[4, 4, 0, 0]} barSize={40} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -117,10 +117,10 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                 </Card>
             )}
 
-            <Card className="border-stone-200 shadow-sm">
+            <Card className="border-line shadow-sm">
                 <CardHeader>
-                    <CardTitle className="text-stone-900">Alcohol Distribution</CardTitle>
-                    <CardDescription className="text-stone-500">Alcoholic vs non-alcoholic cocktails</CardDescription>
+                    <CardTitle className="text-fg">Alcohol Distribution</CardTitle>
+                    <CardDescription className="text-fg-muted">Alcoholic vs non-alcoholic cocktails</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -134,23 +134,23 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                                 innerRadius={60}
                                 outerRadius={100}
                                 paddingAngle={5}
-                                stroke="none"
+                                stroke="var(--surface)" strokeWidth={2}
                             >
                                 {alcoholData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.fill} />
                                 ))}
                             </Pie>
                             <Tooltip content={<CustomTooltip />} />
-                            <Legend wrapperStyle={{ fontSize: '14px', color: '#44403c' }} />
+                            <Legend wrapperStyle={{ fontSize: '14px', color: 'var(--fg-secondary)' }} />
                         </PieChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
-            <Card className="border-stone-200 shadow-sm">
+            <Card className="border-line shadow-sm">
                 <CardHeader>
-                    <CardTitle className="text-stone-900">Difficulty Breakdown</CardTitle>
-                    <CardDescription className="text-stone-500">Cocktails by difficulty level</CardDescription>
+                    <CardTitle className="text-fg">Difficulty Breakdown</CardTitle>
+                    <CardDescription className="text-fg-muted">Cocktails by difficulty level</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -164,41 +164,41 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                                 innerRadius={60}
                                 outerRadius={100}
                                 paddingAngle={5}
-                                stroke="none"
+                                stroke="var(--surface)" strokeWidth={2}
                             >
                                 {difficultyData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.fill} />
                                 ))}
                             </Pie>
                             <Tooltip content={<CustomTooltip />} />
-                            <Legend wrapperStyle={{ fontSize: '14px', color: '#44403c' }} />
+                            <Legend wrapperStyle={{ fontSize: '14px', color: 'var(--fg-secondary)' }} />
                         </PieChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
-            <Card className="border-stone-200 shadow-sm">
+            <Card className="border-line shadow-sm">
                 <CardHeader>
-                    <CardTitle className="text-stone-900">Ratings Distribution</CardTitle>
-                    <CardDescription className="text-stone-500">Number of ratings per star level</CardDescription>
+                    <CardTitle className="text-fg">Ratings Distribution</CardTitle>
+                    <CardDescription className="text-fg-muted">Number of ratings per star level</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[300px] pt-4">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={ratingsData}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e7e5e4" />
-                            <XAxis dataKey="stars" tick={{ fill: '#78716c' }} tickLine={false} axisLine={{ stroke: '#d6d3d1' }} />
-                            <YAxis allowDecimals={false} tick={{ fill: '#78716c' }} tickLine={false} axisLine={false} />
-                            <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f5f5f4' }} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--line)" />
+                            <XAxis dataKey="stars" tick={{ fill: 'var(--fg-muted)' }} tickLine={false} axisLine={{ stroke: 'var(--line-strong)' }} />
+                            <YAxis allowDecimals={false} tick={{ fill: 'var(--fg-muted)' }} tickLine={false} axisLine={false} />
+                            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--surface-hover)' }} />
                             <Bar dataKey="count" fill={CHART_COLORS[2]} radius={[4, 4, 0, 0]} barSize={40} />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
-            <Card className="border-stone-200 shadow-sm">
+            <Card className="border-line shadow-sm">
                 <CardHeader>
-                    <CardTitle className="text-stone-900">Top Ingredients</CardTitle>
-                    <CardDescription className="text-stone-500">Most used across all cocktails</CardDescription>
+                    <CardTitle className="text-fg">Top Ingredients</CardTitle>
+                    <CardDescription className="text-fg-muted">Most used across all cocktails</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[300px] pt-4">
                     <ResponsiveContainer width="100%" height="100%">
@@ -207,17 +207,17 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                             layout="vertical"
                             margin={{ left: 20 }}
                         >
-                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e7e5e4" />
-                            <XAxis type="number" allowDecimals={false} tick={{ fill: '#78716c' }} tickLine={false} axisLine={false} />
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--line)" />
+                            <XAxis type="number" allowDecimals={false} tick={{ fill: 'var(--fg-muted)' }} tickLine={false} axisLine={false} />
                             <YAxis
                                 type="category"
                                 dataKey="name"
                                 width={100}
-                                tick={{ fill: '#78716c', fontSize: 12 }}
+                                tick={{ fill: 'var(--fg-muted)', fontSize: 12 }}
                                 tickLine={false}
-                                axisLine={{ stroke: '#d6d3d1' }}
+                                axisLine={{ stroke: 'var(--line-strong)' }}
                             />
-                            <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f5f5f4' }} />
+                            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--surface-hover)' }} />
                             <Bar dataKey="count" fill={CHART_COLORS[1]} radius={[0, 4, 4, 0]} barSize={24} />
                         </BarChart>
                     </ResponsiveContainer>
@@ -225,26 +225,26 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
             </Card>
 
             {techniqueData.length > 0 && (
-                <Card className="lg:col-span-2 border-stone-200 shadow-sm">
+                <Card className="lg:col-span-2 border-line shadow-sm">
                     <CardHeader>
-                        <CardTitle className="text-stone-900">Techniques</CardTitle>
-                        <CardDescription className="text-stone-500">Cocktail preparation techniques used</CardDescription>
+                        <CardTitle className="text-fg">Techniques</CardTitle>
+                        <CardDescription className="text-fg-muted">Cocktail preparation techniques used</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[320px] pt-4">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={techniqueData} margin={{ bottom: 40 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e7e5e4" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--line)" />
                                 <XAxis
                                     dataKey="name"
                                     angle={-30}
                                     textAnchor="end"
                                     interval={0}
-                                    tick={{ fill: '#78716c', fontSize: 12 }}
+                                    tick={{ fill: 'var(--fg-muted)', fontSize: 12 }}
                                     tickLine={false}
-                                    axisLine={{ stroke: '#d6d3d1' }}
+                                    axisLine={{ stroke: 'var(--line-strong)' }}
                                 />
-                                <YAxis allowDecimals={false} tick={{ fill: '#78716c' }} tickLine={false} axisLine={false} />
-                                <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f5f5f4' }} />
+                                <YAxis allowDecimals={false} tick={{ fill: 'var(--fg-muted)' }} tickLine={false} axisLine={false} />
+                                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--surface-hover)' }} />
                                 <Bar dataKey="count" fill={CHART_COLORS[4]} radius={[4, 4, 0, 0]} barSize={40} />
                             </BarChart>
                         </ResponsiveContainer>

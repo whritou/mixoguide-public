@@ -20,7 +20,7 @@ export function PantrySidebar({
     selectedCategory, onCategorySelect, mobileOpen, onMobileClose,
 }: Props) {
     const statusList = (
-        <ul className="space-y-0.5 mb-4 pb-4 border-b border-[#ece7e1]">
+        <ul className="space-y-0.5 mb-4 pb-4 border-b border-line">
             <NavItem
                 label="All"
                 active={selectedStatus === 'all'}
@@ -64,7 +64,7 @@ export function PantrySidebar({
     return (
         <>
             {/* ── Desktop sidebar ─────────────────────────────────── */}
-            <aside className="hidden md:block w-72 flex-shrink-0 border-r border-mg-sand/60 self-start sticky top-[72px] h-[calc(100vh-72px)] overflow-y-auto">
+            <aside className="hidden md:block w-72 flex-shrink-0 border-r border-line/60 self-start sticky top-[72px] h-[calc(100vh-72px)] overflow-y-auto">
                 <div className="flex flex-col gap-1 py-6 px-4">
                     {statusList}
                     {navList}
@@ -74,11 +74,11 @@ export function PantrySidebar({
             {/* ── Mobile drawer ────────────────────────────────────── */}
             {mobileOpen && (
                 <div className="fixed inset-0 z-50 flex md:hidden">
-                    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onMobileClose} />
-                    <div className="relative z-10 w-72 bg-mg-cream h-full overflow-y-auto shadow-xl">
+                    <div className="absolute inset-0 bg-overlay/40 backdrop-blur-sm" onClick={onMobileClose} />
+                    <div className="relative z-10 w-72 bg-canvas h-full overflow-y-auto shadow-xl">
                         <div className="flex items-center justify-between px-4 pt-5 pb-2">
-                            <span className="font-label text-xs uppercase tracking-widest text-mg-muted">My Pantry</span>
-                            <button onClick={onMobileClose} aria-label="Close sidebar" className="text-mg-muted hover:text-mg-charcoal p-1">
+                            <span className="font-label text-xs uppercase tracking-widest text-fg-muted">My Pantry</span>
+                            <button onClick={onMobileClose} aria-label="Close sidebar" className="text-fg-muted hover:text-fg-secondary p-1">
                                 <X size={18} />
                             </button>
                         </div>
@@ -103,15 +103,15 @@ function NavItem({ label, count, active, onClick }: {
                 onClick={onClick}
                 className={`w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm transition-all ${
                     active
-                        ? 'bg-mg-linen text-mg-brown font-medium'
+                        ? 'bg-surface-subtle text-brand font-medium'
                         : empty
-                            ? 'text-[#b8b0a8] hover:bg-mg-dusk'
-                            : 'text-mg-charcoal hover:bg-mg-dusk'
+                            ? 'text-fg-muted/70 hover:bg-canvas-hover-alt'
+                            : 'text-fg-secondary hover:bg-canvas-hover-alt'
                 }`}
             >
                 <span>{label}</span>
                 {count !== undefined && (
-                    <span className={`text-xs ${active ? 'text-mg-caramel' : empty ? 'text-[#c8c2bc]' : 'text-mg-muted'}`}>
+                    <span className={`text-xs ${active ? 'text-brand-soft-strong' : empty ? 'text-fg-muted/60' : 'text-fg-muted'}`}>
                         {count}
                     </span>
                 )}

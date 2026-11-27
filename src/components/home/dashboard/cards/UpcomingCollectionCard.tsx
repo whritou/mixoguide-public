@@ -55,7 +55,7 @@ export default function UpcomingCollectionCard({ item, now, onUpdate }: Upcoming
 
     return (
         <article
-            className="group relative min-h-[112px] overflow-hidden rounded-2xl border border-[#2e2f2c] bg-mg-ink cursor-pointer"
+            className="group relative min-h-[112px] overflow-hidden rounded-2xl border border-fg/40 bg-surface-inverse cursor-pointer"
         >
             <Link href="/planner?view=collections" className="absolute inset-0 z-10" aria-label="View planned collections" />
             <div className="absolute inset-y-0 right-0 w-[42%] overflow-hidden">
@@ -66,34 +66,34 @@ export default function UpcomingCollectionCard({ item, now, onUpdate }: Upcoming
                     sizes="(max-width: 1024px) 42vw, 20vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-l from-mg-ink/55 via-mg-ink/25 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-l from-overlay/73 via-overlay/33 to-transparent" />
             </div>
 
             <div className="relative z-10 flex h-full flex-col justify-between p-5 pr-[44%]">
                 <div className="flex items-start justify-between gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-label uppercase tracking-widest text-white backdrop-blur-sm">
-                        <span className="h-1.5 w-1.5 rounded-full bg-mg-caramel" />
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-fg-on-inverse/10 px-2.5 py-1 text-[10px] font-label uppercase tracking-widest text-fg-on-inverse backdrop-blur-sm">
+                        <span className="h-1.5 w-1.5 rounded-full bg-brand-soft" />
                         Event
                     </span>
                     {overdue && (
-                        <span className="rounded-full bg-mg-danger-light px-2 py-0.5 text-[10px] font-label uppercase tracking-wider text-mg-danger">
+                        <span className="rounded-full bg-danger-bg px-2 py-0.5 text-[10px] font-label uppercase tracking-wider text-danger">
                             Overdue
                         </span>
                     )}
                 </div>
 
                 <div className="mt-2">
-                    <h3 className="line-clamp-1 font-headline text-lg leading-tight text-white">
+                    <h3 className="line-clamp-1 font-headline text-lg leading-tight text-fg-on-inverse">
                         {item.title}
                     </h3>
-                    <p className="mt-1 flex items-center gap-1.5 text-xs text-white/90">
+                    <p className="mt-1 flex items-center gap-1.5 text-xs text-fg-on-inverse/90">
                         <CalendarDays size={12} />
                         {formatMonthDay(plannedDate)}
                         {showPlannedTime && ` at ${formattedTime}`}
                         {' - '}
                         {relativeDateLabel(plannedDate, now, { eventStyle: true })}
                     </p>
-                    <p className="mt-1 flex items-center gap-1.5 text-[11px] text-white/85">
+                    <p className="mt-1 flex items-center gap-1.5 text-[11px] text-fg-on-inverse/85">
                         <Users size={11} />
                         {item.servings} servings - {item.cocktails.length} cocktails
                     </p>
@@ -104,7 +104,7 @@ export default function UpcomingCollectionCard({ item, now, onUpdate }: Upcoming
                 type="button"
                 onClick={openConfirm}
                 disabled={removing}
-                className="absolute right-2 top-2 z-30 rounded-full bg-white/12 p-1.5 text-white/85 backdrop-blur-sm transition-colors hover:bg-mg-danger-light hover:text-mg-danger disabled:opacity-50"
+                className="absolute right-2 top-2 z-30 rounded-full bg-fg-on-image/12 p-1.5 text-fg-on-image/85 backdrop-blur-sm transition-colors hover:bg-danger-bg hover:text-danger disabled:opacity-50"
                 aria-label="Remove from planner"
             >
                 {removing ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}

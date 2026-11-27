@@ -2,7 +2,7 @@
 
 export default function StatsLoading() {
     return (
-        <div className="min-h-screen bg-mg-cream flex items-center justify-center">
+        <div className="min-h-screen bg-canvas flex items-center justify-center">
             <Loader />
         </div>
     )

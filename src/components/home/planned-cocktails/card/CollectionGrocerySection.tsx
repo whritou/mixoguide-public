@@ -44,21 +44,21 @@ export function CollectionGrocerySection({
                 <button
                     type="button"
                     onClick={onToggle}
-                    className="flex items-center gap-1 text-xs text-mg-muted hover:text-mg-brown transition-colors"
+                    className="flex items-center gap-1 text-xs text-fg-muted hover:text-brand transition-colors"
                 >
                     {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                     <ShoppingCart size={11} />
                     Grocery list
                     {loading && !hasItems && (
-                        <span className="ml-1 text-[10px] text-mg-muted italic">loading…</span>
+                        <span className="ml-1 text-[10px] text-fg-muted italic">loading…</span>
                     )}
                     {hasItems && missingCount > 0 && (
-                        <span className="ml-1 text-[10px] font-label bg-mg-danger-light text-mg-danger rounded-full px-1.5 py-0.5">
+                        <span className="ml-1 text-[10px] font-label bg-danger-bg text-danger rounded-full px-1.5 py-0.5">
                             {missingCount} missing
                         </span>
                     )}
                     {hasItems && missingCount === 0 && (
-                        <span className="ml-1 text-[10px] font-label bg-mg-brown/10 text-mg-brown rounded-full px-1.5 py-0.5">
+                        <span className="ml-1 text-[10px] font-label bg-brand/10 text-brand rounded-full px-1.5 py-0.5">
                             All stocked
                         </span>
                     )}
@@ -70,7 +70,7 @@ export function CollectionGrocerySection({
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-mg-bone bg-white text-[10px] font-label uppercase tracking-widest text-mg-brown hover:bg-mg-sand/60 hover:border-mg-brown/30 transition-colors shadow-sm shrink-0"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-line-strong bg-surface text-[10px] font-label uppercase tracking-widest text-brand hover:bg-line/60 hover:border-brand/30 transition-colors shadow-sm shrink-0"
                         aria-label="Download shopping list as PDF"
                         title="Download shopping list as PDF"
                     >
@@ -88,49 +88,49 @@ export function CollectionGrocerySection({
                                 <span
                                     className={`w-1.5 h-1.5 rounded-full ${
                                         item.missing === 0
-                                            ? 'bg-mg-brown'
+                                            ? 'bg-brand'
                                             : item.inWishlist
-                                                ? 'bg-mg-caramel'
+                                                ? 'bg-brand-soft'
                                                 : item.inPantry > 0
-                                                    ? 'bg-amber-400'
-                                                    : 'bg-mg-danger'
+                                                    ? 'bg-status-partial-dot'
+                                                    : 'bg-danger'
                                     }`}
                                 />
-                                <span className="truncate text-mg-charcoal">{item.ingredientName}</span>
+                                <span className="truncate text-fg-secondary">{item.ingredientName}</span>
                             </div>
-                            <span className="font-mono text-mg-muted shrink-0">
+                            <span className="font-mono text-fg-muted shrink-0">
                                 {item.missing > 0
-                                    ? <span className="text-mg-danger">-{item.missing}{item.unit}</span>
-                                    : <span className="text-mg-brown flex items-center gap-0.5"><Check size={9} />{item.inPantry}{item.unit}</span>
+                                    ? <span className="text-danger">-{item.missing}{item.unit}</span>
+                                    : <span className="text-brand flex items-center gap-0.5"><Check size={9} />{item.inPantry}{item.unit}</span>
                                 }
                             </span>
                         </div>
                     ))}
 
-                    <div className="flex items-center gap-3 pt-1 text-xs text-mg-muted">
+                    <div className="flex items-center gap-3 pt-1 text-xs text-fg-muted">
                         {statusCounts.missing > 0 && (
-                            <span className="flex items-center gap-1 text-mg-danger">
+                            <span className="flex items-center gap-1 text-danger">
                                 <AlertTriangle size={10} />
                                 {statusCounts.missing} missing
                             </span>
                         )}
 
                         {statusCounts.partial > 0 && (
-                            <span className="flex items-center gap-1 text-amber-600">
+                            <span className="flex items-center gap-1 text-warning">
                                 <Package size={10} />
                                 {statusCounts.partial} partial
                             </span>
                         )}
 
                         {statusCounts.inList > 0 && (
-                            <span className="flex items-center gap-1 text-mg-caramel">
+                            <span className="flex items-center gap-1 text-brand-soft-strong">
                                 <ShoppingCart size={10} />
                                 {statusCounts.inList} in list
                             </span>
                         )}
 
                         {statusCounts.inStock > 0 && (
-                            <span className="flex items-center gap-1 text-mg-brown">
+                            <span className="flex items-center gap-1 text-brand">
                                 <Check size={10} />
                                 {statusCounts.inStock} stocked
                             </span>

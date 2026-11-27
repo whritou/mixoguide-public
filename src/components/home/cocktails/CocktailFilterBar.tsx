@@ -103,13 +103,13 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
             className={clsx(
                 'hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-label border transition-colors whitespace-nowrap',
                 (openPanel === key || forceActive || count > 0)
-                    ? 'border-mg-brown bg-mg-linen text-mg-brown'
-                    : 'border-mg-bone bg-white text-mg-charcoal hover:bg-mg-frost'
+                    ? 'border-brand bg-surface-subtle text-brand'
+                    : 'border-line-strong bg-surface text-fg-secondary hover:bg-surface-hover-alt'
             )}
         >
             {label}
             {count > 0 && (
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-mg-caramel text-[10px] font-bold text-white">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-fg-on-brand">
                     {count}
                 </span>
             )}
@@ -119,22 +119,22 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
 
     return (
         <>
-            <div ref={barRef} className="sticky top-0 md:top-[64px] z-[100] bg-mg-cream/95 backdrop-blur-md border-b border-mg-sand">
+            <div ref={barRef} className="sticky top-0 md:top-[64px] z-[100] bg-canvas/95 backdrop-blur-md border-b border-line">
             <div className="px-4 md:px-12 py-3 flex items-center gap-2 md:flex-wrap">
                 <div className="relative flex-1 md:flex-none">
-                    <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-mg-muted" />
+                    <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
                     <input
                         placeholder="Search cocktails..."
                         value={p.get('search') ?? ''}
                         onChange={e => filters.setDebounced('search', e.target.value || null)}
-                        className="pl-8 pr-7 py-2 w-full md:w-94 rounded-full bg-mg-sand/50 text-sm text-mg-ink placeholder:text-mg-muted focus:outline-none focus:ring-1 focus:ring-mg-caramel border-none"
+                        className="pl-8 pr-7 py-2 w-full md:w-94 rounded-full bg-line/50 text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring border border-line-control"
                     />
                     {p.get('search') && (
                         <button
                             type="button"
                             onClick={() => filters.set('search', null)}
                             aria-label="Clear cocktail search"
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mg-muted hover:text-mg-charcoal"
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg-secondary"
                         >
                             <X size={13} />
                         </button>
@@ -151,15 +151,15 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                         className={clsx(
                             'hidden md:flex items-center justify-center w-9 h-9 rounded-full border transition-colors',
                             onlyFavorites
-                                ? 'bg-mg-linen border-mg-caramel text-mg-caramel'
-                                : 'border-mg-bone bg-white text-mg-muted hover:border-mg-caramel hover:text-mg-caramel'
+                                ? 'bg-surface-subtle border-brand-soft text-brand-soft-strong'
+                                : 'border-line-strong bg-surface text-fg-muted hover:border-brand-soft hover:text-brand-soft-strong'
                         )}
                     >
                         <Star size={14} fill={onlyFavorites ? 'currentColor' : 'none'} />
                     </button>
                 )}
 
-                <div className="hidden md:block w-px h-5 bg-mg-sand flex-shrink-0" />
+                <div className="hidden md:block w-px h-5 bg-line flex-shrink-0" />
 
                 {isAuthenticated && (
                     <button
@@ -167,14 +167,14 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                         className={clsx(
                             'hidden md:flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-label border transition-colors whitespace-nowrap',
                             onlyMakeable
-                                ? 'border-mg-brown bg-mg-linen text-mg-brown'
-                                : 'border-mg-bone bg-white text-mg-charcoal hover:bg-mg-frost'
+                                ? 'border-brand bg-surface-subtle text-brand'
+                                : 'border-line-strong bg-surface text-fg-secondary hover:bg-surface-hover-alt'
                         )}
                     >
                         Ready to mix
                         <span className={clsx(
                             'flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px]',
-                            onlyMakeable ? 'bg-mg-brown text-white' : 'bg-mg-sand text-mg-muted'
+                            onlyMakeable ? 'bg-brand text-fg-on-brand' : 'bg-line text-fg-muted'
                         )}>
                             <span className="w-1.5 h-1.5 rounded-full bg-current" />
                             {onlyMakeable ? 'on' : 'off'}
@@ -197,23 +197,23 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                         className={clsx(
                             'flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm border transition-colors whitespace-nowrap',
                             (showDifficultyMenu || difficultyCount > 0)
-                                ? 'border-mg-brown bg-mg-linen text-mg-brown'
-                                : 'border-mg-bone bg-white text-mg-charcoal hover:bg-mg-frost'
+                                ? 'border-brand bg-surface-subtle text-brand'
+                                : 'border-line-strong bg-surface text-fg-secondary hover:bg-surface-hover-alt'
                         )}
                     >
                         {difficultyLabel}
                         <ChevronDown size={13} className={clsx('transition-transform', showDifficultyMenu ? 'rotate-180' : '')} />
                     </button>
                     {showDifficultyMenu && (
-                        <div className="absolute left-0 top-full mt-1 z-[110] bg-white rounded-xl shadow-lg border border-mg-sand py-1 min-w-[180px]">
+                        <div className="absolute left-0 top-full mt-1 z-[110] bg-surface rounded-xl shadow-lg border border-line py-1 min-w-[180px]">
                             <button
                                 onClick={() => {
                                     filters.set('difficulty', null)
                                     setShowDifficultyMenu(false)
                                 }}
                                 className={clsx(
-                                    'w-full text-left px-4 py-2 text-sm hover:bg-mg-frost',
-                                    difficultyCount === 0 ? 'text-mg-brown font-medium' : 'text-mg-charcoal'
+                                    'w-full text-left px-4 py-2 text-sm hover:bg-surface-hover-alt',
+                                    difficultyCount === 0 ? 'text-brand font-medium' : 'text-fg-secondary'
                                 )}
                             >
                                 All
@@ -226,10 +226,10 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                                         setShowDifficultyMenu(false)
                                     }}
                                     className={clsx(
-                                        'w-full text-left px-4 py-2 text-sm hover:bg-mg-frost',
+                                        'w-full text-left px-4 py-2 text-sm hover:bg-surface-hover-alt',
                                         difficultyValues.length === 1 && difficultyValues[0] === d
-                                            ? 'text-mg-brown font-medium'
-                                            : 'text-mg-charcoal'
+                                            ? 'text-brand font-medium'
+                                            : 'text-fg-secondary'
                                     )}
                                 >
                                     {formatLabel(d)}
@@ -250,15 +250,15 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                         className={clsx(
                             'flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm border transition-colors whitespace-nowrap',
                             (showAbvMenu || abvActive)
-                                ? 'border-mg-brown bg-mg-linen text-mg-brown'
-                                : 'border-mg-bone bg-white text-mg-charcoal hover:bg-mg-frost'
+                                ? 'border-brand bg-surface-subtle text-brand'
+                                : 'border-line-strong bg-surface text-fg-secondary hover:bg-surface-hover-alt'
                         )}
                     >
                         {abvLabel}
                         <ChevronDown size={13} className={clsx('transition-transform', showAbvMenu ? 'rotate-180' : '')} />
                     </button>
                     {showAbvMenu && (
-                        <div className="absolute left-0 top-full mt-1 z-[110] bg-white rounded-xl shadow-lg border border-mg-sand py-1 min-w-[180px]">
+                        <div className="absolute left-0 top-full mt-1 z-[110] bg-surface rounded-xl shadow-lg border border-line py-1 min-w-[180px]">
                             {[
                                 { label: 'All', value: 'any' },
                                 { label: 'Alcoholic', value: 'true' },
@@ -271,10 +271,10 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                                         setShowAbvMenu(false)
                                     }}
                                     className={clsx(
-                                        'w-full text-left px-4 py-2 text-sm hover:bg-mg-frost',
+                                        'w-full text-left px-4 py-2 text-sm hover:bg-surface-hover-alt',
                                         (abvValue === value || (value === 'any' && !abvActive))
-                                            ? 'text-mg-brown font-medium'
-                                            : 'text-mg-charcoal'
+                                            ? 'text-brand font-medium'
+                                            : 'text-fg-secondary'
                                     )}
                                 >
                                     {label}
@@ -294,23 +294,23 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                         }}
                         className={clsx(
                             'flex items-center gap-1.5 text-sm transition-colors whitespace-nowrap',
-                            showSortMenu ? 'text-mg-ink font-medium' : 'text-mg-muted hover:text-mg-ink'
+                            showSortMenu ? 'text-fg font-medium' : 'text-fg-muted hover:text-fg'
                         )}
                     >
-                        <span className="font-normal text-mg-muted">Sort</span>
+                        <span className="font-normal text-fg-muted">Sort</span>
                         <span>·</span>
                         <span className="font-medium">{currentSort.label}</span>
                         <ChevronDown size={13} className={clsx('transition-transform', showSortMenu ? 'rotate-180' : '')} />
                     </button>
                     {showSortMenu && (
-                        <div className="absolute right-0 top-full mt-1 z-[110] bg-white rounded-xl shadow-lg border border-mg-sand py-1 min-w-[200px]">
+                        <div className="absolute right-0 top-full mt-1 z-[110] bg-surface rounded-xl shadow-lg border border-line py-1 min-w-[200px]">
                             {SORT_OPTIONS.map(opt => (
                                 <button
                                     key={opt.label}
                                     onClick={() => setSort(opt.sortBy, opt.sortOrder)}
                                     className={clsx(
-                                        'w-full text-left px-4 py-2 text-sm hover:bg-mg-frost',
-                                        currentSort.label === opt.label ? 'text-mg-brown font-medium' : 'text-mg-charcoal'
+                                        'w-full text-left px-4 py-2 text-sm hover:bg-surface-hover-alt',
+                                        currentSort.label === opt.label ? 'text-brand font-medium' : 'text-fg-secondary'
                                     )}
                                 >
                                     {opt.label}
@@ -334,12 +334,12 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                     type="button"
                     onClick={() => setMobileOpen(true)}
                     aria-label="Open cocktail filters"
-                    className="md:hidden fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+6.75rem)] z-[120] inline-flex items-center gap-2 px-4 py-3 rounded-full bg-mg-ink text-white shadow-[0_10px_24px_rgba(27,28,26,0.28)]"
+                    className="md:hidden fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+6.75rem)] z-[120] inline-flex items-center gap-2 px-4 py-3 rounded-full bg-surface-inverse text-fg-on-inverse inset-ring-1 inset-ring-fg/40 shadow-[0_10px_24px_rgba(27,28,26,0.28)]"
                 >
                     <SlidersHorizontal size={15} />
                     <span className="font-label text-[11px] uppercase tracking-widest">Filters</span>
                     {totalActiveFilters > 0 && (
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-mg-caramel text-[10px] font-bold text-white">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-fg-on-brand">
                             {totalActiveFilters}
                         </span>
                     )}

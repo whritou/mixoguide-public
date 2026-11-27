@@ -7,9 +7,9 @@ export const metadata: Metadata = {
 
 export default function TermsOfUsePage() {
     return (
-        <main className="bg-mg-cream text-mg-ink min-h-screen my-12 px-6 md:px-12 py-16 max-w-4xl mx-auto">
-            <h1 className="font-headline text-4xl italic text-mg-brown mb-2">Terms of Use</h1>
-            <p className="text-sm text-mg-ink/50 font-body mb-12">Last updated: April 5, 2026</p>
+        <main className="bg-canvas text-fg min-h-screen my-12 px-6 md:px-12 py-16 max-w-4xl mx-auto">
+            <h1 className="font-headline text-4xl italic text-brand mb-2">Terms of Use</h1>
+            <p className="text-sm text-fg/50 font-body mb-12">Last updated: April 5, 2026</p>
 
             <Section title="1. Acceptance of Terms">
                 <p>
@@ -27,7 +27,7 @@ export default function TermsOfUsePage() {
                 <ul className="list-disc list-inside space-y-1">
                     <li>You must provide accurate, current, and complete information when creating your account.</li>
                     <li>You are responsible for maintaining the confidentiality of your credentials and for all activities under your account.</li>
-                    <li>You must notify us immediately at <a href="mailto:contact@mixoguide.com" className="text-mg-caramel hover:underline">contact@mixoguide.com</a> if you suspect any unauthorised use of your account.</li>
+                    <li>You must notify us immediately at <a href="mailto:contact@mixoguide.com" className="text-brand-soft-strong hover:underline">contact@mixoguide.com</a> if you suspect any unauthorised use of your account.</li>
                     <li>You may not create multiple accounts or share your account with others.</li>
                     <li>Accounts created by automated means or bots are prohibited.</li>
                 </ul>
@@ -119,7 +119,7 @@ export default function TermsOfUsePage() {
             <Section title="14. Contact">
                 <p>
                     For questions regarding these Terms, please contact us at{" "}
-                    <a href="mailto:contact@mixoguide.com" className="text-mg-caramel hover:underline">contact@mixoguide.com</a>.
+                    <a href="mailto:contact@mixoguide.com" className="text-brand-soft-strong hover:underline">contact@mixoguide.com</a>.
                 </p>
             </Section>
         </main>
@@ -129,8 +129,8 @@ export default function TermsOfUsePage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <section className="mb-10">
-            <h2 className="font-headline text-xl text-mg-brown mb-4 pb-2 border-b border-mg-ink/10">{title}</h2>
-            <div className="text-mg-ink/80 font-body leading-relaxed space-y-2">{children}</div>
+            <h2 className="font-headline text-xl text-brand mb-4 pb-2 border-b border-fg/10">{title}</h2>
+            <div className="text-fg/80 font-body leading-relaxed space-y-2">{children}</div>
         </section>
     );
 }

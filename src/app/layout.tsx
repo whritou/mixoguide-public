@@ -4,6 +4,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import AuthProvider from "@/components/AuthProvider";
 import { QueryProvider } from "@/providers/query-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { env } from "@/lib/env";
 import Script from "next/script";
@@ -94,7 +95,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <html lang="en" className={`${notoSerif.variable} ${manrope.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${notoSerif.variable} ${manrope.variable}`}>
     <head>
       <meta name="apple-mobile-web-app-title" content="MixoGuide" />
 
@@ -127,10 +128,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       `}
     >
     <AuthProvider>
-      <QueryProvider>
-        {children}
-        <Toaster />
-      </QueryProvider>
+      <ThemeProvider>
+        <QueryProvider>
+          {children}
+          <Toaster />
+        </QueryProvider>
+      </ThemeProvider>
     </AuthProvider>
     </body>
     </html>

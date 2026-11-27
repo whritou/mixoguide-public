@@ -186,16 +186,16 @@ function CocktailPageContent() {
     })
 
     return (
-        <div className="min-h-screen bg-mg-cream">
+        <div className="min-h-screen bg-canvas">
             <CocktailFilterBar filters={filters} isAuthenticated={isAuthenticated} ingredientOpts={ingredientOpts} />
 
             <div className="max-w-screen-2xl mx-auto px-4 md:px-12 pt-8 pb-20">
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="font-headline text-3xl text-mg-ink">
+                        <h1 className="font-headline text-3xl text-fg">
                             {onlyMakeable ? 'Ready to mix' : 'Cocktails'}
                         </h1>
-                        <p className="text-sm text-mg-muted mt-0.5">
+                        <p className="text-sm text-fg-muted mt-0.5">
                             {onlyMakeable
                                 ? `${clientFiltered.length} cocktail${clientFiltered.length !== 1 ? 's' : ''} makeable with your pantry`
                                 : 'Browse our full collection'}
@@ -205,7 +205,7 @@ function CocktailPageContent() {
                         {hasActiveFilters && (
                             <button
                                 onClick={handleReset}
-                                className="text-xs text-mg-muted hover:text-mg-ink underline underline-offset-2 transition-colors"
+                                className="text-xs text-fg-muted hover:text-fg underline underline-offset-2 transition-colors"
                             >
                                 Clear filters
                             </button>
@@ -218,7 +218,7 @@ function CocktailPageContent() {
                                 }
                                 setSuggestionDialogOpen(true)
                             }}
-                            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full border border-mg-caramel/40 text-mg-brown text-sm hover:bg-[#f5ece0] transition-colors"
+                            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-soft/40 text-brand text-sm hover:bg-surface-muted transition-colors"
                         >
                             <MessageSquarePlus size={14} />
                             Suggest
@@ -290,7 +290,7 @@ function CocktailsEmptyState({
             : 'No cocktails yet'
 
     const body = hasSearch
-        ? <>No cocktails match <span className="font-medium text-mg-charcoal">{search.trim()}</span>.</>
+        ? <>No cocktails match <span className="font-medium text-fg-secondary">{search.trim()}</span>.</>
         : hasActiveFilters
             ? 'Try changing or clearing the current filters.'
             : onlyMakeable
@@ -306,7 +306,7 @@ function CocktailsEmptyState({
             action={onlyMakeable && !hasSearch && !hasActiveFilters ? (
                 <button
                     onClick={onAddIngredients}
-                    className="mt-2 px-8 py-3 bg-gradient-to-br from-mg-brown to-mg-caramel text-white rounded-full font-label text-xs uppercase tracking-widest hover:scale-[0.98] transition-transform duration-200"
+                    className="mt-2 px-8 py-3 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full font-label text-xs uppercase tracking-widest hover:scale-[0.98] transition-transform duration-200"
                 >
                     Add ingredients to pantry
                 </button>

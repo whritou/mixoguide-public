@@ -16,12 +16,12 @@ export function StatsRow({ stats }: { stats: ProfileData['stats'] }) {
                 <Link
                     key={label}
                     href={href}
-                    className="bg-mg-smoke rounded-2xl px-4 py-5 flex flex-col items-center gap-1
-                               hover:bg-[#ece9e5] transition-colors group"
+                    className="bg-surface-hover rounded-2xl px-4 py-5 flex flex-col items-center gap-1
+                               hover:bg-canvas-hover-alt transition-colors group"
                 >
-                    <Icon size={18} className="text-mg-caramel group-hover:text-mg-brown transition-colors" />
-                    <span className="font-headline text-2xl text-mg-ink">{value}</span>
-                    <span className="text-xs text-mg-charcoal/60 font-body text-center">{label}</span>
+                    <Icon size={18} className="text-brand-soft group-hover:text-brand transition-colors" />
+                    <span className="font-headline text-2xl text-fg">{value}</span>
+                    <span className="text-xs text-fg-secondary/60 font-body text-center">{label}</span>
                 </Link>
             ))}
         </div>

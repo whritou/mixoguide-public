@@ -50,10 +50,10 @@ export function MultiSelectField({
 
             return (
                 <FormItem>
-                  <FormLabel className="text-xs font-label uppercase tracking-widest text-mg-muted">
+                  <FormLabel className="text-xs font-label uppercase tracking-widest text-fg-muted">
                     {field.label}
                     {field.required && (
-                        <span className="text-mg-caramel ml-1">*</span>
+                        <span className="text-brand-soft-strong ml-1">*</span>
                     )}
                   </FormLabel>
 
@@ -65,22 +65,22 @@ export function MultiSelectField({
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           disabled={disabled || field.readOnly}
-                          className="rounded-xl bg-white border-mg-sand text-sm font-body text-mg-ink placeholder:text-mg-muted focus-visible:ring-mg-caramel/40 focus-visible:border-mg-caramel"
+                          className="rounded-xl bg-surface border-line-control text-sm font-body text-fg placeholder:text-fg-muted focus-visible:ring-ring/40 focus-visible:border-brand-soft"
                       />
-                      <ScrollArea className="h-[150px] rounded-xl border border-mg-sand bg-white p-2">
+                      <ScrollArea className="h-[150px] rounded-xl border border-line bg-surface p-2">
                         <div className="space-y-0.5">
                           {filteredOptions.map((opt) => (
                               <label
                                   key={opt.value.toString()}
-                                  className="flex items-center gap-2.5 cursor-pointer px-2 py-1.5 rounded-lg hover:bg-mg-caramel/5 transition-colors"
+                                  className="flex items-center gap-2.5 cursor-pointer px-2 py-1.5 rounded-lg hover:bg-brand-soft/5 transition-colors"
                               >
                                 <Checkbox
                                     checked={value.includes(opt.value)}
                                     onCheckedChange={() => toggle(opt.value.toString())}
                                     disabled={disabled || field.readOnly}
-                                    className="border-mg-sand data-[state=checked]:bg-mg-brown data-[state=checked]:border-mg-brown"
+                                    className="border-line-control data-[state=checked]:bg-brand data-[state=checked]:border-brand"
                                 />
-                                <span className="text-sm font-body text-mg-ink">{opt.label}</span>
+                                <span className="text-sm font-body text-fg">{opt.label}</span>
                               </label>
                           ))}
                         </div>
@@ -95,14 +95,14 @@ export function MultiSelectField({
                           return (
                               <span
                                   key={v.toString()}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-label uppercase tracking-wider bg-mg-caramel/15 text-mg-brown border border-mg-caramel/20"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-label uppercase tracking-wider bg-brand-soft/15 text-brand border border-brand-soft/20"
                               >
                                 {opt ? opt.label : v.toString()}
                                 {!disabled && !field.readOnly && (
                                     <button
                                         type="button"
                                         onClick={() => toggle(v.toString())}
-                                        className="text-mg-brown/60 hover:text-mg-brown transition-colors"
+                                        className="text-brand/60 hover:text-brand transition-colors"
                                     >
                                       <X className="h-3 w-3" />
                                     </button>
@@ -114,7 +114,7 @@ export function MultiSelectField({
                   )}
 
                   {field.description && (
-                      <FormDescription className="text-xs text-mg-muted/70 font-body">{field.description}</FormDescription>
+                      <FormDescription className="text-xs text-fg-muted/70 font-body">{field.description}</FormDescription>
                   )}
                   <FormMessage className="text-xs" />
                 </FormItem>

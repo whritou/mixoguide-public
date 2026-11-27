@@ -41,13 +41,13 @@ export default async function DeleteAccountPage() {
     const signupHref = `/signup?callbackUrl=${encodeURIComponent(CALLBACK_URL)}`;
 
     return (
-        <div className="min-h-[calc(100vh-72px)] bg-mg-cream px-4 py-12 md:px-12">
+        <div className="min-h-[calc(100vh-72px)] bg-canvas px-4 py-12 md:px-12">
             <div className="mx-auto max-w-3xl space-y-8">
                 <div>
-                    <p className="mb-3 font-label text-xs uppercase tracking-widest text-mg-muted">
+                    <p className="mb-3 font-label text-xs uppercase tracking-widest text-fg-muted">
                         Account deletion
                     </p>
-                    <h1 className="font-headline text-4xl text-mg-ink">
+                    <h1 className="font-headline text-4xl text-fg">
                         Delete your MixoGuide account
                     </h1>
                 </div>
@@ -56,16 +56,16 @@ export default async function DeleteAccountPage() {
                     <DangerZone hasPassword={hasPassword} />
                 ) : (
                     <Section icon={AlertTriangle} title="Danger Zone" danger>
-                        <p className="mb-4 font-body text-sm text-mg-charcoal/80">
+                        <p className="mb-4 font-body text-sm text-fg-secondary/80">
                             Permanently delete your account and all associated data: pantry,
                             favourites, ratings, and planned cocktails.
                         </p>
 
                         <Link
                             href={signupHref}
-                            className="flex w-fit items-center gap-2 rounded-full border border-mg-danger/40 px-5 py-2.5
-                                       font-label text-xs uppercase tracking-widest text-mg-danger transition-colors
-                                       hover:bg-mg-danger/5"
+                            className="flex w-fit items-center gap-2 rounded-full border border-danger/40 px-5 py-2.5
+                                       font-label text-xs uppercase tracking-widest text-danger transition-colors
+                                       hover:bg-danger/5"
                         >
                             <Trash2 size={14} />
                             Delete my account
