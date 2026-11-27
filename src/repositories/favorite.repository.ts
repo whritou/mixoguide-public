@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db/prisma'
 import { BaseRepository, RepositoryConfig, toDelegate } from './base.repository'
-import type { UserFavoriteCocktail, Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
+import type { UserFavoriteCocktail } from '@prisma/client'
 
 class FavoriteRepository extends BaseRepository <
     UserFavoriteCocktail,
@@ -38,11 +39,18 @@ class FavoriteRepository extends BaseRepository <
      * row instead of racing a check-then-insert into a unique violation.
      */
     async addIdempotent(userId: string, cocktailId: string) {
-        return prisma.userFavoriteCocktail.upsert({
-            where:  { userId_cocktailId: { userId, cocktailId } },
-            create: { userId, cocktailId },
-            update: {},
-        })
+        // Prisma's upsert is a read-then-write, not an atomic INSERT … ON CONFLICT,
+        // so two concurrent adds can both try to insert. The loser's unique
+        // violation (P2002) means the row now exists: return it.
+        try {
+            return await prisma.userFavoriteCocktail.create({ data: { userId, cocktailId } })
+        } catch (err) {
+            if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+                const existing = await this.findByUserAndCocktail(userId, cocktailId)
+                if (existing) return existing
+            }
+            throw err
+        }
     }
 
     /** Returns the number of deleted rows (0 or 1). */

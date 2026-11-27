@@ -200,7 +200,7 @@ describeDb('DB integration: concurrency & integrity', () => {
         await stock(user.id, gin.id, 10)
 
         await expect(ingredientService.delete(gin.id)).rejects.toBeInstanceOf(ConflictError)
-        // The FK itself is RESTRICT, even when bypassing the service check.
+        // The FK itself blocks the delete (NO ACTION -> P2003), even when bypassing the service check.
         await expect(prisma.ingredient.delete({ where: { id: gin.id } }))
             .rejects.toMatchObject({ code: 'P2003' })
 

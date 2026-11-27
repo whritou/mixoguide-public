@@ -403,7 +403,7 @@ model CocktailIngredient {
   cocktail   Cocktail   @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
   // Restrict (DB-004): deleting an ingredient used in a recipe must fail instead
   // of silently removing it from every cocktail.
-  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: NoAction)
 
   @@unique([cocktailId, ingredientId])
   @@index([ingredientId])
@@ -457,7 +457,7 @@ model UserPantryItem {
 
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   // Restrict (DB-004): deleting an ingredient must not wipe users' pantries.
-  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: NoAction)
 
   @@unique([userId, ingredientId])
   @@index([ingredientId])

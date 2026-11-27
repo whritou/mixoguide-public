@@ -97,7 +97,12 @@ class RatingRepository extends BaseRepository<
         create: Prisma.RatingUncheckedCreateInput,
         update: Prisma.RatingUncheckedUpdateInput,
     ): Promise<Rating> {
+        const cocktailId = String(create.cocktailId)
         return prisma.$transaction(async (tx) => {
+            // Lock the cocktail BEFORE touching ratings: inserting a rating takes a
+            // FOR KEY SHARE lock on the cocktail (FK check); locking afterwards made
+            // two concurrent raters deadlock on each other's shares.
+            await this.lockCocktail(cocktailId, tx)
             const rating = await tx.rating.upsert({ where, create, update })
             await this.refreshCocktailStats(rating.cocktailId, tx)
             return rating
@@ -116,6 +121,7 @@ class RatingRepository extends BaseRepository<
 
         try {
             return await prisma.$transaction(async (tx) => {
+                await this.lockCocktail(existing.cocktailId, tx)
                 await tx.rating.delete({ where: { id } })
                 await this.refreshCocktailStats(existing.cocktailId, tx)
                 return true
@@ -130,16 +136,22 @@ class RatingRepository extends BaseRepository<
     // ─── PRIVATE ──────────────────────────────────────────────────────────────
 
     /**
-     * Recompute avg/count for a cocktail inside the current transaction (DB-006).
-     *
-     * The cocktail row is locked first (SELECT … FOR UPDATE), so concurrent rating
-     * writes on the same cocktail serialise here. Because READ COMMITTED takes a
-     * new snapshot per statement, the following single-statement UPDATE sees every
-     * rating committed before the lock was granted plus this transaction's own
-     * write: the last writer always stores the correct aggregate.
+     * Serialise rating writes per cocktail (DB-006). FOR NO KEY UPDATE does not
+     * conflict with the FOR KEY SHARE lock our own rating insert takes through the
+     * foreign key, but does conflict with other writers' NO KEY UPDATE, so
+     * concurrent raters of the same cocktail queue here instead of deadlocking.
+     */
+    private async lockCocktail(cocktailId: string, tx: Prisma.TransactionClient) {
+        await tx.$queryRaw`SELECT id FROM cocktails WHERE id = ${cocktailId} FOR NO KEY UPDATE`
+    }
+
+    /**
+     * Recompute avg/count for a cocktail inside the current transaction, after
+     * {@link lockCocktail}. READ COMMITTED takes a new snapshot per statement, so
+     * this single UPDATE sees every rating committed before the lock was granted
+     * plus this transaction's own write: the last writer stores the right aggregate.
      */
     private async refreshCocktailStats(cocktailId: string, tx: Prisma.TransactionClient) {
-        await tx.$queryRaw`SELECT id FROM cocktails WHERE id = ${cocktailId} FOR UPDATE`
         await tx.$executeRaw`
             UPDATE cocktails AS c
                SET avg_rating   = s.avg,
