@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 
 import { userService } from '@/services/user.service'
-import { registerSchema } from '@/validations/auth.validation'
+import { publicRegisterSchema } from '@/validations/auth.validation'
 import { ApiResponse } from '@/utils/apiResponse'
 import { withErrorHandler } from '@/middlewares/withErrorHandler'
 import { checkRateLimit, getIp } from '@/lib/rateLimit'
@@ -10,13 +10,12 @@ import { authService } from '@/services/auth.service'
 export const POST = withErrorHandler(async (req: NextRequest) => {
     await checkRateLimit('register', getIp(req.headers))
 
-    const data = registerSchema.parse(await req.json())
+    const data = publicRegisterSchema.parse(await req.json())
 
     const user = await userService.create({
         email: data.email,
-        name: data.name ?? null,
+        name: data.name,
         password: data.password,
-        image: data.image ?? null,
         role: 'USER',
     })
 
