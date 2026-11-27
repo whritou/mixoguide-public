@@ -5,13 +5,14 @@ import { RecipeCard } from "./RecipeCard";
 
 const OLD_FASHIONED = {
   name: "Old Fashioned",
-  time: "4 min",
+  time: "5 min",
   lines: [
-    { qty: "60 ml", item: "bourbon" },
-    { qty: "1 tsp", item: "demerara syrup" },
-    { qty: "2 dashes", item: "Angostura bitters" },
+    { qty: "1.5 oz", item: "bourbon" },
+    { qty: "1 tbsp", item: "sugar" },
+    { qty: "0.2 oz", item: "Angostura bitters" },
+    { qty: "dash", item: "water" },
   ],
-  method: "Stir over ice, 30 seconds. Strain over one large cube. Flame an orange peel across the glass.",
+  method: "Soak the sugar with the bitters and a dash of water, muddle until dissolved. Fill with ice, add the bourbon. Garnish with an orange twist and a cherry.",
 };
 
 const SCRIM =
