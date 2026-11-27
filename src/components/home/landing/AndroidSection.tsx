@@ -29,7 +29,7 @@ function AppScreen() {
         </div>
         <div className="flex flex-col gap-[3px] px-3.5 py-3">
           <span className="font-headline text-base">Old Fashioned</span>
-          <span className="text-[11px] text-fg-muted">3 of 3 ingredients, 4 min</span>
+          <span className="text-[11px] text-fg-muted">3 of 3 ingredients, 5 min</span>
         </div>
       </div>
       {PANTRY_ROWS.map((row) => (
@@ -82,7 +82,7 @@ export function AndroidSection({ qrSvg }: { qrSvg: string }) {
                 <div
                   role="img"
                   aria-label="QR code to the Google Play listing"
-                  className="size-[84px] rounded-md bg-fg p-[7px] text-canvas [&>svg]:block [&>svg]:size-full"
+                  className="size-[172px] shrink-0 rounded-lg bg-fg p-[14px] text-canvas [&>svg]:block [&>svg]:size-full"
                   dangerouslySetInnerHTML={{ __html: qrSvg }}
                 />
                 <span className="max-w-[15ch] text-sm leading-5 text-fg-muted">

@@ -253,6 +253,31 @@ describe('web auth routes', () => {
         expect(mockMailService.sendVerificationEmail).toHaveBeenCalledWith('user@example.com', 'email-token', '/verify-email')
     })
 
+    it('ignores privileged fields on register and always creates a USER', async () => {
+        const response = await webRegister(
+            nextRequest({
+                method: 'POST',
+                path: '/api/auth/register',
+                body: {
+                    name: 'User',
+                    email: 'user@example.com',
+                    password: 'password123',
+                    passwordConfirm: 'password123',
+                    turnstileToken: 'captcha-token',
+                    role: 'ADMIN',
+                    emailVerified: '2026-01-01T00:00:00.000Z',
+                },
+            }),
+            routeContext(),
+        )
+
+        expect(response.status).toBe(201)
+        expect(mockUserService.create).toHaveBeenCalledTimes(1)
+        const created = mockUserService.create.mock.calls[0][0]
+        expect(created.role).toBe('USER')
+        expect(created).not.toHaveProperty('emailVerified')
+    })
+
     it('returns 204 for request reset and does not leak unknown emails', async () => {
         mockUserService.getByEmail.mockRejectedValueOnce(new UnauthorizedError('Not found'))
 
@@ -382,6 +407,30 @@ describe('mobile auth routes', () => {
         expect(response.status).toBe(201)
         expect(body.data.userId).toBe('user-1')
         expect(mockSendVerificationEmail).toHaveBeenCalled()
+    })
+
+    it('ignores privileged fields on mobile register and always creates a USER', async () => {
+        const response = await mobileRegister(
+            nextRequest({
+                method: 'POST',
+                path: '/api/auth/mobile/register',
+                body: {
+                    email: 'user@example.com',
+                    name: 'User',
+                    password: 'password123',
+                    passwordConfirm: 'password123',
+                    role: 'ADMIN',
+                    emailVerified: '2026-01-01T00:00:00.000Z',
+                },
+            }),
+            routeContext(),
+        )
+
+        expect(response.status).toBe(201)
+        expect(mockUserService.create).toHaveBeenCalledTimes(1)
+        const created = mockUserService.create.mock.calls[0][0]
+        expect(created.role).toBe('USER')
+        expect(created).not.toHaveProperty('emailVerified')
     })
 
     it('sends mobile reset email when user exists', async () => {

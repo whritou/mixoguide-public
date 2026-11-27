@@ -21,10 +21,10 @@ describe("LandingHero", () => {
   });
 
   it("renders the recipe card with real text", () => {
-    for (const text of ["60 ml", "bourbon", "1 tsp", "demerara syrup", "2 dashes", "Angostura bitters", "Old Fashioned", "4 min"]) {
+    for (const text of ["1.5 oz", "bourbon", "1 tbsp", "sugar", "0.2 oz", "Angostura bitters", "dash", "water", "Old Fashioned", "5 min"]) {
       expect(html).toContain(`>${text}<`);
     }
-    expect(html).toContain("Stir over ice, 30 seconds. Strain over one large cube. Flame an orange peel across the glass.");
+    expect(html).toContain("Soak the sugar with the bitters and a dash of water, muddle until dissolved. Fill with ice, add the bourbon. Garnish with an orange twist and a cherry.");
   });
 
   it("describes the photo", () => {

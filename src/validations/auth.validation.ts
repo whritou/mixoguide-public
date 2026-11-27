@@ -37,13 +37,14 @@ export const loginSchema = z.object({
     password: z.string().min(1, "Password required"),
 })
 
-export const registerSchema = z.object({
+// Public sign-up: must never accept role or other privileged User fields.
+export const publicRegisterSchema = z.object({
     email: emailSchema,
     name: nameSchema,
     password: z.string().min(8, "Password must be at least 8 characters").max(100).optional(),
-    role: z.enum(["ADMIN", "USER"]).optional(),
-    image: z.string().url("Invalid image URL").optional().nullable(),
 })
+
+export type PublicRegisterInput = z.infer<typeof publicRegisterSchema>
 
 export const resetPasswordSchema = z
     .object({
