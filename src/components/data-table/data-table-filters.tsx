@@ -50,13 +50,14 @@ export function DataTableFilters<TData>({ table, filterableColumns }: DataTableF
                           {selectedCount > 0 && (
                               <Badge variant="secondary" className="ml-2 rounded-sm px-1 font-normal">
                                 {selectedCount}
+                                <span className="sr-only"> selected</span>
                               </Badge>
                           )}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[200px] p-0" align="start">
                         <Command>
-                          <CommandInput placeholder={`Rechercher ${column.title}...`} />
+                          <CommandInput placeholder={`Search ${column.title}...`} aria-label={`Search ${column.title}`} />
                           <CommandList>
                             <CommandEmpty>No results found.</CommandEmpty>
                             <CommandGroup>
@@ -82,9 +83,10 @@ export function DataTableFilters<TData>({ table, filterableColumns }: DataTableF
                                               isSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible"
                                           )}
                                       >
-                                        <X className="h-3 w-3" />
+                                        <X className="h-3 w-3" aria-hidden="true" />
                                       </div>
                                       <span>{option.label}</span>
+                                      {isSelected && <span className="sr-only"> (selected)</span>}
                                     </CommandItem>
                                 )
                               })}
@@ -111,7 +113,7 @@ export function DataTableFilters<TData>({ table, filterableColumns }: DataTableF
               {isFiltered && (
                   <Button variant="ghost" onClick={() => table.resetColumnFilters()} className="h-8 px-2 lg:px-3">
                     Reset
-                    <X className="ml-2 h-4 w-4" />
+                    <X className="ml-2 h-4 w-4" aria-hidden="true" />
                   </Button>
               )}
             </div>

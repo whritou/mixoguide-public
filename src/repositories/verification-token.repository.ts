@@ -20,20 +20,26 @@ class VerificationTokenRepository {
     }
 
     /**
-     * Atomically claim a token if it exists and is not yet expired. Two
-     * concurrent calls cannot both succeed, which prevents replay of a
-     * still-valid reset/verification link.
+     * Atomically claim a token if it exists, is not expired and belongs to the
+     * expected purpose (identifier prefix). Two concurrent calls cannot both
+     * succeed, and a token of another purpose is never consumed.
      */
-    async consume(token: string) {
+    async consume(token: string, identifierPrefix: string) {
         const record = await prisma.verificationToken.findUnique({ where: { token } })
         if (!record || record.expires < new Date()) return null
+        if (!record.identifier.startsWith(identifierPrefix)) return null
 
         const deleted = await prisma.verificationToken.deleteMany({
-            where: { token, expires: { gt: new Date() } },
+            where: { token, identifier: record.identifier, expires: { gt: new Date() } },
         })
         if (deleted.count === 0) return null
 
         return record
+    }
+
+    /** Housekeeping: remove expired tokens (DB-016). */
+    async purgeExpired(before: Date = new Date()) {
+        return prisma.verificationToken.deleteMany({ where: { expires: { lt: before } } })
     }
 }
 

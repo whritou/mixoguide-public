@@ -155,16 +155,25 @@ enum SuggestionStatus {
 
 // ─── AUTH (NextAuth) ──────────────────────────────────────────────────────────
 
+// NOTE (DB-013): `email` is additionally protected by a case-insensitive unique
+// index `users_email_lower_key` ON users (lower(email)), created by a hand-written
+// migration (Prisma cannot express expression indexes). Always normalise emails
+// to lower case before writing them.
+// NOTE (DB-013): DateTime columns are `timestamp(3)` without time zone and quantity
+// columns are Float. Converting to timestamptz / Decimal is intentionally deferred:
+// it rewrites tables and changes the JSON contract consumed by the mobile app.
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  password      String?
-  emailVerified DateTime? @map("email_verified")
-  image         String?
-  role          UserRole  @default(USER)
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  password       String?
+  emailVerified  DateTime? @map("email_verified")
+  image          String?
+  role           UserRole  @default(USER)
+  // Bumped to revoke every outstanding session / token of the user.
+  sessionVersion Int       @default(0) @map("session_version")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
   accounts           Account[]
   sessions           Session[]
@@ -392,7 +401,9 @@ model CocktailIngredient {
   subShow      Boolean[]
 
   cocktail   Cocktail   @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
-  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  // Restrict (DB-004): deleting an ingredient used in a recipe must fail instead
+  // of silently removing it from every cocktail.
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
 
   @@unique([cocktailId, ingredientId])
   @@index([ingredientId])
@@ -422,6 +433,7 @@ model UserFavoriteCocktail {
   cocktail Cocktail @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
 
   @@unique([userId, cocktailId])
+  @@index([cocktailId])
   @@map("user_favorite_cocktails")
 }
 
@@ -429,6 +441,7 @@ model UserPantryItem {
   id               String      @id @default(cuid())
   userId           String      @map("user_id")
   ingredientId     String      @map("ingredient_id")
+  // CHECK (quantity >= 0) and CHECK (shopping_quantity >= 0) are enforced by migration.
   quantity         Float
   unitLeft         MeasureUnit @default(cl) @map("unit_left")
   favorite         Boolean     @default(false)
@@ -443,9 +456,11 @@ model UserPantryItem {
   updatedAt        DateTime    @updatedAt @map("updated_at")
 
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  // Restrict (DB-004): deleting an ingredient must not wipe users' pantries.
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
 
   @@unique([userId, ingredientId])
+  @@index([ingredientId])
   @@index([userId])
   @@index([userId, isInPantry])
   @@index([userId, isInShoppingList])
@@ -475,6 +490,7 @@ model PlannedCocktail {
   @@index([userId])
   @@index([status])
   @@index([userId, plannedFor, status])
+  @@index([status, completedAt])
   @@map("planned_cocktails")
 }
 
@@ -503,6 +519,7 @@ model Rating {
   id         String   @id @default(cuid())
   userId     String   @map("user_id")
   cocktailId String   @map("cocktail_id")
+  // CHECK (rating BETWEEN 1 AND 5) is enforced by migration.
   rating     Int
   createdAt  DateTime @default(now()) @map("created_at")
 
@@ -551,7 +568,6 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([hashedToken])
   @@map("refresh_tokens")
 }
 
@@ -568,7 +584,6 @@ model MobileOAuthExchangeCode {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([hashedCode])
   @@index([deviceId])
   @@index([expiresAt])
   @@map("mobile_oauth_exchange_codes")
@@ -610,7 +625,7 @@ model PlannedCollection {
   cocktails PlannedCollectionCocktail[]
   rsvps     CollectionRsvp[]
 
-  @@index([shareToken])
+  @@index([userId, plannedFor])
   @@map("planned_collections")
 }
 
@@ -628,6 +643,9 @@ model CollectionRsvp {
   collection PlannedCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   user       User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  // One RSVP per logged-in user per collection. Guest RSVPs (userId NULL) stay
+  // distinct (NULLs never conflict) and are capped per collection in the service.
+  @@unique([collectionId, userId])
   @@index([collectionId])
   @@index([userId])
   @@map("collection_rsvps")
@@ -644,5 +662,6 @@ model PlannedCollectionCocktail {
   cocktail          Cocktail          @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
 
   @@unique([plannedCollectionId, cocktailId])
+  @@index([cocktailId])
   @@map("planned_collection_cocktails")
 }

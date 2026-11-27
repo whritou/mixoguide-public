@@ -63,21 +63,13 @@ class AdminStatsRepository {
     }
 
     async getTechniqueDistribution() {
-        const cocktails = await prisma.cocktail.findMany({
-            select: { technique: true },
-        })
-
-        const techMap = new Map<string, number>()
-
-        for (const c of cocktails) {
-            for (const t of c.technique) {
-                techMap.set(t, (techMap.get(t) ?? 0) + 1)
-            }
-        }
-
-        return Array.from(techMap.entries())
-            .map(([technique, count]) => ({ technique, count }))
-            .sort((a, b) => b.count - a.count)
+        // Aggregated in SQL (DB-011) instead of loading every cocktail row.
+        return prisma.$queryRaw<Array<{ technique: string; count: number }>>`
+            SELECT t::text AS technique, count(*)::int AS count
+              FROM cocktails, unnest(technique) AS t
+             GROUP BY 1
+             ORDER BY 2 DESC, 1
+        `
     }
 
     async getTopIngredients(limit = 10) {

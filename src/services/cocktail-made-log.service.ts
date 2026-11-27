@@ -1,5 +1,6 @@
 import { cocktailMadeLogRepository } from '@/repositories/cocktail-made-log.repository'
 import { ForbiddenError, NotFoundError } from '@/utils/errors'
+import type { Prisma } from '@prisma/client'
 
 type CreateCocktailMadeLogInput = {
     userId: string
@@ -14,8 +15,8 @@ class CocktailMadeLogService {
         return cocktailMadeLogRepository.findByUser(userId, page, limit, includeArchived)
     }
 
-    async create(data: CreateCocktailMadeLogInput) {
-        return cocktailMadeLogRepository.create(data)
+    async create(data: CreateCocktailMadeLogInput, tx?: Prisma.TransactionClient) {
+        return cocktailMadeLogRepository.create(data, tx)
     }
 
     async delete(id: string, userId: string, isAdmin: boolean) {

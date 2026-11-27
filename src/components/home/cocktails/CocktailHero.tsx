@@ -54,7 +54,7 @@ export function CocktailHero({
 
     return (
         <div className="relative flex flex-col justify-between p-14 text-fg-on-image bg-[linear-gradient(165deg,#2a1e12,#5a3820)] overflow-hidden">
-            <div className="absolute right-[-120px] top-[-120px] w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(216,150,90,0.55),transparent_60%)]" />
+            <div aria-hidden="true" className="absolute right-[-120px] top-[-120px] w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(216,150,90,0.55),transparent_60%)]" />
 
             {cocktail.imageUrl && (
                 <Image
@@ -121,8 +121,8 @@ export function CocktailHero({
 
                 {planState?.exists && (
                     <div className="text-sm text-fg-on-image/90 flex items-center gap-2">
-                        {planState.status === 'planned' && <><CalendarDays size={13} /> Planned</>}
-                        {planState.status === 'done'    && <>✓ Done</>}
+                        {planState.status === 'planned' && <><CalendarDays size={13} aria-hidden="true" /> Planned</>}
+                        {planState.status === 'done'    && <><span aria-hidden="true">✓</span> Done</>}
                     </div>
                 )}
 
@@ -130,19 +130,22 @@ export function CocktailHero({
                     <>
                         <div className="hidden md:flex flex-col md:flex-row gap-3 mt-auto pt-6 border-t border-fg-on-image/15">
                             <button
+                                type="button"
                                 onClick={onMake}
                                 className="px-6 py-3 rounded-full bg-fg-on-image text-surface-inverse flex items-center gap-2 hover:bg-fg-on-image/90"
                             >
-                                <FlaskConical size={15} /> Make now
+                                <FlaskConical size={15} aria-hidden="true" /> Make now
                             </button>
                             <button
+                                type="button"
                                 onClick={onPlan}
                                 className="px-6 py-3 rounded-full border border-fg-on-image/30 flex items-center gap-2 hover:bg-fg-on-image/10"
                             >
-                                <CalendarDays size={15} /> Plan
+                                <CalendarDays size={15} aria-hidden="true" /> Plan
                             </button>
                             {planState?.status === 'planned' && (
                                 <button
+                                    type="button"
                                     onClick={onCompleted}
                                     disabled={completing}
                                     className="px-6 py-3 rounded-full border border-fg-on-image/30 hover:bg-fg-on-image/10 flex items-center gap-2"
@@ -154,6 +157,7 @@ export function CocktailHero({
 
                         {planState?.status === 'planned' && (
                             <button
+                                type="button"
                                 onClick={onCompleted}
                                 disabled={completing}
                                 className="md:hidden mt-2 px-4 py-2 rounded-full border border-fg-on-image/30 hover:bg-fg-on-image/10 flex items-center gap-2 w-fit"

@@ -18,8 +18,13 @@ const urlWithDefault = (fallback: string) =>
 const optionalEmailWithDefault = (fallback: string) =>
   z.preprocess(emptyToUndefined, z.string().email().default(fallback))
 
-const envSchema = z.object({
+const baseSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+
+  // Runtime DB connection (may be a pooler). DIRECT_URL is a direct connection used by
+  // `prisma migrate deploy` in the release job (see docs/RUNBOOK.md).
+  DATABASE_URL: optionalString,
+  DIRECT_URL: optionalString,
 
   NEXTAUTH_SECRET: optionalString,
   NEXTAUTH_URL: optionalUrl,
@@ -48,6 +53,7 @@ const envSchema = z.object({
   ADMIN_NOTIFICATION_EMAIL: optionalEmailWithDefault("suggestion@mixoguide.com"),
 
   TURNSTILE_SECRET_KEY: optionalString,
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: optionalString,
 
   ANDROID_CERT_SHA256_FINGERPRINTS: optionalString,
 
@@ -62,12 +68,54 @@ const envSchema = z.object({
   ),
 })
 
+/** Variables that must be present when the server runs with NODE_ENV=production. */
+export const PRODUCTION_REQUIRED_ENV = [
+  "DATABASE_URL",
+  "NEXTAUTH_SECRET",
+  "RESEND_API_KEY",
+  "TURNSTILE_SECRET_KEY",
+  "TRUSTED_PROXY",
+] as const
+
+/**
+ * Production-required checks are skipped during `next build` (which evaluates modules
+ * with NODE_ENV=production but without runtime secrets), in tests, and in the browser
+ * (server-only secrets are never inlined into client bundles).
+ */
+export function shouldEnforceProductionEnv(
+  source: Record<string, string | undefined> = process.env,
+): boolean {
+  if (source.NODE_ENV !== "production") return false
+  if (source.NEXT_PHASE === "phase-production-build") return false
+  if (source.VITEST || source.SKIP_ENV_VALIDATION === "1") return false
+  if (typeof window !== "undefined") return false
+  return true
+}
+
+export function buildEnvSchema(enforceProduction: boolean) {
+  return baseSchema.superRefine((e, ctx) => {
+    if (!enforceProduction || e.NODE_ENV !== "production") return
+    for (const key of PRODUCTION_REQUIRED_ENV) {
+      if (!e[key]) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [key],
+          message: `${key} is required in production`,
+        })
+      }
+    }
+  })
+}
+
+const envSchema = buildEnvSchema(shouldEnforceProductionEnv())
+
 // Next inlines NEXT_PUBLIC_* only for literal `process.env.NAME` references, so they must be named explicitly to be readable on the client.
 const parsedEnv = envSchema.parse({
   ...process.env,
   NODE_ENV: process.env.NODE_ENV,
   NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
   NEXT_PUBLIC_DARK_MODE: process.env.NEXT_PUBLIC_DARK_MODE,
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
 })
 
 export const env = {

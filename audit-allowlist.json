@@ -1,0 +1,30 @@
+{
+  "@auth/core": {
+    "reason": "Transitive via next-auth 4.24.15 (latest v4). Advisories concern the Email provider normalizer and getToken() on malformed Bearer headers; MixoGuide uses neither (no Email provider; bearer tokens are decoded via next-auth/jwt decode in mobile-auth.service). npm's suggested 'fix' is a downgrade. Resolve by migrating to Auth.js v5 (backlog BL-19).",
+    "expires": "2027-02-28"
+  },
+  "next-auth": {
+    "reason": "Flagged only because of its @auth/core dependency (see above).",
+    "expires": "2027-02-28"
+  },
+  "prisma": {
+    "reason": "Prisma CLI config loader (@prisma/config -> effect, deepmerge-ts). Runs only at build/migration time on trusted config, not on request data. Fix requires Prisma 7 major upgrade (backlog BL-19).",
+    "expires": "2027-02-28"
+  },
+  "@prisma/config": {
+    "reason": "See prisma.",
+    "expires": "2027-02-28"
+  },
+  "effect": {
+    "reason": "See prisma.",
+    "expires": "2027-02-28"
+  },
+  "deepmerge-ts": {
+    "reason": "See prisma.",
+    "expires": "2027-02-28"
+  },
+  "zod": {
+    "reason": "Memory exhaustion when validating oversized constrained collections. Partially mitigated: request arrays carry .max() bounds; JSON body size is not capped in the app, so set a reverse-proxy body limit (docs/RUNBOOK.md). Fix requires zod 4 major upgrade across web + shared schemas (backlog BL-19).",
+    "expires": "2027-01-31"
+  }
+}

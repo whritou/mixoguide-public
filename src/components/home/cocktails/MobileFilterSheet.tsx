@@ -1,9 +1,10 @@
-﻿'use client'
+'use client'
 
 import { useState, useRef, type TouchEvent } from 'react'
 import { ChevronDown, Search, X } from 'lucide-react'
 import clsx from 'clsx'
 import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import {
     COCKTAIL_FLAVORS,
     COCKTAIL_DIFFICULTIES,
@@ -89,36 +90,40 @@ export function MobileFilterSheet({
         startY.current = null
     }
 
-    if (!open) return null
-
     return (
-        <div className="fixed inset-0 z-50 bg-overlay/53 backdrop-blur-sm md:hidden" onClick={close}>
-            <div
-                onClick={(e) => e.stopPropagation()}
+        <Sheet open={open} onOpenChange={(o) => { if (!o) close() }}>
+            <SheetContent
+                side="bottom"
+                showCloseButton={false}
+                overlayClassName="z-[150] bg-overlay/53 backdrop-blur-sm md:hidden"
                 className={clsx(
-                    'absolute bottom-0 inset-x-0 bg-surface rounded-t-3xl p-6 max-h-[82vh] overflow-y-auto',
+                    'z-[150] md:hidden block gap-0 border-0 bg-surface rounded-t-3xl p-6 max-h-[82vh] overflow-y-auto',
                     !dragging && 'transition-transform duration-200'
                 )}
                 style={{ transform: `translateY(${offset}px)` }}
             >
                 <div
+                    aria-hidden="true"
                     className="w-10 h-1.5 bg-line rounded-full mx-auto mb-5"
                     onTouchStart={onTouchStart}
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}
                 />
                 <div className="flex justify-between items-center mb-4">
-                    <span className="font-label text-base font-semibold">Filters</span>
-                    <button onClick={close} className="text-sm text-fg-muted">Close</button>
+                    <SheetTitle className="font-label text-base font-semibold">Filters</SheetTitle>
+                    <button type="button" onClick={close} className="min-h-6 px-2 text-sm text-fg-muted hover:text-fg">Close</button>
                 </div>
+                <SheetDescription className="sr-only">Refine the cocktail list by search, flavor, occasion, difficulty, ingredient, ABV and sort order.</SheetDescription>
 
                 <div className="space-y-5">
                     {/* Search */}
                     <div>
-                        <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Search</span>
+                        <label htmlFor="mobile-cocktail-search" className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Search</label>
                         <div className="relative mt-2">
-                            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
+                            <Search size={13} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
                             <input
+                                id="mobile-cocktail-search"
+                                type="search"
                                 placeholder="Search cocktails..."
                                 value={p.get('search') ?? ''}
                                 onChange={e => filters.setDebounced('search', e.target.value || null)}
@@ -126,10 +131,12 @@ export function MobileFilterSheet({
                             />
                             {p.get('search') && (
                                 <button
+                                    type="button"
+                                    aria-label="Clear search"
                                     onClick={() => filters.set('search', null)}
-                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg-secondary"
+                                    className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center min-h-6 min-w-6 p-1.5 rounded-full text-fg-muted hover:text-fg-secondary"
                                 >
-                                    <X size={13} />
+                                    <X size={13} aria-hidden="true" />
                                 </button>
                             )}
                         </div>
@@ -139,6 +146,8 @@ export function MobileFilterSheet({
                     {isAuthenticated && (
                         <div className="grid grid-cols-2 gap-2">
                             <button
+                                type="button"
+                                aria-pressed={onlyMakeable}
                                 onClick={() => filters.set('onlyMakeable', onlyMakeable ? null : 'true')}
                                 className={clsx(
                                     'rounded-xl border px-3 py-2 text-xs font-label uppercase tracking-wider',
@@ -148,6 +157,8 @@ export function MobileFilterSheet({
                                 Ready to mix
                             </button>
                             <button
+                                type="button"
+                                aria-pressed={onlyFavorites}
                                 onClick={() => filters.set('onlyFavorites', onlyFavorites ? null : 'true')}
                                 className={clsx(
                                     'rounded-xl border px-3 py-2 text-xs font-label uppercase tracking-wider',
@@ -169,17 +180,21 @@ export function MobileFilterSheet({
                     ).map(({ key, label, items, param }) => (
                         <div key={key}>
                             <button
+                                type="button"
+                                aria-expanded={openSection === key}
                                 onClick={() => setOpenSection(prev => prev === key ? null : key)}
                                 className="w-full flex items-center justify-between"
                             >
                                 <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">{label}</span>
-                                <ChevronDown size={14} className={clsx('transition-transform', openSection === key && 'rotate-180')} />
+                                <ChevronDown size={14} aria-hidden="true" className={clsx('transition-transform', openSection === key && 'rotate-180')} />
                             </button>
                             {openSection === key && (
                                 <div className="flex flex-wrap gap-2 mt-2">
                                     {items.map(item => (
                                         <button
                                             key={item}
+                                            type="button"
+                                            aria-pressed={(p.get(param) ?? '').split(',').includes(item)}
                                             className={chipCls((p.get(param) ?? '').split(',').includes(item))}
                                             onClick={() => filters.toggleCsvValue(param, item)}
                                         >
@@ -194,17 +209,21 @@ export function MobileFilterSheet({
                     {/* Ingredients */}
                     <div>
                         <button
+                            type="button"
+                            aria-expanded={openSection === 'ingredient'}
                             onClick={() => setOpenSection(prev => prev === 'ingredient' ? null : 'ingredient')}
                             className="w-full flex items-center justify-between"
                         >
                             <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Ingredient</span>
-                            <ChevronDown size={14} className={clsx('transition-transform', openSection === 'ingredient' && 'rotate-180')} />
+                            <ChevronDown size={14} aria-hidden="true" className={clsx('transition-transform', openSection === 'ingredient' && 'rotate-180')} />
                         </button>
                         {openSection === 'ingredient' && (
                             <div className="flex max-h-36 overflow-y-auto pr-1 flex-wrap gap-2 mt-2">
                                 {[...ingredientOpts].sort((a, b) => a.name.localeCompare(b.name)).map(ing => (
                                     <button
                                         key={ing.id}
+                                        type="button"
+                                        aria-pressed={(p.get('ingredients') ?? '').split(',').includes(ing.name)}
                                         className={chipCls((p.get('ingredients') ?? '').split(',').includes(ing.name))}
                                         onClick={() => filters.toggleCsvValue('ingredients', ing.name)}
                                     >
@@ -218,11 +237,13 @@ export function MobileFilterSheet({
                     {/* ABV */}
                     <div>
                         <button
+                            type="button"
+                            aria-expanded={openSection === 'abv'}
                             onClick={() => setOpenSection(prev => prev === 'abv' ? null : 'abv')}
                             className="w-full flex items-center justify-between"
                         >
                             <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">ABV</span>
-                            <ChevronDown size={14} className={clsx('transition-transform', openSection === 'abv' && 'rotate-180')} />
+                            <ChevronDown size={14} aria-hidden="true" className={clsx('transition-transform', openSection === 'abv' && 'rotate-180')} />
                         </button>
                         {openSection === 'abv' && (
                             <div className="flex flex-wrap gap-2 mt-2">
@@ -233,6 +254,8 @@ export function MobileFilterSheet({
                                 ].map(({ label, value }) => (
                                     <button
                                         key={value}
+                                        type="button"
+                                        aria-pressed={(p.get('alcoholic') ?? 'any') === value}
                                         className={chipCls((p.get('alcoholic') ?? 'any') === value)}
                                         onClick={() => filters.set('alcoholic', value === 'any' ? null : value)}
                                     >
@@ -246,17 +269,21 @@ export function MobileFilterSheet({
                     {/* Sort */}
                     <div>
                         <button
+                            type="button"
+                            aria-expanded={openSection === 'sort'}
                             onClick={() => setOpenSection(prev => prev === 'sort' ? null : 'sort')}
                             className="w-full flex items-center justify-between"
                         >
                             <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Sort</span>
-                            <ChevronDown size={14} className={clsx('transition-transform', openSection === 'sort' && 'rotate-180')} />
+                            <ChevronDown size={14} aria-hidden="true" className={clsx('transition-transform', openSection === 'sort' && 'rotate-180')} />
                         </button>
                         {openSection === 'sort' && (
                             <div className="mt-2 space-y-1">
                                 {SORT_OPTIONS.map(opt => (
                                     <button
                                         key={opt.label}
+                                        type="button"
+                                        aria-pressed={currentSort.label === opt.label}
                                         onClick={() => setSort(opt.sortBy, opt.sortOrder)}
                                         className={clsx(
                                             'w-full text-left px-3 py-2 rounded-lg text-sm',
@@ -281,11 +308,11 @@ export function MobileFilterSheet({
                     >
                         Reset
                     </Button>
-                    <Button className="flex-1 bg-brand-soft hover:bg-brand" onClick={close}>
+                    <Button className="flex-1 bg-brand hover:bg-brand/90" onClick={close}>
                         Done
                     </Button>
                 </div>
-            </div>
-        </div>
+            </SheetContent>
+        </Sheet>
     )
 }

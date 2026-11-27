@@ -129,22 +129,23 @@ export function DataTable<TData, TValue>({
 
             {(pageTitle || pageDescription) && (
                 <div className="space-y-1">
-                    {pageTitle && <h2 className="text-2xl tracking-tight">{pageTitle}</h2>}
+                    {/* A11Y-018: the data-table title is the admin page's main heading. */}
+                    {pageTitle && <h1 className="text-2xl tracking-tight">{pageTitle}</h1>}
                     {pageDescription && <p className="text-sm text-muted-foreground">{pageDescription}</p>}
                 </div>
             )}
 
             {/* background loading indicator */}
-            {showBackgroundLoading && (
-                <div className="text-xs text-muted-foreground">
-                    Updating...
-                </div>
-            )}
+            <div role="status" aria-live="polite" className="text-xs text-muted-foreground empty:hidden">
+                {showBackgroundLoading ? "Updating..." : ""}
+            </div>
 
             <div className="flex justify-between">
                 <div className="flex items-center gap-2">
                     {searchColumn && (
                         <Input
+                            type="search"
+                            aria-label={pageTitle ? `Search ${pageTitle}` : "Search"}
                             placeholder={searchPlaceholder}
                             value={onSearchChange ? localSearch : ((table.getColumn(searchColumn)?.getFilterValue() as string) ?? "")}
                             onChange={(e) => {
@@ -167,7 +168,7 @@ export function DataTable<TData, TValue>({
                     {createButtonLink && (
                         <Button asChild>
                             <Link href={createButtonLink}>
-                                <Plus className="mr-1 h-4 w-4" />
+                                <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
                                 {createButtonLabel}
                             </Link>
                         </Button>
@@ -180,12 +181,12 @@ export function DataTable<TData, TValue>({
             <div className="relative border rounded-md bg-surface">
 
                 {showInitialLoader && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-surface/70 z-10">
+                    <div role="status" aria-live="polite" className="absolute inset-0 flex items-center justify-center bg-surface/70 z-10">
                         <span className="text-sm">Loading...</span>
                     </div>
                 )}
 
-                <Table>
+                <Table aria-busy={isLoading || isFetching || undefined}>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>

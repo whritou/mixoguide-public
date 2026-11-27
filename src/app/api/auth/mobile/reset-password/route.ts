@@ -12,6 +12,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
     const { token, password } = resetPasswordSchema.parse(await req.json())
 
+    // Ends every existing session and refresh token (SEC-004).
     await authService.resetPassword(token, password)
 
     return ApiResponse.success({ message: 'Password reset successfully. You can now sign in.' })

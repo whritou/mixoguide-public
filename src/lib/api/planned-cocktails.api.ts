@@ -3,6 +3,14 @@ import { mapPlannedCocktail, mapPlannedCocktails } from '@/lib/mappers/planned-c
 import type { PlannedCocktail, PlannedCocktailDTO } from '@/types/models/planned-cocktail'
 import type { ListParams } from '@/lib/query-keys'
 
+/** The current user's plan for one cocktail (GET /api/planned-cocktails/exist). */
+export interface PlannedCocktailState {
+    exists:            boolean
+    plannedCocktailId: string | null
+    status:            'planned' | 'done' | null
+    plannedFor:        string | null
+}
+
 export const plannedCocktailsApi = {
     list: async (params: ListParams = {}) => {
         const res = await api.getList<PlannedCocktailDTO>('planned-cocktails', params)
@@ -28,9 +36,11 @@ export const plannedCocktailsApi = {
         return mapPlannedCocktail(res.data)
     },
     exists: async (cocktailId: string): Promise<boolean> => {
-        const res = await fetch(`/api/planned-cocktails/exist?cocktailId=${cocktailId}`)
-        if (!res.ok) return false
-        const json = await res.json()
-        return Boolean(json.data?.exists)
+        const state = await plannedCocktailsApi.state(cocktailId).catch(() => null)
+        return Boolean(state?.exists)
+    },
+    state: async (cocktailId: string): Promise<PlannedCocktailState> => {
+        const res = await api.get<PlannedCocktailState>('planned-cocktails/exist', { cocktailId })
+        return res.data
     },
 }

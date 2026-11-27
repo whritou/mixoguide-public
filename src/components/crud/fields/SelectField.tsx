@@ -1,4 +1,4 @@
-﻿/* src/components/crud/fields/SelectField.tsx */
+/* src/components/crud/fields/SelectField.tsx */
 "use client";
 
 import {
@@ -49,7 +49,7 @@ export function SelectField({ field, control, disabled }: Props) {
                       ))}
                     </RadioGroup>
                   </FormControl>
-                  {field.description && <FormDescription className="text-xs text-fg-muted/70 font-body">{field.description}</FormDescription>}
+                  {field.description && <FormDescription className="text-xs text-fg-muted font-body">{field.description}</FormDescription>}
                   <FormMessage className="text-xs" />
                 </FormItem>
             )}
@@ -75,7 +75,7 @@ export function SelectField({ field, control, disabled }: Props) {
                     disabled={disabled || field.readOnly}
                 >
                   <FormControl>
-                    <SelectTrigger className="rounded-xl bg-surface border-line-control text-sm font-body text-fg focus:ring-ring/40 focus:border-brand-soft data-[placeholder]:text-fg-muted">
+                    <SelectTrigger className="rounded-xl bg-surface border-line-control text-sm font-body text-fg focus:ring-ring focus:border-brand-soft data-[placeholder]:text-fg-muted">
                       <SelectValue placeholder={field.placeholder || `Select ${field.label.toLowerCase()}`} />
                     </SelectTrigger>
                   </FormControl>
@@ -92,7 +92,7 @@ export function SelectField({ field, control, disabled }: Props) {
                   </SelectContent>
                 </Select>
 
-                {field.description && <FormDescription className="text-xs text-fg-muted/70 font-body">{field.description}</FormDescription>}
+                {field.description && <FormDescription className="text-xs text-fg-muted font-body">{field.description}</FormDescription>}
                 <FormMessage className="text-xs" />
               </FormItem>
           )}

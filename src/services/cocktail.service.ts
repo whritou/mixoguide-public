@@ -1,6 +1,6 @@
 import { cocktailRepository } from '@/repositories/cocktail.repository'
 import { getDerivationMap } from '@/lib/derivations/derivation-cache'
-import { getMakeableCache, setMakeableCache } from '@/lib/cache/makeable-cache'
+import { bumpCatalogVersion, clampMaxMissing, getMakeableCache, setMakeableCache } from '@/lib/cache/makeable-cache'
 import { NotFoundError } from '@/utils/errors'
 import type { Flavor, Occasion, Technique } from '@prisma/client'
 import type { MakeableCocktail, MakeablePreview } from '@/types/models/cocktail'
@@ -19,7 +19,8 @@ class CocktailService {
         return cocktail
     }
 
-    async getMakeable(userId: string, maxMissing = 3) {
+    async getMakeable(userId: string, maxMissingRaw: number = 3) {
+        const maxMissing = clampMaxMissing(maxMissingRaw)
         const [pantryItems, derivationMap] = await Promise.all([
             cocktailRepository.findPantryItemsForMakeable(userId),
             getDerivationMap(),
@@ -37,7 +38,8 @@ class CocktailService {
         return cocktailRepository.findMakeable(ingredientIds, maxMissing, derivationMap, 200, pantryQuantities)
     }
 
-    async getBestMakeable(userId: string, maxMissing = 3) {
+    async getBestMakeable(userId: string, maxMissingRaw: number = 3) {
+        const maxMissing = clampMaxMissing(maxMissingRaw)
         const cached = await getMakeableCache(userId, maxMissing)
         if (cached) return cached
 
@@ -96,12 +98,14 @@ class CocktailService {
     async create(data: CreateCocktailInput) {
         // Strip relation fields handled separately by sync methods
         const { ingredients: _ing, barToolIds: _tools, ...rest } = data
-        return cocktailRepository.create({
+        const cocktail = await cocktailRepository.create({
             ...rest,
             flavors:   rest.flavors   as Flavor[]    | undefined,
             occasions: rest.occasions as Occasion[]  | undefined,
             technique: rest.technique as Technique[] | undefined,
         })
+        await bumpCatalogVersion()
+        return cocktail
     }
 
     async update(id: string, data: UpdateCocktailInput) {
@@ -114,12 +118,14 @@ class CocktailService {
             technique: rest.technique as Technique[] | undefined,
         })
         if (!cocktail) throw new NotFoundError('Cocktail not found')
+        await bumpCatalogVersion()
         return cocktail
     }
 
     async delete(id: string) {
         const ok = await cocktailRepository.deletePreservingMadeLogStats(id)
         if (!ok) throw new NotFoundError('Cocktail not found')
+        await bumpCatalogVersion()
     }
 
     // ─── RELATION SYNC (many-to-many) ─────────────────────────────────────────
@@ -141,6 +147,8 @@ class CocktailService {
     ) {
         await this.assertExists(cocktailId)
         await cocktailRepository.syncIngredients(cocktailId, ingredients)
+        // Recipes changed: every user's makeable results may change.
+        await bumpCatalogVersion()
     }
 
     // ─── PRIVATE ──────────────────────────────────────────────────────────────

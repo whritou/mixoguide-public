@@ -1,5 +1,5 @@
-﻿'use client'
-import { useState, useTransition } from 'react'
+'use client'
+import { useState, useTransition, useId } from 'react'
 import { Check, ChevronsUpDown, X } from 'lucide-react'
 import clsx from 'clsx'
 import {
@@ -26,7 +26,7 @@ interface Props {
 const triggerCls = `
     w-full flex items-center justify-between px-4 py-2 rounded-xl bg-surface
     border border-line-control text-sm font-body text-left
-    focus:outline-none focus:ring-1 focus:ring-ring/40
+    focus:outline-none focus:ring-1 focus:ring-ring
     hover:border-brand-soft/50 transition-colors
     disabled:opacity-50 disabled:cursor-not-allowed
 `.trim()
@@ -84,22 +84,31 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
 
     const clearSub = () => onChange({ ...value, subTypeId: '' })
 
+    /* A11Y-022: unique ids per instance; the trigger is named by "label + current value". */
+    const uid = useId()
+    const ids = {
+        typeLabel: `${uid}-type-label`,
+        typeValue: `${uid}-type-value`,
+        subLabel: `${uid}-sub-label`,
+        subValue: `${uid}-sub-value`,
+    }
+
     /* ── Render ──────────────────────────────────────────────────── */
     return (
         <div className="space-y-4">
 
             {/* Type */}
             <div>
-                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                <span id={ids.typeLabel} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                     Type <span className="text-brand-soft-strong">*</span>
-                </label>
+                </span>
                 <Popover open={typeOpen} onOpenChange={setTypeOpen} modal>
                     <PopoverTrigger asChild>
-                        <button type="button" role="combobox" aria-controls="type-listbox" aria-expanded={typeOpen} disabled={disabled} className={triggerCls}>
-                            <span className={selectedType ? 'text-fg' : 'text-fg-muted'}>
+                        <button type="button" aria-labelledby={`${ids.typeLabel} ${ids.typeValue}`} disabled={disabled} className={triggerCls}>
+                            <span id={ids.typeValue} className={selectedType ? 'text-fg' : 'text-fg-muted'}>
                                 {selectedType ? selectedType.name : 'Select a type…'}
                             </span>
-                            <ChevronsUpDown size={14} className="shrink-0 text-fg-muted" />
+                            <ChevronsUpDown size={14} aria-hidden="true" className="shrink-0 text-fg-muted" />
                         </button>
                     </PopoverTrigger>
                     <PopoverContent
@@ -110,10 +119,11 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
                         <Command shouldFilter={false}>
                             <CommandInput
                                 placeholder="Search type…"
+                                aria-label="Search types"
                                 onValueChange={handleTypeSearch}
                                 className="text-sm font-body"
                             />
-                            <CommandList id="type-listbox" className="max-h-60">
+                            <CommandList className="max-h-60">
                                 <CommandEmpty className="py-4 text-center text-sm font-body text-fg-muted">
                                     No type found.
                                 </CommandEmpty>
@@ -127,6 +137,7 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
                                         >
                                             <span className="flex-1">{t.name}</span>
                                             <Check
+                                                aria-hidden="true"
                                                 size={14}
                                                 className={clsx('shrink-0 text-brand-soft-strong', value.typeId === t.id ? 'opacity-100' : 'opacity-0')}
                                             />
@@ -142,18 +153,18 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
             {/* Sub-type — only visible once a type is chosen */}
             {value.typeId && (
                 <div>
-                    <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                    <span id={ids.subLabel} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                         Sub-type{' '}
-                        <span className="normal-case font-body tracking-normal text-fg-muted/60">(optional)</span>
-                    </label>
+                        <span className="normal-case font-body tracking-normal text-fg-muted">(optional)</span>
+                    </span>
                     <div className="flex gap-2">
                         <Popover open={subOpen} onOpenChange={setSubOpen} modal>
                             <PopoverTrigger asChild>
-                                <button type="button" role="combobox" aria-controls="subtype-listbox" aria-expanded={subOpen} disabled={disabled} className={`flex-1 ${triggerCls}`}>
-                                    <span className={selectedSub ? 'text-fg' : 'text-fg-muted'}>
+                                <button type="button" aria-labelledby={`${ids.subLabel} ${ids.subValue}`} disabled={disabled} className={`flex-1 ${triggerCls}`}>
+                                    <span id={ids.subValue} className={selectedSub ? 'text-fg' : 'text-fg-muted'}>
                                         {selectedSub ? selectedSub.name : 'Select a sub-type…'}
                                     </span>
-                                    <ChevronsUpDown size={14} className="shrink-0 text-fg-muted" />
+                                    <ChevronsUpDown size={14} aria-hidden="true" className="shrink-0 text-fg-muted" />
                                 </button>
                             </PopoverTrigger>
                             <PopoverContent
@@ -164,10 +175,11 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
                                 <Command shouldFilter={false}>
                                     <CommandInput
                                         placeholder="Search sub-type…"
+                                        aria-label="Search sub-types"
                                         onValueChange={handleSubSearch}
                                         className="text-sm font-body"
                                     />
-                                    <CommandList id="subtype-listbox" className="max-h-60">
+                                    <CommandList className="max-h-60">
                                         <CommandEmpty className="py-4 text-center text-sm font-body text-fg-muted">
                                             {ingredientSubTypes.length === 0 && !deferredSubSearch
                                                 ? 'No sub-types for this type.'
@@ -183,6 +195,7 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
                                                 >
                                                     <span className="flex-1">{st.name}</span>
                                                     <Check
+                                                        aria-hidden="true"
                                                         size={14}
                                                         className={clsx('shrink-0 text-brand-soft-strong', value.subTypeId === st.id ? 'opacity-100' : 'opacity-0')}
                                                     />
@@ -199,9 +212,10 @@ export function TypeSubTypeSelector({ value, onChange, disabled }: Props) {
                                 type="button"
                                 disabled={disabled}
                                 onClick={clearSub}
+                                aria-label="Clear sub-type"
                                 className="w-9 h-9 flex items-center justify-center rounded-xl border border-line text-fg-muted hover:bg-line hover:text-fg-secondary transition-colors disabled:opacity-40"
                             >
-                                <X size={14} />
+                                <X size={14} aria-hidden="true" />
                             </button>
                         )}
                     </div>

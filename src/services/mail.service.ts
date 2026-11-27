@@ -1,5 +1,5 @@
 // src/services/mail.service.ts
-import { sendVerificationEmail, sendResetPasswordEmail, sendCollectionInviteEmail } from "@/utils/mail"
+import { sendVerificationEmail, sendResetPasswordEmail, sendCollectionInviteEmail, sendAccountExistsEmail } from "@/utils/mail"
 import { env } from "@/lib/env"
 
 const BASE_URL = env.NEXT_PUBLIC_BASE_URL
@@ -10,9 +10,15 @@ export class MailService {
         await sendVerificationEmail(email, link)
     }
 
-    async sendResetPasswordEmail(email: string, token: string): Promise<void> {
-        const link = `${BASE_URL}/reset-password?token=${token}`
+    async sendResetPasswordEmail(email: string, token: string, opts: { source?: "mobile" } = {}): Promise<void> {
+        const source = opts.source === "mobile" ? "&source=mobile" : ""
+        const link = `${BASE_URL}/reset-password?token=${token}${source}`
         await sendResetPasswordEmail(email, link)
+    }
+
+    /** Sent instead of an error when someone registers with an existing email (SEC-008). */
+    async sendAccountExistsEmail(email: string): Promise<void> {
+        await sendAccountExistsEmail(email, `${BASE_URL}/signin`, `${BASE_URL}/request-reset-password`)
     }
 
     async sendCollectionInvite(params: {

@@ -45,7 +45,33 @@ function row(id: string, ingredientId: string, quantity: number, unitLeft = 'cl'
     return { id, ingredientId, quantity, unitLeft, isInfinite }
 }
 
+/**
+ * The repository now locks the user's rows with `SELECT … FOR UPDATE` ($queryRaw)
+ * and applies all deltas with ONE relative `UPDATE … FROM unnest(ids, deltas)`
+ * ($executeRaw). These fakes emulate that SQL on top of `mockPI` so the
+ * behavioural assertions (final quantity per row) stay readable:
+ *  - $queryRaw returns whatever `mockPI.findMany` resolves (the locked rows),
+ *  - $executeRaw applies `GREATEST(0, quantity - delta)` + the SQL rounding and
+ *    reports each row through `mockPI.update({ where: { id }, data: { quantity } })`.
+ */
 function setupTx() {
+    let lockedRows: Array<{ id: string; quantity: number; unitLeft: string; isInfinite: boolean }> = []
+    mockPrisma.$queryRaw = vi.fn(async () => {
+        lockedRows = (await mockPI.findMany()) ?? []
+        return lockedRows
+    })
+    mockPrisma.$executeRaw = vi.fn(async (_sql: TemplateStringsArray, ids: string[], deltas: number[]) => {
+        for (let i = 0; i < ids.length; i++) {
+            const r = lockedRows.find((x) => x.id === ids[i])
+            if (!r || r.isInfinite) continue
+            const rawQty = Math.max(0, r.quantity - deltas[i])
+            const quantity = r.unitLeft === 'pcs'
+                ? Math.floor(+rawQty.toFixed(6) / 0.5) * 0.5
+                : +rawQty.toFixed(2)
+            await mockPI.update({ where: { id: r.id }, data: { quantity } })
+        }
+        return ids.length
+    })
     mockPrisma.$transaction.mockImplementation(async (cb: (tx: any) => any) => cb(mockPrisma))
 }
 
@@ -397,5 +423,52 @@ describe('PantryRepository.importIngredientsIntoEmptyPantry', () => {
 
         expect(imported).toBe(0)
         expect(mockPI.createMany).not.toHaveBeenCalled()
+    })
+})
+
+// ════════════════════════════════════════════════════════════════════════════
+describe('PantryRepository.decrementForCocktails (atomic batch, DB-001 / DB-012)', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        setupTx()
+        mockGetDerivationMap.mockResolvedValue(new Map())
+    })
+
+    it('locks the rows and issues a single relative UPDATE for several cocktails', async () => {
+        mockPI.findMany.mockResolvedValue([row('pi-gin', 'gin', 70), row('pi-tonic', 'tonic', 100)])
+
+        await pantryRepository.decrementForCocktails('user-1', [
+            [{ ingredientId: 'gin', amount: 6, unit: 'cl' }],
+            [{ ingredientId: 'gin', amount: 4, unit: 'cl' }, { ingredientId: 'tonic', amount: 15, unit: 'cl' }],
+        ])
+
+        expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(1)
+        const lockSql = (mockPrisma.$queryRaw.mock.calls[0][0] as TemplateStringsArray).join('?')
+        expect(lockSql).toMatch(/FOR UPDATE/)
+
+        expect(mockPrisma.$executeRaw).toHaveBeenCalledTimes(1)
+        const [sql, ids, deltas] = mockPrisma.$executeRaw.mock.calls[0]
+        expect((sql as TemplateStringsArray).join('?')).toMatch(/quantity - v\.delta/)
+        expect(ids).toEqual(['pi-gin', 'pi-tonic'])
+        expect(deltas).toEqual([10, 15])
+        expect(mockPI.update).toHaveBeenCalledWith({ where: { id: 'pi-gin' },   data: { quantity: 60 } })
+        expect(mockPI.update).toHaveBeenCalledWith({ where: { id: 'pi-tonic' }, data: { quantity: 85 } })
+    })
+
+    it('reuses the caller transaction client instead of opening a new one', async () => {
+        mockPI.findMany.mockResolvedValue([row('pi-gin', 'gin', 70)])
+
+        await pantryRepository.decrementForCocktail('user-1', [{ ingredientId: 'gin', amount: 6, unit: 'cl' }], mockPrisma)
+
+        expect(mockPrisma.$transaction).not.toHaveBeenCalled()
+        expect(mockPrisma.$executeRaw).toHaveBeenCalledTimes(1)
+    })
+
+    it('issues no UPDATE when nothing needs to be deducted', async () => {
+        mockPI.findMany.mockResolvedValue([row('pi-gin', 'gin', 70, 'cl', true)])
+
+        await pantryRepository.decrementForCocktail('user-1', [{ ingredientId: 'gin', amount: 6, unit: 'cl' }])
+
+        expect(mockPrisma.$executeRaw).not.toHaveBeenCalled()
     })
 })

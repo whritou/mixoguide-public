@@ -66,7 +66,7 @@ export default async function InvitePage({ params }: Props) {
         .reduce((s, r) => s + r.guestCount, 0)
 
     return (
-        <main className="min-h-screen bg-canvas">
+        <main id="main" tabIndex={-1} className="min-h-screen bg-canvas">
             {/* Hero header */}
             <div className="bg-gradient-to-br from-surface-inverse via-surface-inverse to-brand-gradient-from px-6 py-12 text-center">
                 <div className="inline-flex items-center gap-1.5 rounded-full bg-fg-on-inverse/10 px-3 py-1 text-[10px] font-label uppercase tracking-widest text-fg-on-inverse mb-4">

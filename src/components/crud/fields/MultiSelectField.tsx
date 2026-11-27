@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import {
@@ -8,6 +8,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  useFormField,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -57,18 +58,20 @@ export function MultiSelectField({
                     )}
                   </FormLabel>
 
-                  <FormControl>
-                    <div className="space-y-2">
+                  <div className="space-y-2">
                       <Input
                           type="search"
+                          aria-label={`Search ${field.label} options`}
                           placeholder="Search…"
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           disabled={disabled || field.readOnly}
-                          className="rounded-xl bg-surface border-line-control text-sm font-body text-fg placeholder:text-fg-muted focus-visible:ring-ring/40 focus-visible:border-brand-soft"
+                          className="rounded-xl bg-surface border-line-control text-sm font-body text-fg placeholder:text-fg-muted focus-visible:ring-ring focus-visible:border-brand-soft"
                       />
                       <ScrollArea className="h-[150px] rounded-xl border border-line bg-surface p-2">
-                        <div className="space-y-0.5">
+                        {/* A11Y-006: FormControl ids/aria land on the labelled group of checkboxes. */}
+                        <FormControl>
+                        <LabelledGroup className="space-y-0.5">
                           {filteredOptions.map((opt) => (
                               <label
                                   key={opt.value.toString()}
@@ -83,10 +86,10 @@ export function MultiSelectField({
                                 <span className="text-sm font-body text-fg">{opt.label}</span>
                               </label>
                           ))}
-                        </div>
+                        </LabelledGroup>
+                        </FormControl>
                       </ScrollArea>
                     </div>
-                  </FormControl>
 
                   {value.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-2">
@@ -102,9 +105,10 @@ export function MultiSelectField({
                                     <button
                                         type="button"
                                         onClick={() => toggle(v.toString())}
-                                        className="text-brand/60 hover:text-brand transition-colors"
+                                        aria-label={`Remove ${opt ? opt.label : v.toString()}`}
+                                        className="-my-1 -mr-1.5 inline-flex min-h-6 min-w-6 items-center justify-center rounded-full p-1.5 text-brand-soft-strong hover:text-brand transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                     >
-                                      <X className="h-3 w-3" />
+                                      <X className="h-3 w-3" aria-hidden="true" />
                                     </button>
                                 )}
                               </span>
@@ -114,7 +118,7 @@ export function MultiSelectField({
                   )}
 
                   {field.description && (
-                      <FormDescription className="text-xs text-fg-muted/70 font-body">{field.description}</FormDescription>
+                      <FormDescription className="text-xs text-fg-muted font-body">{field.description}</FormDescription>
                   )}
                   <FormMessage className="text-xs" />
                 </FormItem>
@@ -122,4 +126,10 @@ export function MultiSelectField({
           }}
       />
   );
+}
+
+/** role="group" labelled by the field's FormLabel (FormControl adds id/aria-describedby/aria-invalid). */
+function LabelledGroup(props: React.ComponentProps<"div">) {
+  const { formLabelId } = useFormField();
+  return <div role="group" aria-labelledby={formLabelId} {...props} />;
 }

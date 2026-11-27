@@ -1,11 +1,4 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db/prisma'
+// Backwards-compatible alias of /api/health/ready (existing monitors point here).
+export { GET } from './ready/route'
 
-export const GET = async () => {
-    try {
-        await prisma.$queryRaw`SELECT 1`
-        return NextResponse.json({ status: 'ok', db: 'ok' }, { status: 200 })
-    } catch {
-        return NextResponse.json({ status: 'error', db: 'unreachable' }, { status: 503 })
-    }
-}
+export const dynamic = 'force-dynamic'

@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useEffect, useId, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { toast } from 'sonner'
@@ -23,6 +22,7 @@ import {
     Trash2,
 } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { useCocktailsQuery } from '@/hooks/queries/use-cocktails'
 import { usePlannedCollectionMutations } from '@/hooks/mutations/use-planned-collection-mutations'
 import type { PlannedCollection } from '@/types/models/planned-collection'
@@ -61,7 +61,7 @@ export default function CollectionDetailsModal({
     const [searchFocused, setSearchFocused] = useState(false)
     const [addingCocktailId, setAddingCocktailId] = useState<string | null>(null)
     const [removingCocktailId, setRemovingCocktailId] = useState<string | null>(null)
-    const [mounted, setMounted] = useState(false)
+    const searchResultsId = useId()
 
     const date = new Date(item.plannedFor)
     const dateLabel = date.toLocaleDateString('en-US', {
@@ -85,11 +85,6 @@ export default function CollectionDetailsModal({
         }, 250)
         return () => window.clearTimeout(timer)
     }, [cocktailSearch])
-
-    useEffect(() => {
-        setMounted(true)
-        return () => setMounted(false)
-    }, [])
 
     const searchParams = useMemo(
         () => debouncedSearch ? { search: debouncedSearch, limit: 20 } : { limit: 20 },
@@ -135,48 +130,41 @@ export default function CollectionDetailsModal({
         }
     }
 
-    if (!mounted) return null
-
-    return createPortal(
-        <div
-            className="fixed inset-0 flex items-center justify-center overflow-hidden bg-overlay/67 p-4 backdrop-blur-sm cursor-default"
-            style={{ zIndex: 9999 }}
-            onClick={(e) => {
-                e.stopPropagation()
-                onClose()
-            }}
-        >
-            <div
-                className="flex min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-canvas shadow-2xl cursor-default"
+    return (
+        <Dialog open onOpenChange={(o) => { if (!o) onClose() }}>
+            <DialogContent
+                showCloseButton={false}
+                aria-describedby={undefined}
+                overlayClassName="z-[9999] backdrop-blur-sm"
+                className="z-[9999] flex min-h-0 w-full max-w-2xl sm:max-w-2xl flex-col gap-0 overflow-hidden rounded-2xl border-0 bg-canvas p-0 shadow-2xl"
                 style={{ maxHeight: 'calc(100vh - 2rem)' }}
-                onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-start justify-between gap-3 px-6 pt-6 pb-4 shrink-0 border-b border-line-strong/50">
                     <div className="min-w-0 flex-1">
                         <p className="text-[10px] font-label uppercase tracking-widest text-brand mb-1">
                             Event details
                         </p>
-                        <h2 className="font-headline italic text-2xl text-fg leading-tight">
+                        <DialogTitle className="font-headline italic font-normal text-2xl text-fg leading-tight">
                             {item.title}
-                        </h2>
+                        </DialogTitle>
                         <div className="flex items-center gap-3 flex-wrap text-xs text-fg-muted mt-2">
                             <span className="flex items-center gap-1">
-                                <CalendarDays size={12} />
+                                <CalendarDays size={12} aria-hidden="true" />
                                 {showTime ? `${dateLabel} at ${timeLabel}` : dateLabel}
                             </span>
                             {item.location && (
                                 <span className="flex items-center gap-1">
-                                    <MapPin size={12} />
+                                    <MapPin size={12} aria-hidden="true" />
                                     {item.location}
                                 </span>
                             )}
                             <span className="flex items-center gap-1">
-                                <Users size={12} />
+                                <Users size={12} aria-hidden="true" />
                                 {item.servings} serving{item.servings !== 1 ? 's' : ''}
                             </span>
                             {item.shareEnabled && (item.rsvpGoingCount ?? 0) > 0 && (
                                 <span className="flex items-center gap-1 text-brand font-medium">
-                                    <Users size={12} />
+                                    <Users size={12} aria-hidden="true" />
                                     {item.rsvpGoingCount} going
                                 </span>
                             )}
@@ -189,7 +177,7 @@ export default function CollectionDetailsModal({
                                         key={occ}
                                         className="inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-widest px-2 py-0.5 rounded-full bg-line text-fg-secondary"
                                     >
-                                        <Tag size={8} />
+                                        <Tag size={8} aria-hidden="true" />
                                         {formatLabel(occ)}
                                     </span>
                                 ))}
@@ -200,9 +188,9 @@ export default function CollectionDetailsModal({
                         type="button"
                         onClick={onClose}
                         aria-label="Close"
-                        className="shrink-0 p-1.5 rounded-full text-fg-muted hover:text-fg hover:bg-line/60 transition-colors"
+                        className="shrink-0 inline-flex size-8 items-center justify-center rounded-full text-fg-muted hover:text-fg hover:bg-line transition-colors"
                     >
-                        <X size={16} />
+                        <X size={16} aria-hidden="true" />
                     </button>
                 </div>
 
@@ -210,7 +198,7 @@ export default function CollectionDetailsModal({
                     <section>
                         <header className="flex items-center justify-between mb-3">
                             <h3 className="text-[10px] font-label uppercase tracking-widest text-brand flex items-center gap-1.5">
-                                <FlaskConical size={11} />
+                                <FlaskConical size={11} aria-hidden="true" />
                                 Cocktails
                             </h3>
                             <span className="text-xs text-fg-muted">
@@ -221,20 +209,23 @@ export default function CollectionDetailsModal({
                         {canEditCocktails && (
                             <div className="mb-3">
                                 <div className="relative">
-                                    <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
+                                    <Search size={13} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
                                     <input
-                                        type="text"
+                                        type="search"
+                                        aria-label="Search cocktails to add"
+                                        aria-controls={showSearchDropdown ? searchResultsId : undefined}
+                                        autoComplete="off"
                                         value={cocktailSearch}
                                         onChange={(e) => setCocktailSearch(e.target.value)}
                                         onFocus={() => setSearchFocused(true)}
                                         onBlur={() => setSearchFocused(false)}
                                         placeholder="Search cocktails to add..."
-                                        className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring"
+                                        className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm text-fg placeholder:text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                     />
                                 </div>
 
                                 {showSearchDropdown && (
-                                    <div className="mt-1 bg-surface border border-line-strong rounded-xl shadow-md overflow-hidden">
+                                    <div id={searchResultsId} role="group" aria-label="Matching cocktails" className="mt-1 bg-surface border border-line-strong rounded-xl shadow-md overflow-hidden">
                                         {searchResults.slice(0, 20).map((c) => (
                                             <button
                                                 key={c.id}
@@ -244,7 +235,8 @@ export default function CollectionDetailsModal({
                                                 disabled={addingCocktailId === c.id}
                                                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-fg hover:bg-brand-soft/10 transition-colors text-left disabled:opacity-50"
                                             >
-                                                <Plus size={12} className="text-brand shrink-0" />
+                                                <Plus size={12} aria-hidden="true" className="text-brand shrink-0" />
+                                                <span className="sr-only">Add </span>
                                                 {addingCocktailId === c.id ? 'Adding...' : c.name}
                                             </button>
                                         ))}
@@ -252,7 +244,7 @@ export default function CollectionDetailsModal({
                                 )}
 
                                 {(searchingCocktails || searchPending) && searchFocused && (
-                                    <p className="mt-1 text-xs text-fg-muted">Searching...</p>
+                                    <p role="status" className="mt-1 text-xs text-fg-muted">Searching...</p>
                                 )}
                             </div>
                         )}
@@ -279,7 +271,7 @@ export default function CollectionDetailsModal({
                                                 <div className="relative w-10 h-10 rounded-lg bg-line overflow-hidden shrink-0">
                                                     <Image
                                                         src={c.cocktail?.imageUrl ?? '/placeholder.svg'}
-                                                        alt={c.cocktail?.name ?? 'Cocktail'}
+                                                        alt=""
                                                         fill
                                                         className="object-cover"
                                                         sizes="40px"
@@ -295,14 +287,14 @@ export default function CollectionDetailsModal({
                                                         </p>
                                                     )}
                                                 </div>
-                                                <ChevronRight size={14} className="shrink-0 text-fg-muted" />
+                                                <ChevronRight size={14} aria-hidden="true" className="shrink-0 text-fg-muted" />
                                             </Link>
 
                                         </div>
                                         {item.status === 'done' || c.status === 'done' ? (
                                             <div className="px-3 pb-2 -mt-1 flex justify-end">
                                                 <span className="inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-widest px-2 py-1 rounded-full bg-brand/10 text-brand">
-                                                    <Check size={11} />
+                                                    <Check size={11} aria-hidden="true" />
                                                     Made
                                                 </span>
                                             </div>
@@ -315,18 +307,20 @@ export default function CollectionDetailsModal({
                                                         disabled={removingCocktailId === c.cocktailId || completingCocktailId === c.cocktailId}
                                                         className="inline-flex items-center gap-1 rounded-full border border-line-strong bg-surface px-2.5 py-1.5 text-[10px] font-label uppercase tracking-widest text-danger hover:bg-danger-bg disabled:opacity-50"
                                                     >
-                                                        <Trash2 size={11} />
+                                                        <Trash2 size={11} aria-hidden="true" />
                                                         {removingCocktailId === c.cocktailId ? 'Removing' : 'Remove'}
+                                                        <span className="sr-only"> {c.cocktail?.name ?? 'cocktail'}</span>
                                                     </button>
                                                 )}
                                                 <button
                                                     type="button"
                                                     onClick={() => onMarkCocktailDone(c.cocktailId, c.cocktail?.name ?? 'Cocktail')}
                                                     disabled={completingCocktailId === c.cocktailId || removingCocktailId === c.cocktailId}
-                                                    className="inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-widest px-2.5 py-1.5 rounded-full bg-line/70 text-fg-secondary hover:bg-brand/10 hover:text-brand transition-colors disabled:opacity-50"
+                                                    className="inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-widest px-2.5 py-1.5 rounded-full bg-line text-fg-secondary hover:bg-brand/10 hover:text-brand transition-colors disabled:opacity-50"
                                                 >
-                                                    <Check size={11} />
+                                                    <Check size={11} aria-hidden="true" />
                                                     {completingCocktailId === c.cocktailId ? 'Saving' : 'Mark made'}
+                                                    <span className="sr-only"> {c.cocktail?.name ?? 'cocktail'}</span>
                                                 </button>
                                             </div>
                                         )}
@@ -339,7 +333,7 @@ export default function CollectionDetailsModal({
                     <section>
                         <header className="flex items-center justify-between mb-3">
                             <h3 className="text-[10px] font-label uppercase tracking-widest text-brand flex items-center gap-1.5">
-                                <ShoppingCart size={11} />
+                                <ShoppingCart size={11} aria-hidden="true" />
                                 Shopping list
                             </h3>
                             {totalMissingCount > 0 && (
@@ -350,7 +344,7 @@ export default function CollectionDetailsModal({
                         </header>
 
                         {groceryLoading && groceryItems.length === 0 ? (
-                            <p className="text-xs text-fg-muted italic py-4 text-center">Loading...</p>
+                            <p role="status" className="text-xs text-fg-muted italic py-4 text-center">Loading...</p>
                         ) : groceryItems.length === 0 ? (
                             <EmptyState icon={ShoppingCart} heading="Nothing to buy" body="Your pantry already has everything." size="card" />
                         ) : (
@@ -376,7 +370,7 @@ export default function CollectionDetailsModal({
                                 {inList.length > 0 && (
                                     <GroceryGroup
                                         icon={ShoppingCart}
-                                        iconColor="text-brand-soft"
+                                        iconColor="text-brand-soft-strong"
                                         label="Already in shopping list"
                                         items={inList}
                                         variant="list"
@@ -402,9 +396,9 @@ export default function CollectionDetailsModal({
                             type="button"
                             onClick={() => { void onManageIngredients() }}
                             disabled={groceryLoading}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-label uppercase tracking-widest whitespace-nowrap rounded-full bg-line/60 text-fg-secondary hover:bg-brand-soft/20 hover:text-brand transition-colors disabled:opacity-40"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-label uppercase tracking-widest whitespace-nowrap rounded-full bg-line text-fg-secondary hover:bg-brand-soft/20 hover:text-brand transition-colors disabled:opacity-40"
                         >
-                            <ShoppingCart size={12} />
+                            <ShoppingCart size={12} aria-hidden="true" />
                             Manage ingredients
                         </button>
                     )}
@@ -414,8 +408,9 @@ export default function CollectionDetailsModal({
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-label uppercase tracking-widest rounded-full border border-line-strong bg-surface text-brand hover:bg-line/60 hover:border-brand/30 transition-colors shadow-sm"
                     >
-                        <Printer size={12} />
+                        <Printer size={12} aria-hidden="true" />
                         Download PDF
+                        <span className="sr-only"> (opens in a new tab)</span>
                     </a>
                     <a
                         href={`/api/planned-collections/${item.id}/menu/pdf`}
@@ -423,13 +418,13 @@ export default function CollectionDetailsModal({
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-label uppercase tracking-widest rounded-full border border-line-strong bg-surface text-brand hover:bg-line/60 hover:border-brand/30 transition-colors shadow-sm"
                     >
-                        <Printer size={12} />
+                        <Printer size={12} aria-hidden="true" />
                         Print the menu
+                        <span className="sr-only"> (opens in a new tab)</span>
                     </a>
                 </div>
-            </div>
-        </div>,
-        document.body,
+            </DialogContent>
+        </Dialog>
     )
 }
 
@@ -445,9 +440,9 @@ function GroceryGroup({
     return (
         <div>
             <h4 className="flex items-center gap-1.5 text-[10px] font-label uppercase tracking-widest text-fg-muted mb-1.5">
-                <Icon size={11} className={iconColor} />
+                <Icon size={11} aria-hidden="true" className={iconColor} />
                 {label}
-                <span className="text-fg-muted/70">({items.length})</span>
+                <span className="text-fg-muted">({items.length})</span>
             </h4>
             <ul className="rounded-xl border border-line bg-surface divide-y divide-line/70">
                 {items.map(item => (
@@ -460,6 +455,7 @@ function GroceryGroup({
                                             : variant === 'list' ? 'bg-brand-soft'
                                                 : 'bg-brand'
                                 }`}
+                                aria-hidden="true"
                             />
                             <span className="text-fg-secondary truncate">{item.ingredientName}</span>
                         </div>

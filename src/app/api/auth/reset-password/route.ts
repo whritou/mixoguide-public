@@ -13,12 +13,13 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
     const { token, password } = resetPasswordSchema.parse(await req.json())
 
+    // Ends every existing session and refresh token, then signs this browser in.
     const user = await authService.resetPassword(token, password)
 
-    const { token: sessionToken, cookieOptions } = await authService.createSession(user)
+    const { token: sessionToken, cookieName, cookieOptions } = await authService.createSession(user)
 
     const res = ApiResponse.success({ success: true })
-    res.cookies.set("next-auth.session-token", sessionToken, cookieOptions)
+    res.cookies.set(cookieName, sessionToken, cookieOptions)
 
     return res
 })

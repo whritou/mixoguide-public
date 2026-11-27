@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Lock } from "lucide-react";
@@ -18,6 +18,15 @@ export default function ResetPasswordPage() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
+    const passwordId = useId();
+    const confirmId = useId();
+    const errorId = useId();
+    const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // CQ-005: don't navigate after the page has unmounted.
+    useEffect(() => () => {
+        if (redirectTimer.current) clearTimeout(redirectTimer.current);
+    }, []);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -39,13 +48,13 @@ export default function ResetPasswordPage() {
         }
 
         setSuccess(true);
-        setTimeout(() => router.push("/signin"), 2000);
+        redirectTimer.current = setTimeout(() => router.push("/signin"), 2000);
     }
 
     return (
         <div className="text-center">
             <div className="w-16 h-16 rounded-full bg-brand-soft/15 flex items-center justify-center mx-auto mb-6">
-                <Lock size={28} className="text-brand" />
+                <Lock size={28} aria-hidden="true" className="text-brand" />
             </div>
 
             <h1 className="font-headline text-3xl text-fg mb-2">Reset your password</h1>
@@ -55,7 +64,7 @@ export default function ResetPasswordPage() {
 
             {success ? (
                 <div>
-                    <p className="text-sm text-brand bg-brand-soft/10 rounded-xl px-4 py-4 font-body mb-4">
+                    <p role="status" className="text-sm text-brand bg-brand-soft/10 rounded-xl px-4 py-4 font-body mb-4">
                         Password updated successfully. Redirecting to sign in...
                     </p>
                     <Link
@@ -68,11 +77,16 @@ export default function ResetPasswordPage() {
             ) : (
                 <form onSubmit={handleSubmit} className="space-y-4 text-left">
                     <div>
-                        <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
+                        <label htmlFor={passwordId} className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                             New Password
                         </label>
                         <input
+                            id={passwordId}
+                            name="password"
                             type="password"
+                            autoComplete="new-password"
+                            aria-invalid={!!error || undefined}
+                            aria-describedby={error ? errorId : undefined}
                             value={password}
                             onChange={(e) => {
                                 setPassword(e.target.value);
@@ -81,16 +95,22 @@ export default function ResetPasswordPage() {
                             required
                             className="w-full px-4 py-3 rounded-xl bg-line/50 text-sm font-body text-fg
                                        placeholder:text-fg-muted border border-line-control
-                                       focus:outline-none focus:ring-1 focus:ring-ring"
+                                       focus:outline-none focus:ring-2 focus:ring-ring
+                                       aria-[invalid=true]:border-danger"
                             placeholder="Enter new password"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
+                        <label htmlFor={confirmId} className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                             Confirm Password
                         </label>
                         <input
+                            id={confirmId}
+                            name="passwordConfirm"
                             type="password"
+                            autoComplete="new-password"
+                            aria-invalid={!!error || undefined}
+                            aria-describedby={error ? errorId : undefined}
                             value={passwordConfirm}
                             onChange={(e) => {
                                 setPasswordConfirm(e.target.value);
@@ -99,7 +119,8 @@ export default function ResetPasswordPage() {
                             required
                             className="w-full px-4 py-3 rounded-xl bg-line/50 text-sm font-body text-fg
                                        placeholder:text-fg-muted border border-line-control
-                                       focus:outline-none focus:ring-1 focus:ring-ring"
+                                       focus:outline-none focus:ring-2 focus:ring-ring
+                                       aria-[invalid=true]:border-danger"
                             placeholder="Confirm new password"
                         />
                     </div>
@@ -109,14 +130,14 @@ export default function ResetPasswordPage() {
                         disabled={loading}
                         className="w-full py-3 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full
                                    font-label text-sm uppercase tracking-widest
-                                   hover:scale-[0.98] transition-transform duration-200
+                                   motion-safe:hover:scale-[0.98] transition-transform duration-200
                                    disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         {loading ? "Resetting..." : "Reset password"}
                     </button>
 
                     {error && (
-                        <p className="text-sm text-center text-danger bg-danger-bg rounded-xl px-4 py-3 font-body">
+                        <p id={errorId} role="alert" className="text-sm text-center text-danger bg-danger-bg rounded-xl px-4 py-3 font-body">
                             {error}
                         </p>
                     )}

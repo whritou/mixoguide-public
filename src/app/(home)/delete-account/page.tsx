@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { AlertTriangle, Trash2 } from "lucide-react";
@@ -25,11 +25,10 @@ async function getDeleteAccountState() {
 
     try {
         const user = await userService.getWithStats(session.user.id);
-        const linkedProviders = user.accounts.map((account) => account.provider);
 
         return {
             isAuthenticated: true,
-            hasPassword: user.password !== null && !linkedProviders.includes("google"),
+            hasPassword: user.hasPassword,
         };
     } catch {
         return { isAuthenticated: false, hasPassword: false };

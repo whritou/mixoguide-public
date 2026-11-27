@@ -11,10 +11,10 @@ export const cocktailIngredientSchema = z.object({
   amount: z.number().positive().optional(),
   unit: measureUnit,
   optional: z.boolean().default(false),
-  substitutes: z.array(z.string().cuid()).default([]),
-  subUnit: z.array(measureUnit).default([]),
-  subAmount: z.array(z.number().positive()).default([]),
-  subShow: z.array(z.boolean()).default([]),
+  substitutes: z.array(z.string().cuid()).max(20).default([]),
+  subUnit: z.array(measureUnit).max(20).default([]),
+  subAmount: z.array(z.number().positive()).max(20).default([]),
+  subShow: z.array(z.boolean()).max(20).default([]),
 })
 
 export const createCocktailSchema = z.object({
@@ -30,12 +30,12 @@ export const createCocktailSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']).default('easy'),
   preparationTime: z.number().int().positive().optional().nullable(),
   technique: z.array(z.enum(['shaken', 'stirred', 'built', 'layered', 'blended', 'flamed', 'infused', 'clarified', 'muddled', 'smoked'])).optional(),
-  flavors: z.array(z.string()).optional(),
-  occasions: z.array(z.string()).optional(),
+  flavors: z.array(z.string().max(40)).max(20).optional(),
+  occasions: z.array(z.string().max(40)).max(20).optional(),
   origin: z.string().optional().nullable(),
   glassId: z.string().cuid().optional().nullable(),
-  ingredients: z.array(cocktailIngredientSchema).optional(),
-  barToolIds: z.array(z.string().cuid()).optional(),
+  ingredients: z.array(cocktailIngredientSchema).max(40).optional(),
+  barToolIds: z.array(z.string().cuid()).max(30).optional(),
 })
 
 export const updateCocktailSchema = createCocktailSchema.partial()
@@ -77,9 +77,25 @@ export const createUserSchema = z.object({
 
 export const updateUserSchema = createUserSchema.partial()
 
+/** Avatar URLs must come from our upload pipeline or the Google profile CDN. */
+const AVATAR_HOSTS = new Set(['res.cloudinary.com', 'lh3.googleusercontent.com', 'lh4.googleusercontent.com', 'lh5.googleusercontent.com', 'lh6.googleusercontent.com'])
+
+export const avatarUrlSchema = z
+    .string()
+    .url()
+    .max(2048)
+    .refine((value) => {
+        try {
+            const url = new URL(value)
+            return url.protocol === 'https:' && AVATAR_HOSTS.has(url.hostname)
+        } catch {
+            return false
+        }
+    }, 'Unsupported image URL')
+
 export const updateProfileSchema = z.object({
     name: z.string().min(2).max(LIMITS.NAME_SHORT).trim().optional(),
-    image: z.string().url().nullable().optional(),
+    image: avatarUrlSchema.nullable().optional(),
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -153,8 +169,8 @@ export const createPlannedCollectionSchema = z.object({
     guestNote:   z.string().trim().max(LIMITS.GUEST_NOTE).optional().nullable(),
     plannedFor:  z.string().datetime(),
     servings:    z.number().int().min(1).max(LIMITS.SERVINGS).default(1),
-    occasions:   z.array(z.string()).default([]),
-    cocktailIds: z.array(z.string().cuid()).default([]),
+    occasions:   z.array(z.string().max(40)).max(20).default([]),
+    cocktailIds: z.array(z.string().cuid()).max(50).default([]),
 })
 
 export const updatePlannedCollectionSchema = z.object({
@@ -209,12 +225,12 @@ export const createIngredientSubTypeSchema = z.object({
 export const updateIngredientSubTypeSchema = createIngredientSubTypeSchema.partial()
 
 export const syncCocktailIngredientsSchema = z.object({
-    ingredients: z.array(cocktailIngredientSchema),
+    ingredients: z.array(cocktailIngredientSchema).max(40),
 })
 
 // Reusable for bar-tools sync
 export const syncIdsSchema = z.object({
-    ids: z.array(z.string().cuid()),
+    ids: z.array(z.string().cuid()).max(100),
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -241,9 +257,9 @@ export type UpdateSuggestionInput = z.infer<typeof updateSuggestionSchema>
 
 export const registerDeviceSchema = z.object({
     platform: z.enum(['android', 'ios']),
-    fcmToken: z.string().min(1),
-    expoToken: z.string().optional(),
-    appVersion: z.string().optional(),
+    fcmToken: z.string().min(1).max(4096),
+    expoToken: z.string().max(4096).optional(),
+    appVersion: z.string().max(40).optional(),
 })
 
 export type RegisterDeviceInput = z.infer<typeof registerDeviceSchema>

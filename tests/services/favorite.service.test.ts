@@ -3,14 +3,15 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { NotFoundError, ConflictError } from '@/utils/errors'
+import { NotFoundError } from '@/utils/errors'
+import { Prisma } from '@prisma/client'
 
 const { mockFavoriteRepo } = vi.hoisted(() => ({
     mockFavoriteRepo: {
         findAllByUser:          vi.fn(),
         findByUserAndCocktail:  vi.fn(),
-        create:                 vi.fn(),
-        hardDelete:             vi.fn(),
+        addIdempotent:          vi.fn(),
+        removeByUserAndCocktail: vi.fn(),
     },
 }))
 
@@ -64,22 +65,30 @@ describe('FavoriteService.exists', () => {
 describe('FavoriteService.add', () => {
     beforeEach(() => { vi.clearAllMocks() })
 
-    it('creates the favorite when it does not already exist', async () => {
-        mockFavoriteRepo.findByUserAndCocktail.mockResolvedValue(null)
+    it('adds the favorite through an idempotent upsert', async () => {
         const created = { userId: UID, cocktailId: COCKTAIL_ID }
-        mockFavoriteRepo.create.mockResolvedValue(created)
+        mockFavoriteRepo.addIdempotent.mockResolvedValue(created)
 
         const result = await favoriteService.add(UID, COCKTAIL_ID)
 
-        expect(mockFavoriteRepo.create).toHaveBeenCalledWith({ userId: UID, cocktailId: COCKTAIL_ID })
+        expect(mockFavoriteRepo.addIdempotent).toHaveBeenCalledWith(UID, COCKTAIL_ID)
         expect(result).toBe(created)
     })
 
-    it('throws ConflictError when the cocktail is already in favorites', async () => {
-        mockFavoriteRepo.findByUserAndCocktail.mockResolvedValue({ id: FAV_ID })
+    it('is idempotent: adding an existing favorite returns it instead of failing', async () => {
+        const existing = { id: FAV_ID, userId: UID, cocktailId: COCKTAIL_ID }
+        mockFavoriteRepo.addIdempotent.mockResolvedValue(existing)
 
-        await expect(favoriteService.add(UID, COCKTAIL_ID)).rejects.toThrow(ConflictError)
-        expect(mockFavoriteRepo.create).not.toHaveBeenCalled()
+        await expect(favoriteService.add(UID, COCKTAIL_ID)).resolves.toBe(existing)
+        await expect(favoriteService.add(UID, COCKTAIL_ID)).resolves.toBe(existing)
+    })
+
+    it('maps a missing cocktail (FK violation P2003) to NotFoundError', async () => {
+        mockFavoriteRepo.addIdempotent.mockRejectedValue(
+            new Prisma.PrismaClientKnownRequestError('fk', { code: 'P2003', clientVersion: 'test' }),
+        )
+
+        await expect(favoriteService.add(UID, COCKTAIL_ID)).rejects.toThrow(NotFoundError)
     })
 })
 
@@ -88,23 +97,14 @@ describe('FavoriteService.remove', () => {
     beforeEach(() => { vi.clearAllMocks() })
 
     it('deletes the favorite when it exists', async () => {
-        mockFavoriteRepo.findByUserAndCocktail.mockResolvedValue({ id: FAV_ID })
-        mockFavoriteRepo.hardDelete.mockResolvedValue(true)
+        mockFavoriteRepo.removeByUserAndCocktail.mockResolvedValue(1)
 
         await expect(favoriteService.remove(UID, COCKTAIL_ID)).resolves.not.toThrow()
-        expect(mockFavoriteRepo.hardDelete).toHaveBeenCalledWith(FAV_ID)
+        expect(mockFavoriteRepo.removeByUserAndCocktail).toHaveBeenCalledWith(UID, COCKTAIL_ID)
     })
 
     it('throws NotFoundError when the favorite does not exist', async () => {
-        mockFavoriteRepo.findByUserAndCocktail.mockResolvedValue(null)
-
-        await expect(favoriteService.remove(UID, COCKTAIL_ID)).rejects.toThrow(NotFoundError)
-        expect(mockFavoriteRepo.hardDelete).not.toHaveBeenCalled()
-    })
-
-    it('throws NotFoundError when hardDelete fails unexpectedly', async () => {
-        mockFavoriteRepo.findByUserAndCocktail.mockResolvedValue({ id: FAV_ID })
-        mockFavoriteRepo.hardDelete.mockResolvedValue(false)
+        mockFavoriteRepo.removeByUserAndCocktail.mockResolvedValue(0)
 
         await expect(favoriteService.remove(UID, COCKTAIL_ID)).rejects.toThrow(NotFoundError)
     })

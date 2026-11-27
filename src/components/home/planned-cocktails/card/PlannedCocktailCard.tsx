@@ -10,7 +10,6 @@ import {
     ChevronDown,
     ChevronUp,
     Loader2,
-    RotateCcw,
     ShoppingCart,
     Trash2,
 } from 'lucide-react'
@@ -59,14 +58,6 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
     const isDone = item.status === 'done'
 
     const formattedDate = `${formatMonthDay(plannedDate)} - ${relativeDateLabel(plannedDate, now, { eventStyle: true })}`
-
-    const completedDate = item.completedAt
-        ? new Date(item.completedAt).toLocaleDateString('en-US', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-        })
-        : null
 
     const ingredients = useMemo(() => item.cocktail?.ingredients ?? [], [item.cocktail?.ingredients])
 
@@ -171,11 +162,11 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
                     type="button"
                     onClick={() => setConfirmRemove(true)}
                     disabled={removing}
-                    className="absolute right-3 top-3 z-20 rounded-full bg-surface/90 p-1.5 text-fg-muted shadow-sm backdrop-blur-sm transition-colors hover:bg-danger-bg hover:text-danger disabled:opacity-50"
+                    className="absolute right-3 top-3 z-20 inline-flex size-7 items-center justify-center rounded-full bg-surface/90 text-fg-muted shadow-sm backdrop-blur-sm transition-colors hover:bg-danger-bg hover:text-danger disabled:opacity-50"
                     title="Remove from planner"
                     aria-label="Remove from planner"
                 >
-                    {removing ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                    {removing ? <Loader2 size={13} className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={13} />}
                 </button>
 
                 <div className="flex min-h-[148px]">
@@ -230,7 +221,8 @@ export default function PlannedCocktailCard({ item, now, onUpdate, getIngredient
                                 <button
                                     type="button"
                                     onClick={() => setShowIngredients((prev) => !prev)}
-                                    className="flex items-center gap-1 text-xs text-fg-muted transition-colors hover:text-brand"
+                                    aria-expanded={showIngredients}
+                                    className="flex min-h-6 items-center gap-1 text-xs text-fg-muted transition-colors hover:text-brand"
                                 >
                                     {showIngredients ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                                     {ingredients.length} ingredient{ingredients.length > 1 ? 's' : ''}

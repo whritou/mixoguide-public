@@ -1,8 +1,8 @@
-﻿'use client'
+'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { BarChart2 } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { ProfileHeader }       from '@/components/user/ProfileHeader'
 import { StatsRow }            from '@/components/user/StatsRow'
 import { EditProfileSection }  from '@/components/user/EditProfileSection'
@@ -10,26 +10,18 @@ import { ChangePasswordSection } from '@/components/user/ChangePasswordSection'
 import { DangerZone }          from '@/components/user/DangerZone'
 import { PageSkeleton }        from '@/components/user/PageSkeleton'
 import type { ProfileData }    from '@/components/user/types'
+import { useProfileQuery }     from '@/hooks/queries/use-profile'
+import { queryKeys }           from '@/lib/query-keys'
 
 export default function UserPage() {
-    const [profile,  setProfile] = useState<ProfileData | null>(null)
-    const [loading, setLoading]  = useState(true)
+    const qc = useQueryClient()
+    const { data: profile, isLoading } = useProfileQuery()
 
-    useEffect(() => {
-        fetch('/api/user/me/profile')
-            .then(async (r) => {
-                if (!r.ok) { setLoading(false); return }
-                const text = await r.text()
-                if (!text) { setLoading(false); return }
-                const d = JSON.parse(text)
-                const profileData = d.data ?? d
-                setProfile({ ...profileData, hasPassword: profileData.hasPassword ?? false } as ProfileData)
-            })
-            .catch(() => setLoading(false))
-            .finally(() => setLoading(false))
-    }, [])
+    // Child sections report the updated profile after their own writes; keep the
+    // query cache as the single source of truth instead of local state.
+    const setProfile = (next: ProfileData) => qc.setQueryData(queryKeys.profile.me(), next)
 
-    if (loading)  return <PageSkeleton />
+    if (isLoading) return <PageSkeleton />
     if (!profile) return null
 
     return (

@@ -1,13 +1,14 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import { ingredientService } from '@/services/ingredient.service'
+import { getIngredient } from './_lib/get-ingredient'
 
 export async function generateMetadata(
     { params }: { params: Promise<{ id: string }> }
 ): Promise<Metadata> {
     const { id } = await params
     try {
-        const ingredient = await ingredientService.getById(id)
+        const ingredient = await getIngredient(id)
+        if (!ingredient) return { title: 'Ingredient' }
         const raw = ingredient.description ?? ''
         const description = raw.length > 0
             ? raw.slice(0, 155) + (raw.length > 155 ? '…' : '')

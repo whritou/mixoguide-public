@@ -1,4 +1,4 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
 import { Heart, Star, ShoppingBasket, CalendarDays } from 'lucide-react'
 import type { ProfileData } from './types'
 
@@ -21,7 +21,7 @@ export function StatsRow({ stats }: { stats: ProfileData['stats'] }) {
                 >
                     <Icon size={18} className="text-brand-soft group-hover:text-brand transition-colors" />
                     <span className="font-headline text-2xl text-fg">{value}</span>
-                    <span className="text-xs text-fg-secondary/60 font-body text-center">{label}</span>
+                    <span className="text-xs text-fg-muted font-body text-center">{label}</span>
                 </Link>
             ))}
         </div>

@@ -31,8 +31,12 @@ export type IngredientStatusInfo = {
     pantryUnit: string | null
 }
 
-export function useCocktailIngredientPantry(ingredientIds: string[]) {
-    const { data: pantryData, isLoading: loadingPantry } = usePantryQuery({ limit: 500 })
+/**
+ * @param options.enabled pass `false` for signed-out users so the (auth-only)
+ * pantry request is not made; defaults to `true` for existing callers.
+ */
+export function useCocktailIngredientPantry(ingredientIds: string[], options: { enabled?: boolean } = {}) {
+    const { data: pantryData, isLoading: loadingPantry } = usePantryQuery({ limit: 500 }, { enabled: options.enabled ?? true })
     const { data: derivations = {} as DerivationMap, isLoading: loadingDerivations } = useDerivationsQuery()
     const { add } = usePantryMutations()
 

@@ -94,12 +94,30 @@ class PlannedCocktailRepository extends BaseRepository<
         })
     }
 
-    async upsertAsMade(userId: string, cocktailId: string, quantity: number, madeAt: Date) {
-        return prisma.plannedCocktail.upsert({
+    async upsertAsMade(
+        userId: string,
+        cocktailId: string,
+        quantity: number,
+        madeAt: Date,
+        tx: Prisma.TransactionClient = prisma,
+    ) {
+        return tx.plannedCocktail.upsert({
             where: { userId_cocktailId: { userId, cocktailId } },
             update: { quantity, status: 'done', completedAt: madeAt, plannedFor: madeAt },
             create: { userId, cocktailId, quantity, plannedFor: madeAt, status: 'done', completedAt: madeAt },
         })
+    }
+
+    /**
+     * Claim step of the idempotent completion (DB-002): flips `planned → done`
+     * only if the row is still planned. Returns true when this caller won the claim.
+     */
+    async claimCompletion(id: string, completedAt: Date, tx: Prisma.TransactionClient = prisma): Promise<boolean> {
+        const result = await tx.plannedCocktail.updateMany({
+            where: { id, status: 'planned' },
+            data:  { status: 'done', completedAt },
+        })
+        return result.count === 1
     }
 
     /**

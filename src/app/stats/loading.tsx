@@ -1,4 +1,4 @@
-﻿import Loader from '@/components/ui/Loader'
+import Loader from '@/components/ui/Loader'
 
 export default function StatsLoading() {
     return (

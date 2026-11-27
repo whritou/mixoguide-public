@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { withUser } from "@/middlewares/withAuth";
 import { ApiResponse } from "@/utils/apiResponse";
 import { env } from "@/lib/env";
+import { detectImageFormat } from "@/utils/imageFormat";
 
 cloudinary.config({
   cloud_name: env.CLOUDINARY_CLOUD_NAME,
@@ -10,23 +11,26 @@ cloudinary.config({
   api_secret: env.CLOUDINARY_API_SECRET,
 });
 
+const MAX_SIZE = 5 * 1024 * 1024
+/** Multipart overhead allowance on top of the file itself. */
+const MAX_BODY_SIZE = MAX_SIZE + 64 * 1024
+
 export const POST = withUser(async (req: NextRequest) => {
   if (!env.CLOUDINARY_CLOUD_NAME || !env.CLOUDINARY_API_KEY || !env.CLOUDINARY_API_SECRET) {
     return ApiResponse.error("Upload service is not configured", 500, "UPLOAD_NOT_CONFIGURED");
   }
 
-  const form = await req.formData();
-  const file = form.get("file") as File | null;
-
-  if (!file || file.size === 0) {
-    return ApiResponse.error("No file provided", 400, "BAD_REQUEST");
+  // Reject oversized bodies before buffering the multipart payload (SEC-012/BPERF-003).
+  const declaredLength = Number(req.headers.get("content-length") ?? 0);
+  if (declaredLength > MAX_BODY_SIZE) {
+    return ApiResponse.error("File too large (max 5 MB)", 413, "PAYLOAD_TOO_LARGE");
   }
 
-  const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
-  const MAX_SIZE = 5 * 1024 * 1024
+  const form = await req.formData();
+  const file = form.get("file");
 
-  if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-    return ApiResponse.error("Invalid file type", 400, "BAD_REQUEST")
+  if (!(file instanceof File) || file.size === 0) {
+    return ApiResponse.error("No file provided", 400, "BAD_REQUEST");
   }
   if (file.size > MAX_SIZE) {
     return ApiResponse.error("File too large (max 5 MB)", 400, "BAD_REQUEST")
@@ -34,11 +38,17 @@ export const POST = withUser(async (req: NextRequest) => {
 
   const buffer = Buffer.from(await file.arrayBuffer());
 
+  // Trust the bytes, not the client-declared MIME type (SEC-014).
+  const format = detectImageFormat(buffer);
+  if (!format) {
+    return ApiResponse.error("Invalid file type", 400, "BAD_REQUEST")
+  }
+
   const uploaded = await new Promise<{ secure_url: string }>(
     (resolve, reject) => {
       cloudinary.uploader
         .upload_stream(
-          { folder: "avatars", resource_type: "image" },
+          { folder: "avatars", resource_type: "image", allowed_formats: ["jpg", "png", "webp", "gif"] },
           (err, result) => {
             if (err || !result) reject(err);
             else resolve(result as { secure_url: string });

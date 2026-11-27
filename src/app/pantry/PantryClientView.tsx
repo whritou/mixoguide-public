@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useCallback, useMemo, useState } from 'react'
 import { Menu } from 'lucide-react'
@@ -141,10 +141,13 @@ export default function PantryClientView() {
             <div className="px-4 md:px-8 pt-5 pb-5 flex items-start justify-between border-b border-line/60 gap-4">
                 <div className="flex items-center gap-3">
                     <button
+                        type="button"
+                        aria-label="Open pantry sections"
+                        aria-expanded={mobileSidebar}
                         className="md:hidden p-2 -ml-1 rounded-lg text-fg-muted hover:bg-canvas-hover-alt"
                         onClick={() => setMobileSidebar(true)}
                     >
-                        <Menu size={20} />
+                        <Menu size={20} aria-hidden="true" />
                     </button>
                     <div>
                         <h1 className="font-headline text-3xl md:text-4xl text-fg leading-tight">
@@ -176,7 +179,7 @@ export default function PantryClientView() {
                     onMobileClose={() => setMobileSidebar(false)}
                 />
 
-                <main className="flex-1 px-4 md:px-6 py-5 min-w-0">
+                <div className="flex-1 px-4 md:px-6 py-5 min-w-0">
                     <PantryFilterBar
                         filters={filters}
                         sortOption={sortOption}
@@ -211,7 +214,7 @@ export default function PantryClientView() {
                         onItemUpdated={handleItemUpdated}
                         onUpdated={handleReload}
                     />
-                </main>
+                </div>
             </div>
 
             <AddPantryItemDialog open={openAdd} onOpenChange={setOpenAdd} onCreated={handleReload} />

@@ -35,10 +35,12 @@ export default function RecentMadeCard({ item, onRemove, selectable, selected, o
                 <button
                     type="button"
                     onClick={() => onSelect?.()}
-                    className={`absolute top-2 left-2 z-10 w-5 h-5 rounded-md border-2 transition-colors flex items-center justify-center ${
+                    role="checkbox"
+                    aria-checked={selected}
+                    className={`absolute top-2 left-2 z-10 w-6 h-6 rounded-md border-2 transition-colors flex items-center justify-center ${
                         selected ? 'bg-brand border-brand' : 'bg-surface border-line-control hover:border-brand'
                     }`}
-                    aria-label={selected ? 'Deselect' : 'Select'}
+                    aria-label={`Select ${item.cocktail?.name ?? 'entry'}`}
                 >
                     {selected && <Check size={11} className="text-fg-on-brand" />}
                 </button>
@@ -71,10 +73,11 @@ export default function RecentMadeCard({ item, onRemove, selectable, selected, o
                     type="button"
                     onClick={() => setConfirmRemove(true)}
                     disabled={removing}
-                    className="rounded-full m-1 p-1.5 text-fg-muted hover:bg-danger-bg hover:text-danger transition-colors disabled:opacity-50"
+                    className="inline-flex size-8 items-center justify-center rounded-full m-1 text-fg-muted hover:bg-danger-bg hover:text-danger transition-colors disabled:opacity-50"
                     title="Remove from history"
+                    aria-label={`Remove ${item.cocktail?.name ?? 'entry'} from history`}
                 >
-                    {removing ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    {removing ? <Loader2 size={14} className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={14} />}
                 </button>
             </div>
             {confirmRemove && (

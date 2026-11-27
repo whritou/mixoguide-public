@@ -1,6 +1,6 @@
-﻿'use client'
+'use client'
 
-import { useState } from 'react'
+import { useState, useId } from 'react'
 import { toast } from 'sonner'
 import { X, MessageSquarePlus, Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
@@ -41,6 +41,9 @@ export default function SuggestionDialog({
 
     const [type,        setType]        = useState<SuggestionType>(defaultType ?? 'NEW_COCKTAIL')
     const [title,       setTitle]       = useState('')
+    const titleId = useId()
+    const contentId = useId()
+    const counterId = useId()
     const [content,     setContent]     = useState('')
     const [submitting,  setSubmitting]  = useState(false)
 
@@ -80,14 +83,14 @@ export default function SuggestionDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-full max-w-lg bg-surface rounded-2xl shadow-2xl overflow-hidden p-0 border-0 gap-0 [&>button]:hidden">
+            <DialogContent showCloseButton={false} aria-describedby={undefined} className="w-full max-w-lg bg-surface rounded-2xl shadow-2xl overflow-hidden p-0 border-0 gap-0">
 
                 {/* Header */}
                 <div className="bg-gradient-to-r from-brand-gradient-from to-brand-gradient-to px-6 py-5 flex items-start justify-between">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <MessageSquarePlus size={18} className="text-fg-on-brand/80" />
-                            <p className="text-xs font-medium uppercase tracking-widest text-fg-on-brand/80">
+                            <MessageSquarePlus size={18} className="text-fg-on-brand" />
+                            <p className="text-xs font-medium uppercase tracking-widest text-fg-on-brand">
                                 Community contribution
                             </p>
                         </div>
@@ -101,7 +104,7 @@ export default function SuggestionDialog({
                         type="button"
                         onClick={() => onOpenChange(false)}
                         aria-label="Close suggestion dialog"
-                        className="text-fg-on-brand/80 hover:text-fg-on-brand transition-colors mt-0.5"
+                        className="inline-flex size-8 -mr-1.5 items-center justify-center rounded-full text-fg-on-brand hover:bg-fg-on-brand/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-fg-on-brand"
                     >
                         <X size={20} />
                     </button>
@@ -113,15 +116,16 @@ export default function SuggestionDialog({
                     {/* Type selector — hide when it's locked to a modification */}
                     {!targetId && (
                         <div>
-                            <label className="block text-xs font-medium uppercase tracking-widest text-fg-muted mb-2">
+                            <span id={`${titleId}-type`} className="block text-xs font-medium uppercase tracking-widest text-fg-muted mb-2">
                                 Suggestion type
-                            </label>
-                            <div className="grid grid-cols-2 gap-2">
+                            </span>
+                            <div role="group" aria-labelledby={`${titleId}-type`} className="grid grid-cols-2 gap-2">
                                 {TYPE_OPTIONS.map(opt => (
                                     <button
                                         key={opt.value}
                                         type="button"
                                         onClick={() => setType(opt.value)}
+                                        aria-pressed={type === opt.value}
                                         className={`px-3 py-2 rounded-lg text-sm text-left border transition-colors ${
                                             type === opt.value
                                                 ? 'bg-surface-muted border-brand-soft text-brand font-medium'
@@ -137,10 +141,11 @@ export default function SuggestionDialog({
 
                     {/* Title */}
                     <div>
-                        <label className="block text-xs font-medium uppercase tracking-widest text-fg-muted mb-2">
-                            Title <span className="text-danger">*</span>
+                        <label htmlFor={titleId} className="block text-xs font-medium uppercase tracking-widest text-fg-muted mb-2">
+                            Title <span className="text-danger" aria-hidden="true">*</span>
                         </label>
                         <input
+                            id={titleId}
                             type="text"
                             value={title}
                             onChange={e => setTitle(e.target.value)}
@@ -150,17 +155,19 @@ export default function SuggestionDialog({
                                     ? 'e.g. "Wrong ABV listed" or "Better garnish idea"'
                                     : 'e.g. "Add a Penicillin cocktail"'
                             }
-                            className="w-full px-3 py-2.5 rounded-lg border border-line-control text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand-soft focus:ring-2 focus:ring-ring/20"
+                            className="w-full px-3 py-2.5 rounded-lg border border-line-control text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-line-control focus-visible:ring-2 focus-visible:ring-ring"
                             required
                         />
                     </div>
 
                     {/* Content */}
                     <div>
-                        <label className="block text-xs font-medium uppercase tracking-widest text-fg-muted mb-2">
-                            Details <span className="text-danger">*</span>
+                        <label htmlFor={contentId} className="block text-xs font-medium uppercase tracking-widest text-fg-muted mb-2">
+                            Details <span className="text-danger" aria-hidden="true">*</span>
                         </label>
                         <textarea
+                            id={contentId}
+                            aria-describedby={counterId}
                             value={content}
                             onChange={e => setContent(e.target.value)}
                             rows={5}
@@ -170,10 +177,10 @@ export default function SuggestionDialog({
                                     ? 'Describe what should be changed and why...'
                                     : 'Describe the cocktail, its ingredients, how to make it, and why you think it\'d be a great addition...'
                             }
-                            className="w-full px-3 py-2.5 rounded-lg border border-line-control text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand-soft focus:ring-2 focus:ring-ring/20 resize-none"
+                            className="w-full px-3 py-2.5 rounded-lg border border-line-control text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-line-control focus-visible:ring-2 focus-visible:ring-ring resize-none"
                             required
                         />
-                        <p className="mt-1 text-xs text-fg-muted text-right">{content.length}/5000</p>
+                        <p id={counterId} className="mt-1 text-xs text-fg-muted text-right">{content.length}/5000<span className="sr-only"> characters used</span></p>
                     </div>
 
                     {/* Actions */}
@@ -192,7 +199,7 @@ export default function SuggestionDialog({
                         >
                             {submitting ? (
                                 <>
-                                    <Loader2 size={15} className="animate-spin" />
+                                    <Loader2 size={15} className="animate-spin motion-reduce:animate-none" />
                                     Submitting…
                                 </>
                             ) : (

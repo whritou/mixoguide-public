@@ -1,6 +1,6 @@
-﻿'use client'
+'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
@@ -20,6 +20,7 @@ import RescheduleDialog from '@/components/home/planned-cocktails/dialog/Resched
 import RescheduleCollectionDialog from '@/components/home/planned-cocktails/dialog/RescheduleCollectionDialog'
 import AddIngredientsModal, { type GroceryItem } from '@/components/AddIngredientsModal'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { usePlannedCocktailMutations } from '@/hooks/mutations/use-planned-cocktail-mutations'
 import { usePlannedCollectionMutations } from '@/hooks/mutations/use-planned-collection-mutations'
 import { useCocktailMadeLogMutations } from '@/hooks/mutations/use-cocktail-made-log-mutations'
@@ -86,7 +87,6 @@ export default function PlannerCalendarView({
     const [ingredientsItem, setIngredientsItem] = useState<PlannedCocktail | null>(null)
     const [pendingDelete, setPendingDelete] = useState<CalendarEvent | null>(null)
 
-    const popoverRef = useRef<HTMLDivElement | null>(null)
 
     const { update: updatePlanned, remove: removePlanned, complete: completePlanned } = usePlannedCocktailMutations()
     const { update: updateCollection, remove: removeCollection, complete: completeCollection } = usePlannedCollectionMutations()
@@ -158,24 +158,6 @@ export default function PlannerCalendarView({
         }
         return map
     }, [plannedItems, collections, madeLogs, today])
-
-    useEffect(() => {
-        if (!selected) return
-        const onClick = (e: MouseEvent) => {
-            if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-                setSelected(null)
-            }
-        }
-        const onEsc = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setSelected(null)
-        }
-        document.addEventListener('mousedown', onClick)
-        document.addEventListener('keydown', onEsc)
-        return () => {
-            document.removeEventListener('mousedown', onClick)
-            document.removeEventListener('keydown', onEsc)
-        }
-    }, [selected])
 
     function shiftCursor(delta: number) {
         if (mode === 'month') setCursor((c) => addMonths(c, delta))
@@ -328,6 +310,14 @@ export default function PlannerCalendarView({
     }
 
     const isMonth = mode === 'month'
+    const eventStatusLabel = (e: CalendarEvent) => {
+        if (e.kind === 'made') return 'Made'
+        if (e.item.status === 'done') return e.kind === 'collection' ? 'Event, done' : 'Done'
+        const prefix = e.kind === 'collection' ? 'Event' : 'Planned'
+        if (e.overdue) return `${prefix}, overdue`
+        if (e.today) return `${prefix}, today`
+        return prefix
+    }
     const eventChipStyle = (e: CalendarEvent) => {
         if (e.kind === 'made') return 'bg-surface-inverse/85 text-fg-on-inverse inset-ring-1 inset-ring-fg/40'
         if (e.kind === 'collection') {
@@ -348,7 +338,7 @@ export default function PlannerCalendarView({
                     <button
                         type="button"
                         onClick={() => setCursor(today)}
-                        className="px-3 py-1.5 text-xs font-label uppercase tracking-widest rounded-full bg-line/60 text-fg-secondary hover:bg-line transition-colors"
+                        className="px-3 py-1.5 text-xs font-label uppercase tracking-widest rounded-full bg-line text-fg-secondary hover:bg-line-strong transition-colors"
                     >
                         Today
                     </button>
@@ -356,7 +346,7 @@ export default function PlannerCalendarView({
                         type="button"
                         onClick={() => shiftCursor(-1)}
                         className="w-8 h-8 inline-flex items-center justify-center rounded-full border border-line-strong bg-surface text-fg-secondary hover:bg-canvas-hover"
-                        aria-label="Previous"
+                        aria-label={mode === 'month' ? 'Previous month' : 'Previous week'}
                     >
                         <ChevronLeft size={14} />
                     </button>
@@ -364,16 +354,18 @@ export default function PlannerCalendarView({
                         type="button"
                         onClick={() => shiftCursor(1)}
                         className="w-8 h-8 inline-flex items-center justify-center rounded-full border border-line-strong bg-surface text-fg-secondary hover:bg-canvas-hover"
-                        aria-label="Next"
+                        aria-label={mode === 'month' ? 'Next month' : 'Next week'}
                     >
                         <ChevronRight size={14} />
                     </button>
-                    <h3 className="ml-2 font-headline text-lg md:text-xl text-fg">{formatCalendarHeader(cursor, mode)}</h3>
+                    <h3 className="ml-2 font-headline text-lg md:text-xl text-fg" aria-live="polite">{formatCalendarHeader(cursor, mode)}</h3>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <div
-                        className="flex rounded-full bg-line/50 p-1 gap-1"
+                        role="group"
+                        aria-label="Calendar view"
+                        className="flex rounded-full bg-line p-1 gap-1"
                         title="Drag events to reschedule"
                     >
                         {(['month', 'week'] as const).map((m) => (
@@ -381,6 +373,7 @@ export default function PlannerCalendarView({
                                 key={m}
                                 type="button"
                                 onClick={() => setMode(m)}
+                                aria-pressed={mode === m}
                                 className={`px-4 py-1.5 text-xs font-label uppercase tracking-widest rounded-full transition-all ${mode === m ? 'bg-surface shadow-sm text-brand font-bold' : 'text-fg-muted hover:text-fg-secondary'}`}
                             >
                                 {m}
@@ -393,7 +386,7 @@ export default function PlannerCalendarView({
                         className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line-strong bg-surface text-fg-secondary text-xs font-label uppercase tracking-widest hover:bg-canvas-hover"
                     >
                         <Plus size={13} />
-                        <span className="hidden sm:inline">Browse cocktails</span>
+                        <span>Browse cocktails</span>
                     </button>
                     <button
                         type="button"
@@ -495,6 +488,7 @@ export default function PlannerCalendarView({
                                                     title={ev.title}
                                                 >
                                                     <div className="flex items-center gap-1.5 mb-1">
+                                                        <span className="sr-only">{eventStatusLabel(ev)}: </span>
                                                         {ev.kind === 'collection' && <Sparkles size={11} />}
                                                         {ev.kind === 'made' && <CheckCheck size={11} />}
                                                         <span className={`text-sm font-semibold leading-tight line-clamp-2 ${isDone && ev.kind === 'planned' ? 'line-through opacity-75' : ''}`}>
@@ -545,6 +539,7 @@ export default function PlannerCalendarView({
                                                 title={ev.title}
                                             >
                                                 <span className="inline-flex items-center gap-1 w-full">
+                                                    <span className="sr-only">{eventStatusLabel(ev)}: </span>
                                                     {ev.kind === 'collection' && <Sparkles size={9} />}
                                                     {ev.kind === 'made' && <CheckCheck size={9} />}
                                                     <span className={`truncate ${isDone && ev.kind === 'planned' ? 'line-through opacity-90' : ''}`}>
@@ -561,9 +556,10 @@ export default function PlannerCalendarView({
                                         <button
                                             type="button"
                                             onClick={() => { setMode('week'); setCursor(day) }}
-                                            className="text-[10px] text-brand hover:underline px-1 text-left"
+                                            className="min-h-6 text-[10px] text-brand hover:underline px-1 text-left"
                                         >
                                             +{events.length - 3} more
+                                            <span className="sr-only"> events, show week</span>
                                         </button>
                                     )}
                                 </div>
@@ -574,46 +570,48 @@ export default function PlannerCalendarView({
             </div>
 
             {/* Legend */}
-            <div className="flex flex-wrap items-center gap-3 text-xs text-fg-muted">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-fg-muted" aria-label="Calendar legend" role="note">
                 <span className="inline-flex items-center gap-1.5">
-                    <span className="h-3 w-3 rounded bg-surface border border-line-strong" /> Planned
+                    <span aria-hidden="true" className="h-3 w-3 rounded bg-surface border border-line-strong" /> Planned
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                    <span className="h-3 w-3 rounded bg-brand" /> Today
+                    <span aria-hidden="true" className="h-3 w-3 rounded bg-brand" /> Today
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                    <span className="h-3 w-3 rounded bg-danger-bg border border-danger/30" /> Overdue
+                    <span aria-hidden="true" className="h-3 w-3 rounded bg-danger-bg border border-danger/30" /> Overdue
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                    <span className="h-3 w-3 rounded bg-brand/15 border border-brand/30" /> Collection
+                    <span aria-hidden="true" className="h-3 w-3 rounded bg-brand/15 border border-brand/30" /> Collection
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                    <span className="h-3 w-3 rounded bg-surface-inverse/85 inset-ring-1 inset-ring-fg/40" /> Done / Made
+                    <span aria-hidden="true" className="h-3 w-3 rounded bg-surface-inverse/85 inset-ring-1 inset-ring-fg/40" /> Done / Made
                 </span>
             </div>
 
             {/* Selected event popover */}
             {selected && (
-                <div className="fixed inset-0 z-[160] flex items-center justify-center overflow-y-auto p-4 bg-overlay/53 backdrop-blur-sm">
-                    <div
-                        ref={popoverRef}
-                        className="w-full max-w-md bg-canvas rounded-2xl shadow-2xl flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden"
+                <Dialog open onOpenChange={(o) => { if (!o) setSelected(null) }}>
+                    <DialogContent
+                        showCloseButton={false}
+                        aria-describedby={undefined}
+                        overlayClassName="z-[160] backdrop-blur-sm"
+                        className="z-[160] w-full max-w-md sm:max-w-md bg-canvas rounded-2xl shadow-2xl flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-y-auto p-0 border-0"
                     >
                         <div className="flex items-center justify-between px-5 py-4 border-b border-line">
                             <div className="flex items-center gap-2 min-w-0">
                                 {selected.kind === 'collection' ? (
-                                    <Sparkles size={16} className="text-brand-soft shrink-0" />
+                                    <Sparkles size={16} className="text-brand-soft-strong shrink-0" />
                                 ) : selected.kind === 'made' ? (
                                     <CheckCheck size={16} className="text-brand shrink-0" />
                                 ) : (
-                                    <CalendarDays size={16} className="text-brand-soft shrink-0" />
+                                    <CalendarDays size={16} className="text-brand-soft-strong shrink-0" />
                                 )}
-                                <h3 className="font-headline text-lg text-fg truncate">{selected.title}</h3>
+                                <DialogTitle className="font-headline text-lg font-normal leading-normal text-fg truncate">{selected.title}</DialogTitle>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setSelected(null)}
-                                className="text-fg-muted text-xs px-2 py-1 rounded hover:bg-line"
+                                className="min-h-8 text-fg-muted text-xs px-2 py-1 rounded hover:bg-line hover:text-fg"
                             >
                                 Close
                             </button>
@@ -703,7 +701,7 @@ export default function PlannerCalendarView({
                                         <button
                                             type="button"
                                             onClick={() => void undoPlannedDone(selected.item as PlannedCocktail)}
-                                            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-line/70 text-fg-secondary text-xs font-label uppercase tracking-widest hover:bg-line"
+                                            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-line text-fg-secondary text-xs font-label uppercase tracking-widest hover:bg-line-strong"
                                         >
                                             <RotateCcw size={12} />
                                             Undo
@@ -767,7 +765,7 @@ export default function PlannerCalendarView({
                                                     toast.error('Could not update status')
                                                 }
                                             }}
-                                            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-line/70 text-fg-secondary text-xs font-label uppercase tracking-widest hover:bg-line"
+                                            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-line text-fg-secondary text-xs font-label uppercase tracking-widest hover:bg-line-strong"
                                         >
                                             <RotateCcw size={12} />
                                             Undo
@@ -798,7 +796,7 @@ export default function PlannerCalendarView({
                                             Open
                                         </button>
                                     ) : (
-                                        <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-line-strong bg-line/60 text-xs font-label uppercase tracking-widest text-fg-muted">
+                                        <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-line-strong bg-line text-xs font-label uppercase tracking-widest text-fg-muted">
                                             Archived
                                         </span>
                                     )}
@@ -813,8 +811,8 @@ export default function PlannerCalendarView({
                                 </>
                             )}
                         </div>
-                    </div>
-                </div>
+                    </DialogContent>
+                </Dialog>
             )}
 
             {reschedItem && (

@@ -1,14 +1,25 @@
-﻿"use client";
+"use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Mail, RotateCw } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import {
+    readPendingVerificationEmail,
+    subscribePendingVerificationEmail,
+} from "@/components/auth/pending-verification-email";
 
 function CheckEmailContent() {
     const searchParams = useSearchParams();
 
-    const email = searchParams.get("email");
+    // SEC-018: the address arrives via sessionStorage; the ?email= query param
+    // is only a fallback for links created before this change.
+    const storedEmail = useSyncExternalStore(
+        subscribePendingVerificationEmail,
+        readPendingVerificationEmail,
+        () => null,
+    );
+    const email = storedEmail ?? searchParams.get("email");
     const callbackUrl = searchParams.get("callbackUrl") || "/";
 
     const [remaining, setRemaining] = useState(60);
@@ -37,12 +48,21 @@ function CheckEmailContent() {
     }
 
     if (!email) {
+        // No address available (new tab, storage blocked): explain instead of
+        // spinning forever, and let the person get back to sign in.
         return (
             <div className="text-center">
                 <div className="w-16 h-16 rounded-full bg-line flex items-center justify-center mx-auto mb-6">
-                    <Mail size={28} className="text-brand" />
+                    <Mail size={28} aria-hidden="true" className="text-brand" />
                 </div>
-                <p className="text-fg-secondary font-body">Loading...</p>
+                <h1 className="font-headline text-3xl text-fg mb-2">Check your email</h1>
+                <p className="text-fg-secondary font-body text-sm mb-8">
+                    If you just signed up, we&apos;ve sent a confirmation link to your inbox.
+                    Sign in again to get a new link.
+                </p>
+                <Link href="/signin" className="text-brand font-semibold text-sm hover:underline">
+                    Back to sign in
+                </Link>
             </div>
         );
     }
@@ -50,7 +70,7 @@ function CheckEmailContent() {
     return (
         <div className="text-center">
             <div className="w-16 h-16 rounded-full bg-brand-soft/15 flex items-center justify-center mx-auto mb-6">
-                <Mail size={28} className="text-brand" />
+                <Mail size={28} aria-hidden="true" className="text-brand" />
             </div>
 
             <h1 className="font-headline text-3xl text-fg mb-2">Check your email</h1>
@@ -66,6 +86,7 @@ function CheckEmailContent() {
             </p>
 
             <button
+                type="button"
                 onClick={resend}
                 disabled={remaining > 0 || sending}
                 className="w-full py-3 rounded-full font-label text-sm uppercase tracking-widest transition-all duration-200
@@ -73,7 +94,7 @@ function CheckEmailContent() {
                            bg-surface text-brand shadow-sm hover:bg-surface-hover
                            flex items-center justify-center gap-2"
             >
-                <RotateCw size={14} className={sending ? "animate-spin" : ""} />
+                <RotateCw size={14} aria-hidden="true" className={sending ? "animate-spin motion-reduce:animate-none" : ""} />
                 {remaining > 0
                     ? `Resend in ${remaining}s`
                     : "Resend verification email"
@@ -81,7 +102,7 @@ function CheckEmailContent() {
             </button>
 
             {sent && (
-                <p className="mt-4 text-sm text-brand bg-brand-soft/10 rounded-xl px-4 py-3 font-body">
+                <p role="status" className="mt-4 text-sm text-brand bg-brand-soft/10 rounded-xl px-4 py-3 font-body">
                     Email sent! Check your inbox.
                 </p>
             )}
@@ -100,9 +121,9 @@ export default function CheckEmailPage() {
         <Suspense fallback={
             <div className="text-center">
                 <div className="w-16 h-16 rounded-full bg-line flex items-center justify-center mx-auto mb-6">
-                    <Mail size={28} className="text-brand" />
+                    <Mail size={28} aria-hidden="true" className="text-brand" />
                 </div>
-                <p className="text-fg-secondary font-body">Loading...</p>
+                <p role="status" className="text-fg-secondary font-body">Loading...</p>
             </div>
         }>
             <CheckEmailContent />

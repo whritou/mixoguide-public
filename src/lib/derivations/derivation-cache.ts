@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db/prisma'
 import type { MeasureUnit } from '@prisma/client'
+import { isNonBlockingCocktailIngredient } from '@/utils/cocktailIngredientImportance'
 
 export interface DerivationEntry {
   baseIngredientId: string
@@ -64,6 +65,64 @@ export function getDerivationMap(): Promise<DerivationMap> {
 export function invalidateDerivationCache() {
   cachePromise   = null
   cacheTimestamp = 0
+  catalogPromise   = null
+  catalogTimestamp = 0
+}
+
+// ─── Ingredient catalog metadata (for makeable computation) ─────────────────
+
+export interface IngredientCatalogEntry {
+  id: string
+  name: string
+  isAlcoholic: boolean | null
+  type: { name: string } | null
+  subType: { name: string } | null
+}
+
+export interface IngredientCatalog {
+  byId: Map<string, IngredientCatalogEntry>
+  /**
+   * Ingredients that are never blocking on their own (garnishes, peels, twists…),
+   * i.e. `isNonBlockingCocktailIngredient` is true for a required, measured row.
+   * Row-level rules (optional / no amount / twist|zest|slice unit) are applied in SQL.
+   */
+  nonBlockingIds: string[]
+}
+
+let catalogPromise:   Promise<IngredientCatalog> | null = null
+let catalogTimestamp: number                            = 0
+
+async function buildIngredientCatalog(): Promise<IngredientCatalog> {
+  const rows = await prisma.ingredient.findMany({
+    select: {
+      id: true,
+      name: true,
+      isAlcoholic: true,
+      type: { select: { name: true } },
+      subType: { select: { name: true } },
+    },
+  })
+  const byId = new Map<string, IngredientCatalogEntry>()
+  const nonBlockingIds: string[] = []
+  for (const row of rows) {
+    byId.set(row.id, row)
+    if (isNonBlockingCocktailIngredient({ optional: false, amount: 1, unit: 'cl', ingredient: row })) {
+      nonBlockingIds.push(row.id)
+    }
+  }
+  return { byId, nonBlockingIds }
+}
+
+export function getIngredientCatalog(): Promise<IngredientCatalog> {
+  const now = Date.now()
+  if (catalogPromise && now - catalogTimestamp < CACHE_TTL_MS) return catalogPromise
+
+  catalogTimestamp = now
+  catalogPromise   = buildIngredientCatalog().catch(err => {
+    catalogPromise = null
+    throw err
+  })
+  return catalogPromise
 }
 
 /**

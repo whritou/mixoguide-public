@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -31,10 +31,12 @@ export function MobileTopSearchBar({
 
     return (
         <div className="md:hidden sticky top-0 z-[100] bg-canvas/95 backdrop-blur-md border-b border-line">
-            <form onSubmit={submit} className="px-4 py-3">
+            <form onSubmit={submit} className="px-4 py-3" role="search">
                 <div className="relative">
-                    <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
+                    <Search size={13} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
                     <input
+                        type="search"
+                        aria-label={placeholder.replace(/\.+$|…$/, '')}
                         placeholder={placeholder}
                         value={query}
                         onChange={(event) => setQuery(event.target.value)}
@@ -43,10 +45,11 @@ export function MobileTopSearchBar({
                     {query && (
                         <button
                             type="button"
+                            aria-label="Clear search"
                             onClick={() => setQuery('')}
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg-secondary"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center min-h-6 min-w-6 p-1.5 rounded-full text-fg-muted hover:text-fg-secondary"
                         >
-                            <X size={13} />
+                            <X size={13} aria-hidden="true" />
                         </button>
                     )}
                 </div>

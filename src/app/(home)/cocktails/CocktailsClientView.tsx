@@ -1,6 +1,6 @@
-﻿'use client'
+'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { MessageSquarePlus, PackageOpen, SearchX } from 'lucide-react'
@@ -10,22 +10,27 @@ import { CocktailFilterBar } from '@/components/home/cocktails/CocktailFilterBar
 import AddPantryItemDialog from '@/components/home/pantry/dialog/AddPantryItemDialog'
 import SuggestionDialog from '@/components/home/suggestions/SuggestionDialog'
 import Loader from '@/components/ui/Loader'
-import { useCocktailsQuery } from '@/hooks/queries/use-cocktails'
-import { useIngredientsQuery } from '@/hooks/queries/use-ingredients'
+import { useInfiniteCocktailsQuery } from '@/hooks/queries/use-cocktails'
+import { useIngredientOptionsQuery, type IngredientOption } from '@/hooks/queries/use-ingredients'
 import { useMakeableCocktailsQuery } from '@/hooks/queries/use-makeable'
 import { useRecommendationsQuery } from '@/hooks/queries/use-recommendations'
 import { useAutoLoadMore } from '@/hooks/use-auto-load-more'
-import { useOffsetAccumulator } from '@/hooks/use-offset-accumulator'
+import { useIdle } from '@/hooks/use-idle'
 import { useFavorites } from '@/hooks/useFavorite'
 import { useFilters } from '@/hooks/useFilters'
+import { flattenUnique } from '@/lib/api/pagination'
 import type { Cocktail, MakeableCocktail } from '@/types/models/cocktail'
 import { hasCocktailFilters } from '@/utils/filters'
 
 const PAGE_SIZE = 20
+const EMPTY_OPTIONS: IngredientOption[] = []
 
-export default function CocktailsClientView() {
-    return <CocktailPageContent />
-}
+/**
+ * Grid items skip rendering work while off-screen (PERF-010). The padding /
+ * negative margin pair keeps card shadows and focus rings inside the item's
+ * paint-containment box so they are not clipped.
+ */
+const GRID_ITEM_CLASS = '[content-visibility:auto] [contain-intrinsic-size:auto_380px] p-2 -m-2'
 
 function matchesAvailability(cocktail: MakeableCocktail, availability: string): boolean {
     switch (availability) {
@@ -44,18 +49,25 @@ function matchesAvailability(cocktail: MakeableCocktail, availability: string): 
     }
 }
 
-function CocktailPageContent() {
+/**
+ * Client island for /cocktails. Filters live in the URL; the server list is a
+ * `useInfiniteQuery` keyed by the committed URL filters, so a filter change
+ * starts a new list in the same render (no offset-reset effects).
+ */
+export default function CocktailsClientView() {
     const { data: session, status: authStatus } = useSession()
     const isAuthenticated = authStatus === 'authenticated'
 
     const [suggestionDialogOpen, setSuggestionDialogOpen] = useState(false)
     const [openAdd, setOpenAdd] = useState(false)
-    const [displayed, setDisplayed] = useState(PAGE_SIZE)
-    const [offset, setOffset] = useState(0)
 
     const filters = useFilters()
     const searchParams = useSearchParams()
-    const rawParams = Object.fromEntries(searchParams.entries())
+    const urlKey = searchParams.toString()
+    const rawParams = useMemo(
+        () => Object.fromEntries(new URLSearchParams(urlKey).entries()),
+        [urlKey],
+    )
 
     const onlyMakeable = rawParams.onlyMakeable === 'true'
     const filteringByFavs = rawParams.onlyFavorites === 'true'
@@ -71,16 +83,25 @@ function CocktailPageContent() {
     )
 
     const { ids: favoriteIds, loading: favoriteLoading } = useFavorites()
+    const favoriteKey = favoriteIds.join(',')
 
-    const { data: ingredientsData } = useIngredientsQuery({ limit: 300 })
-    const ingredientOpts = ingredientsData?.items?.map((ingredient) => ({ id: ingredient.id, name: ingredient.name })) ?? []
+    // The 300-ingredient option list only feeds the filter pickers: fetch it once
+    // the page is idle (or immediately if an ingredient filter is already active),
+    // and keep it cached for an hour.
+    const idle = useIdle()
+    const { data: ingredientOpts = EMPTY_OPTIONS } = useIngredientOptionsQuery({
+        enabled: idle || Boolean(rawParams.ingredients),
+    })
 
+    // ── "Ready to mix" (client-side over the makeable list) ──────────────────
+    const clientFilterKey = filters.params.toString()
     const clientFiltered = useMemo(() => {
         if (!onlyMakeable) return []
-        const search = filters.params.get('search')?.toLowerCase() ?? ''
-        const availability = filters.params.get('availability') ?? 'all'
-        const difficulties = (filters.params.get('difficulty') ?? '').split(',').filter(Boolean)
-        const flavors = (filters.params.get('flavors') ?? '').split(',').filter(Boolean)
+        const params = new URLSearchParams(clientFilterKey)
+        const search = params.get('search')?.toLowerCase() ?? ''
+        const availability = params.get('availability') ?? 'all'
+        const difficulties = (params.get('difficulty') ?? '').split(',').filter(Boolean)
+        const flavors = (params.get('flavors') ?? '').split(',').filter(Boolean)
 
         return makeableList.filter((cocktail) => {
             if (search && !cocktail.name.toLowerCase().includes(search)) return false
@@ -89,55 +110,35 @@ function CocktailPageContent() {
             if (flavors.length > 0 && !flavors.some((flavor) => cocktail.flavors?.includes(flavor as never))) return false
             return true
         })
-    }, [filters.params, makeableList, onlyMakeable])
+    }, [clientFilterKey, makeableList, onlyMakeable])
 
-    useEffect(() => {
-        setDisplayed(PAGE_SIZE)
-    }, [filters.params])
+    // Visible slice of the client list; resets whenever the filters change
+    // because the count is stored together with the filter key it belongs to.
+    const [displayed, setDisplayed] = useState({ key: clientFilterKey, count: PAGE_SIZE })
+    const displayedCount = displayed.key === clientFilterKey ? displayed.count : PAGE_SIZE
 
-    const effectiveParams = useMemo(() => {
-        if (filteringByFavs) {
-            const { onlyFavorites: _onlyFavorites, limit: _limit, onlyMakeable: _onlyMakeable, ...rest } = rawParams
-            return favoriteIds.length > 0
-                ? { ...rest, favoriteIds: favoriteIds.join(',') }
-                : { ...rest, favoriteIds: '__none__' }
-        }
-
-        const { limit: _limit, onlyMakeable: _onlyMakeable, ...rest } = rawParams
+    // ── Server list ──────────────────────────────────────────────────────────
+    const serverParams = useMemo(() => {
+        const {
+            limit: _limit,
+            offset: _offset,
+            onlyMakeable: _onlyMakeable,
+            onlyFavorites: _onlyFavorites,
+            ...rest
+        } = rawParams
+        // Favorites filter is still a client-computed id allow-list (the API has no
+        // server-side "only my favorites" flag yet), so only this mode waits for
+        // the favorites query. All other modes fetch in parallel with it.
+        if (filteringByFavs) return { ...rest, favoriteIds: favoriteKey || '__none__' }
         return rest
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [JSON.stringify(rawParams), favoriteIds.join(',')])
+    }, [rawParams, filteringByFavs, favoriteKey])
 
-    const filterKey = JSON.stringify(effectiveParams)
-
-    useEffect(() => {
-        setOffset(0)
-    }, [filterKey])
-
-    const requestParams = useMemo(
-        () => ({ ...effectiveParams, limit: PAGE_SIZE, offset }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [filterKey, offset],
-    )
-
-    const {
-        data,
-        isLoading: serverLoading,
-        isFetching: serverFetching,
-        isFetched: serverFetched,
-    } = useCocktailsQuery(onlyMakeable ? { limit: 0 } : requestParams)
-
-    const allCocktailsAccumulator = useOffsetAccumulator<Cocktail>({
-        filterKey,
-        offset,
-        pageItems: data?.items ?? [],
-        isLoading: serverLoading || (filteringByFavs && favoriteLoading),
-        isFetched: serverFetched,
-        isFetching: serverFetching,
-        enabled: !onlyMakeable,
-        waitForFetchWhenEmpty: true,
+    const waitingForFavorites = filteringByFavs && favoriteLoading
+    const list = useInfiniteCocktailsQuery(serverParams, {
+        pageSize: PAGE_SIZE,
+        enabled: !onlyMakeable && !waitingForFavorites,
     })
-    const allCocktails = allCocktailsAccumulator.items
+    const allCocktails = useMemo(() => flattenUnique<Cocktail>(list.data?.pages), [list.data])
 
     const serverCocktails = useMemo(() => {
         if (!session || hasExplicitSort || filteringByFavs || favoriteIds.length === 0) return allCocktails
@@ -150,38 +151,32 @@ function CocktailPageContent() {
 
     const isLoading = onlyMakeable
         ? isAuthenticated && makeableLoading
-        : serverLoading || (filteringByFavs && favoriteLoading)
+        : list.isLoading || waitingForFavorites
 
     const displayList: Array<{ cocktail: Cocktail; makeable?: MakeableCocktail }> = onlyMakeable
-        ? clientFiltered.slice(0, displayed).map((cocktail) => ({ cocktail, makeable: cocktail }))
+        ? clientFiltered.slice(0, displayedCount).map((cocktail) => ({ cocktail, makeable: cocktail }))
         : serverCocktails.map((cocktail) => ({
             cocktail,
             makeable: isAuthenticated ? makeableMap.get(cocktail.id) : undefined,
         }))
 
-    const serverTotal = data?.meta?.total ?? 0
-    const hasMoreServer = !onlyMakeable && !serverLoading && serverTotal > allCocktails.length
-    const hasMoreClient = onlyMakeable && displayed < clientFiltered.length
+    const hasMoreServer = !onlyMakeable && Boolean(list.hasNextPage)
+    const hasMoreClient = onlyMakeable && displayedCount < clientFiltered.length
 
     const hasActiveFilters = hasCocktailFilters(filters.params)
 
-    const handleReset = () => {
-        setOffset(0)
-        allCocktailsAccumulator.reset()
-        filters.resetAll()
-    }
-
+    const { fetchNextPage, isFetchingNextPage } = list
     const loadMore = useCallback(() => {
         if (onlyMakeable) {
-            setDisplayed((current) => current + PAGE_SIZE)
+            setDisplayed({ key: clientFilterKey, count: displayedCount + PAGE_SIZE })
             return
         }
-        setOffset((current) => current + PAGE_SIZE)
-    }, [onlyMakeable])
+        if (!isFetchingNextPage) void fetchNextPage()
+    }, [onlyMakeable, clientFilterKey, displayedCount, isFetchingNextPage, fetchNextPage])
 
     const loadMoreRef = useAutoLoadMore({
         enabled: hasMoreServer || hasMoreClient,
-        isLoading: !onlyMakeable && serverFetching,
+        isLoading: !onlyMakeable && list.isFetching,
         onLoadMore: loadMore,
     })
 
@@ -204,7 +199,7 @@ function CocktailPageContent() {
                     <div className="flex items-center gap-3">
                         {hasActiveFilters && (
                             <button
-                                onClick={handleReset}
+                                onClick={filters.resetAll}
                                 className="text-xs text-fg-muted hover:text-fg underline underline-offset-2 transition-colors"
                             >
                                 Clear filters
@@ -239,21 +234,22 @@ function CocktailPageContent() {
                         onAddIngredients={() => setOpenAdd(true)}
                     />
                 ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
+                    <ul role="list" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
                         {displayList.map(({ cocktail, makeable }) => (
-                            <CocktailCard
-                                key={cocktail.id}
-                                cocktail={cocktail}
-                                makeable={makeable}
-                                isNeverTried={isAuthenticated ? neverTriedIds.has(cocktail.id) : false}
-                            />
+                            <li key={cocktail.id} className={GRID_ITEM_CLASS}>
+                                <CocktailCard
+                                    cocktail={cocktail}
+                                    makeable={makeable}
+                                    isNeverTried={isAuthenticated ? neverTriedIds.has(cocktail.id) : false}
+                                />
+                            </li>
                         ))}
-                    </div>
+                    </ul>
                 )}
 
                 {(hasMoreServer || hasMoreClient) && (
                     <div ref={loadMoreRef} className="mt-10 flex min-h-10 justify-center" aria-live="polite">
-                        {serverFetching && !onlyMakeable && <Loader variant="spinner" />}
+                        {isFetchingNextPage && !onlyMakeable && <Loader variant="spinner" />}
                     </div>
                 )}
             </div>

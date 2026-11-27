@@ -1,10 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Check, Loader2, PackagePlus, X } from 'lucide-react'
+import { Loader2, PackagePlus, X } from 'lucide-react'
 import { toast } from 'sonner'
 import clsx from 'clsx'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import { usePantryMutations } from '@/hooks/mutations/use-pantry-mutations'
 import { isRestockCandidate, restockQuantityForUnit } from '@/utils/pantryRestock'
 import type { UserPantryItem } from '@/types/models/pantry'
@@ -105,14 +106,18 @@ function RestockPantryDialogContent({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-full max-w-lg bg-canvas rounded-2xl shadow-2xl flex flex-col max-h-[90vh] p-0 border-0 gap-0 overflow-hidden [&>button]:hidden">
+            <DialogContent
+                showCloseButton={false}
+                aria-describedby={undefined}
+                className="w-full max-w-lg sm:max-w-lg bg-canvas rounded-2xl shadow-2xl flex flex-col max-h-[90vh] p-0 border-0 gap-0 overflow-hidden"
+            >
                 <div className="flex items-center justify-between px-6 py-5 border-b border-line">
                     <div>
                         <div className="mb-1 flex items-center gap-2 text-[10px] font-label uppercase tracking-widest text-brand-soft-strong">
-                            <PackagePlus size={13} />
+                            <PackagePlus size={13} aria-hidden="true" />
                             Restock pantry
                         </div>
-                        <DialogTitle className="font-headline text-xl text-fg">Low and empty items</DialogTitle>
+                        <DialogTitle className="font-headline text-xl font-normal leading-normal text-fg">Low and empty items</DialogTitle>
                     </div>
                     <button
                         type="button"
@@ -120,7 +125,7 @@ function RestockPantryDialogContent({
                         aria-label="Close restock pantry dialog"
                         className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-line transition-colors"
                     >
-                        <X size={16} className="text-fg-muted" />
+                        <X size={16} className="text-fg-muted" aria-hidden="true" />
                     </button>
                 </div>
 
@@ -156,25 +161,17 @@ function RestockPantryDialogContent({
                                             className={clsx(
                                                 'rounded-xl border p-3 transition-colors',
                                                 selected
-                                                    ? 'border-brand-soft/50 bg-brand-soft/5'
+                                                    ? 'border-brand-soft bg-brand-soft/5'
                                                     : 'border-line bg-surface',
                                             )}
                                         >
                                             <div className="flex items-start gap-3">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => toggle(item.id)}
-                                                    aria-label={`${selected ? 'Remove' : 'Add'} ${ingredientName} from restock batch`}
-                                                    aria-pressed={selected}
-                                                    className={clsx(
-                                                        'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors',
-                                                        selected
-                                                            ? 'border-brand bg-brand'
-                                                            : 'border-line-control bg-surface',
-                                                    )}
-                                                >
-                                                    {selected && <Check size={12} className="text-fg-on-brand" />}
-                                                </button>
+                                                <Checkbox
+                                                    checked={selected}
+                                                    onCheckedChange={() => toggle(item.id)}
+                                                    aria-label={`Restock ${ingredientName}`}
+                                                    className="relative mt-0.5 size-5 shrink-0 rounded-md focus-visible:ring-ring after:absolute after:-inset-1 after:content-['']"
+                                                />
 
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex flex-wrap items-center gap-2">
@@ -196,10 +193,12 @@ function RestockPantryDialogContent({
 
                                             {selected && (
                                                 <div className="ml-8 mt-3 flex items-center gap-2">
-                                                    <label className="text-[10px] font-label uppercase tracking-widest text-fg-muted">
+                                                    <label htmlFor={`restock-qty-${item.id}`} className="text-[10px] font-label uppercase tracking-widest text-fg-muted">
                                                         Add
                                                     </label>
                                                     <input
+                                                        id={`restock-qty-${item.id}`}
+                                                        aria-label={`Quantity of ${ingredientName} to add, in ${item.unitLeft}`}
                                                         type="number"
                                                         min={0.01}
                                                         step={0.01}
@@ -222,7 +221,7 @@ function RestockPantryDialogContent({
                     <button
                         type="button"
                         onClick={close}
-                        className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full bg-line/60 text-fg-secondary hover:bg-line transition-colors"
+                        className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full bg-line text-fg-secondary hover:bg-line transition-colors"
                     >
                         Cancel
                     </button>
@@ -234,7 +233,7 @@ function RestockPantryDialogContent({
                     >
                         {restock.isPending ? (
                             <span className="inline-flex items-center gap-2">
-                                <Loader2 size={13} className="animate-spin" />
+                                <Loader2 size={13} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />
                                 Restocking
                             </span>
                         ) : (

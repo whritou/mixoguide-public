@@ -1,28 +1,14 @@
-﻿"use client"
+"use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft, CheckCircle2, XCircle, Clock, User, Calendar, MessageSquare } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-
-type SuggestionStatus = "PENDING" | "ACCEPTED" | "DECLINED"
-type SuggestionType = "NEW_COCKTAIL" | "NEW_INGREDIENT" | "MODIFY_COCKTAIL" | "MODIFY_INGREDIENT"
-
-interface Suggestion {
-    id: string
-    type: SuggestionType
-    status: SuggestionStatus
-    title: string
-    content: string
-    targetId?: string | null
-    targetName?: string | null
-    adminNote?: string | null
-    createdAt: string
-    updatedAt: string
-    user: { id: string; name?: string | null; email: string; image?: string | null }
-}
+import { useSuggestionQuery } from "@/hooks/queries/use-suggestions"
+import { useSuggestionMutations } from "@/hooks/mutations/use-suggestion-mutations"
+import type { SuggestionStatus, SuggestionType } from "@/lib/api/suggestions.api"
 
 const TYPE_LABELS: Record<SuggestionType, string> = {
     NEW_COCKTAIL:      "New cocktail",
@@ -41,38 +27,22 @@ export default function ViewSuggestionPage() {
     const { id } = useParams() as { id: string }
     const router = useRouter()
 
-    const [suggestion, setSuggestion] = useState<Suggestion | null>(null)
-    const [loading, setLoading]       = useState(true)
-    const [adminNote, setAdminNote]   = useState("")
-    const [saving, setSaving]         = useState(false)
+    const { data: suggestion, isLoading: loading } = useSuggestionQuery(id)
+    const { update } = useSuggestionMutations()
+    const saving = update.isPending
 
-    useEffect(() => {
-        fetch(`/api/suggestions/${id}`)
-            .then(r => r.json())
-            .then(json => {
-                setSuggestion(json.data)
-                setAdminNote(json.data?.adminNote ?? "")
-            })
-            .catch(() => toast.error("Could not load suggestion"))
-            .finally(() => setLoading(false))
-    }, [id])
+    // Draft note: `null` until the admin edits it, so it follows the loaded
+    // suggestion without copying server data into state in an effect.
+    const [noteDraft, setNoteDraft] = useState<string | null>(null)
+    const adminNote = noteDraft ?? suggestion?.adminNote ?? ""
+    const setAdminNote = (value: string) => setNoteDraft(value)
 
     const updateStatus = async (status: SuggestionStatus) => {
-        setSaving(true)
         try {
-            const res = await fetch(`/api/suggestions/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status, adminNote: adminNote || null }),
-            })
-            if (!res.ok) throw new Error()
-            const json = await res.json()
-            setSuggestion(json.data)
+            await update.mutateAsync({ id, status, adminNote: adminNote || null })
             toast.success(`Suggestion marked as ${status.toLowerCase()}`)
         } catch {
             toast.error("Could not update suggestion")
-        } finally {
-            setSaving(false)
         }
     }
 
@@ -149,13 +119,16 @@ export default function ViewSuggestionPage() {
 
             {/* Admin response card */}
             <div className="bg-surface rounded-2xl border border-line shadow-sm p-6 mb-6">
-                <h2 className="text-xs font-label uppercase tracking-widest text-fg-muted mb-4">Admin note (optional)</h2>
+                <h2 className="text-xs font-label uppercase tracking-widest text-fg-muted mb-4">
+                    <label htmlFor="suggestion-admin-note">Admin note (optional)</label>
+                </h2>
                 <Textarea
+                    id="suggestion-admin-note"
                     value={adminNote}
                     onChange={e => setAdminNote(e.target.value)}
                     placeholder="Add an internal note or feedback for this suggestion..."
                     rows={4}
-                    className="border-line focus:border-brand-soft focus:ring-ring/20 resize-none"
+                    className="border-line focus:border-brand-soft focus-visible:ring-2 focus-visible:ring-ring resize-none"
                 />
             </div>
 

@@ -17,10 +17,13 @@ interface EntityMutationConfig<T extends { id: string }> {
     api: EntityApi<T>
     listKeys: () => readonly unknown[]
     detailKey?: (id: string) => readonly unknown[]
-    /** Invalidator called after create and remove. Also used for update when invalidateOnUpdate is omitted. */
-    invalidate: (qc: QueryClient) => void
+    /**
+     * Invalidator called after create and remove. Also used for update when invalidateOnUpdate is omitted.
+     * Its promise is returned from onSettled so the mutation stays pending until caches have refetched.
+     */
+    invalidate: (qc: QueryClient) => Promise<unknown> | void
     /** Invalidator called after update when the entity has a detail view with a separate cache key. */
-    invalidateOnUpdate?: (qc: QueryClient, id: string) => void
+    invalidateOnUpdate?: (qc: QueryClient, id: string) => Promise<unknown> | void
 }
 
 export function createEntityMutations<T extends { id: string }>(
@@ -73,10 +76,10 @@ export function createEntityMutations<T extends { id: string }>(
                     qc.setQueryData(config.detailKey(vars.id), ctx.detailSnap)
                 }
             },
-            onSettled: (_d, _e, vars) => {
-                if (config.invalidateOnUpdate) config.invalidateOnUpdate(qc, vars.id)
-                else config.invalidate(qc)
-            },
+            onSettled: (_d, _e, vars) =>
+                config.invalidateOnUpdate
+                    ? config.invalidateOnUpdate(qc, vars.id)
+                    : config.invalidate(qc),
         })
 
         const remove = useMutation({

@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { CalendarDays } from 'lucide-react'
+import { useId, useState } from 'react'
+import { CalendarDays, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { usePlannedCollectionMutations } from '@/hooks/mutations/use-planned-collection-mutations'
 import type { PlannedCollection } from '@/types/models/planned-collection'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
 interface Props {
     item: PlannedCollection
@@ -16,6 +17,7 @@ export default function RescheduleCollectionDialog({ item, onRescheduled, onClos
     const { update } = usePlannedCollectionMutations()
     const [date, setDate] = useState(item.plannedFor.split('T')[0])
     const [saving, setSaving] = useState(false)
+    const dateId = useId()
 
     const handleConfirm = async () => {
         if (!date) return
@@ -35,12 +37,16 @@ export default function RescheduleCollectionDialog({ item, onRescheduled, onClos
     }
 
     return (
-        <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-overlay/67 backdrop-blur-sm">
-            <div className="w-full max-w-sm bg-canvas rounded-2xl shadow-2xl flex flex-col">
+        <Dialog open onOpenChange={(o) => { if (!o) onClose() }}>
+            <DialogContent
+                showCloseButton={false}
+                overlayClassName="z-[160] backdrop-blur-sm"
+                className="z-[160] w-full max-w-sm sm:max-w-sm bg-canvas rounded-2xl shadow-2xl flex flex-col gap-0 p-0 border-0"
+            >
                 <div className="flex items-center justify-between px-6 py-5 border-b border-line">
                     <div className="flex items-center gap-2">
-                        <CalendarDays size={18} className="text-brand-soft" />
-                        <h2 className="font-headline text-xl text-fg">Reschedule</h2>
+                        <CalendarDays size={18} className="text-brand-soft-strong" aria-hidden="true" />
+                        <DialogTitle className="font-headline text-xl font-normal leading-normal text-fg">Reschedule</DialogTitle>
                     </div>
                     <button
                         type="button"
@@ -48,23 +54,25 @@ export default function RescheduleCollectionDialog({ item, onRescheduled, onClos
                         className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-line transition-colors text-fg-muted"
                         aria-label="Close"
                     >
-                        ×
+                        <X size={16} aria-hidden="true" />
                     </button>
                 </div>
 
                 <div className="px-6 py-5 space-y-4">
-                    <p className="text-sm text-fg-muted">
+                    <DialogDescription className="text-sm text-fg-muted">
                         When is{' '}<span className="font-medium text-fg">{item.title}</span>?
-                    </p>
+                    </DialogDescription>
                     <div>
-                        <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                        <label htmlFor={dateId} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                             New date *
                         </label>
                         <input
+                            id={dateId}
                             type="date"
+                            required
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
-                            className="w-full px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm text-fg focus:outline-none focus:ring-1 focus:ring-ring"
+                            className="w-full px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         />
                     </div>
                 </div>
@@ -73,7 +81,7 @@ export default function RescheduleCollectionDialog({ item, onRescheduled, onClos
                     <button
                         type="button"
                         onClick={onClose}
-                        className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full bg-line/60 text-fg-secondary hover:bg-line transition-colors"
+                        className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full bg-line text-fg-secondary hover:bg-line-strong transition-colors"
                     >
                         Cancel
                     </button>
@@ -86,7 +94,7 @@ export default function RescheduleCollectionDialog({ item, onRescheduled, onClos
                         {saving ? 'Saving…' : 'Confirm'}
                     </button>
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     )
 }

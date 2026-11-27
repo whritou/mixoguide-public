@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import Link from 'next/link';
 import { Wine, Droplets, Sparkles, GlassWater } from 'lucide-react';
 import { Ingredient } from "@/types/models/ingredient"
@@ -22,15 +22,15 @@ export default function IngredientCard({ ingredient: i, types, subTypes }: {
       {/* Image */}
       <div className="relative overflow-hidden aspect-[1]">
         <div
-          role="img"
-          aria-label={i.name}
+          aria-hidden="true"
           className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
           style={{ backgroundImage: `url(${i.imageUrl ?? '/placeholder.svg'})` }}
         />
         {usageCount != null && usageCount > 0 && (
           <span className="absolute top-2 right-2 inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-wider text-fg-on-image bg-overlay/73 backdrop-blur-sm px-2 py-0.5 rounded-full">
-            <GlassWater size={10} />
+            <GlassWater size={10} aria-hidden="true" />
             {usageCount}
+            <span className="sr-only"> {usageCount === 1 ? 'cocktail uses' : 'cocktails use'} this ingredient</span>
           </span>
         )}
       </div>
@@ -42,11 +42,11 @@ export default function IngredientCard({ ingredient: i, types, subTypes }: {
         </h3>
 
         <div className="flex items-center gap-2 text-xs text-fg-secondary">
-          <Wine size={13} className="text-brand-soft" />
+          <Wine size={13} className="text-brand-soft-strong" aria-hidden="true" />
           <span className="font-medium">{typeName}</span>
           {subTypeName && (
             <>
-              <span className="text-line-strong">/</span>
+              <span aria-hidden="true" className="text-line-strong">/</span>
               <span>{subTypeName}</span>
             </>
           )}
@@ -55,12 +55,12 @@ export default function IngredientCard({ ingredient: i, types, subTypes }: {
         <div className="flex flex-wrap gap-1.5">
           {i.isAlcoholic === false && (
             <span className="inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-wider text-brand bg-brand-soft/10 px-2 py-0.5 rounded-full">
-              <Sparkles size={10} /> Non-alcoholic
+              <Sparkles size={10} aria-hidden="true" /> Non-alcoholic
             </span>
           )}
           {i.abv != null && i.isAlcoholic === true && (
             <span className="inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-wider text-brand bg-brand-soft/10 px-2 py-0.5 rounded-full">
-              <Droplets size={10} /> {i.abv}% ABV
+              <Droplets size={10} aria-hidden="true" /> {i.abv}% ABV
             </span>
           )}
         </div>

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { MoreHorizontal, PackageCheck, Loader2 } from 'lucide-react'
@@ -123,11 +123,20 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
                 {/* INGREDIENT */}
                 <div className="flex items-center gap-3 min-w-0">
                     <div
+                        aria-hidden="true"
                         className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex-shrink-0 bg-line bg-cover bg-center"
                         style={ing?.imageUrl ? { backgroundImage: `url(${ing.imageUrl})` } : {}}
                     />
                     <div className="min-w-0">
-                        <p className="text-sm font-medium text-fg truncate">{ing?.name ?? '—'}</p>
+                        {/* Keyboard/AT entry point for the row's click-to-edit behaviour */}
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setEditOpen(true) }}
+                            aria-label={`Edit ${ing?.name ?? 'pantry item'}`}
+                            className="block max-w-full text-left text-sm font-medium text-fg truncate rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                            {ing?.name ?? '—'}
+                        </button>
                         {item.note && (
                             <p className="text-xs text-fg-muted truncate">{item.note}</p>
                         )}
@@ -143,9 +152,9 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
                 {/* STOCK BAR — desktop only */}
                 <div className="hidden sm:flex items-center">
                     {isShoppingView || !inPantry || stock === 'out' ? (
-                        <span className="text-xs text-fg-muted">—</span>
+                        <span className="text-xs text-fg-muted" aria-hidden="true">—</span>
                     ) : (
-                        <div className="h-1.5 bg-line rounded-full overflow-hidden w-full max-w-[160px]">
+                        <div aria-hidden="true" className="h-1.5 bg-line rounded-full overflow-hidden w-full max-w-[160px]">
                             <div
                                 className="h-full rounded-full transition-all"
                                 style={{ width: `${fill * 100}%`, backgroundColor: barColor }}
@@ -169,7 +178,7 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
                                         disabled={busy}
                                         className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1.5 text-[11px] font-medium text-fg-on-brand transition-colors hover:bg-brand/90 disabled:opacity-50"
                                     >
-                                        {busy ? <Loader2 size={12} className="animate-spin" /> : <PackageCheck size={12} />}
+                                        {busy ? <Loader2 size={12} aria-hidden="true" className="animate-spin motion-reduce:animate-none" /> : <PackageCheck size={12} aria-hidden="true" />}
                                         Move to pantry
                                     </button>
                                 </>
@@ -208,7 +217,7 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
                                 className="p-1.5 rounded-lg hover:bg-canvas-hover-alt text-fg-muted transition-colors"
                                 aria-label={`Actions for ${ing?.name ?? 'pantry item'}`}
                             >
-                                <MoreHorizontal size={16} />
+                                <MoreHorizontal size={16} aria-hidden="true" />
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
@@ -244,7 +253,7 @@ export default function PantryTableRow({ item, statusFilter, onDeleted, onItemUp
                                 disabled={busy}
                                 className="rounded-lg px-4 py-2 text-danger focus:bg-danger-bg focus:text-danger"
                             >
-                                {busy && <Loader2 size={13} className="animate-spin" />}
+                                {busy && <Loader2 size={13} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />}
                                 Remove
                             </DropdownMenuItem>
                         </DropdownMenuContent>

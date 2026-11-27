@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Image from 'next/image'
 import Link from 'next/link'
@@ -9,10 +9,11 @@ import { StarRatingDisplay } from '@/components/StarRating'
 import type { Cocktail, MakeableCocktail, MakeableStatus } from '@/types/models/cocktail'
 
 const STATUS_BADGE: Record<MakeableStatus, { dot: string; label: (c: MakeableCocktail) => string }> = {
-    full:            { dot: 'bg-status-ready-dot', label: () => 'MAKEABLE' },
-    withSubstitutes: { dot: 'bg-status-partial-dot',   label: () => 'MAKEABLE' },
-    withDerivates:   { dot: 'bg-status-partial-dot',   label: () => 'MAKEABLE' },
-    missing:         { dot: 'bg-status-missing-dot',  label: (c) => c.missingIngredients[0] ? `NEED ${c.missingIngredients[0].name.toUpperCase()}` : 'MISSING' },
+    // Each status has distinct text so it is not conveyed by dot colour alone (WCAG 1.4.1).
+    full:            { dot: 'bg-status-ready-dot',   label: () => 'Makeable' },
+    withSubstitutes: { dot: 'bg-status-partial-dot', label: () => 'Makeable · substitute' },
+    withDerivates:   { dot: 'bg-status-partial-dot', label: () => 'Makeable · derivative' },
+    missing:         { dot: 'bg-status-missing-dot', label: (c) => c.missingIngredients[0] ? `Need ${c.missingIngredients[0].name}` : 'Missing' },
 }
 
 interface Props {
@@ -38,6 +39,7 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
 
     const handleFav = async (e: React.MouseEvent) => {
         e.stopPropagation()
+        e.preventDefault()
         try {
             await toggle(cocktail.id)
             toast.success(fav ? 'Removed from favorites' : 'Added to favorites')
@@ -47,15 +49,17 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
     }
 
     return (
-        <Link
-            href={`/cocktails/${cocktail.id}`}
-            className="group bg-surface rounded-2xl overflow-hidden cursor-pointer shadow-xs hover:shadow-md transition-all duration-300 block"
+        // Stretched-link pattern: the title link covers the whole card via ::after,
+        // and the favorite button sits above it (z-10) so no interactive element
+        // is nested inside another (WCAG 4.1.2).
+        <article
+            className="group relative bg-surface rounded-2xl overflow-hidden cursor-pointer shadow-xs hover:shadow-md transition-all duration-300 block has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring has-[a:focus-visible]:ring-offset-2"
         >
             {/* Image */}
             <div className="relative aspect-[4/3] overflow-hidden">
                 <Image
                     src={cocktail.imageUrl ?? '/placeholder.svg'}
-                    alt={cocktail.name}
+                    alt=""
                     fill
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     className={`object-cover transition-transform duration-500 group-hover:scale-105 ${missingAny ? 'opacity-80' : ''}`}
@@ -66,7 +70,7 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
                 {badge && (
                     <div className="absolute top-3 left-3">
                         <span className="inline-flex items-center gap-1.5 bg-overlay backdrop-blur-sm text-fg-on-image text-[10px] font-label uppercase tracking-widest px-2.5 py-1.5 rounded-full">
-                            <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
+                            <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
                             {badge.label(makeable!)}
                         </span>
                     </div>
@@ -78,10 +82,11 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
                     onClick={handleFav}
                     aria-label={fav ? `Remove ${cocktail.name} from favorites` : `Add ${cocktail.name} to favorites`}
                     aria-pressed={fav}
-                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface/85 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-surface transition-colors"
+                    className="absolute z-10 top-3 right-3 w-8 h-8 rounded-full bg-surface/85 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-surface transition-colors"
                 >
                     <Star
                         size={14}
+                        aria-hidden="true"
                         className={fav ? 'text-brand-soft-strong' : 'text-fg-muted'}
                         fill={fav ? 'currentColor' : 'none'}
                     />
@@ -91,7 +96,12 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
             {/* Info */}
             <div className="p-4 space-y-1.5">
                 <h3 className="font-headline text-lg text-fg leading-tight line-clamp-1">
-                    {cocktail.name}
+                    <Link
+                        href={`/cocktails/${cocktail.id}`}
+                        className="focus-visible:outline-none after:absolute after:inset-0 after:content-['']"
+                    >
+                        {cocktail.name}
+                    </Link>
                 </h3>
 
                 <div className="flex items-center gap-2 text-xs text-fg-muted flex-wrap">
@@ -104,16 +114,16 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
                         </span>
                     )}
                     {showIngCount && cocktail.preparationTime != null && (
-                        <span className="text-line-strong">·</span>
+                        <span aria-hidden="true" className="text-line-strong">·</span>
                     )}
                     {cocktail.preparationTime != null && (
                         <span>{cocktail.preparationTime} min</span>
                     )}
                     {isNeverTried && makeable?.makeableStatus === 'full' && (
                         <>
-                            <span className="text-line-strong">·</span>
+                            <span aria-hidden="true" className="text-line-strong">·</span>
                             <span className="flex items-center gap-1 text-brand font-medium">
-                                <Sparkles size={11} />
+                                <Sparkles size={11} aria-hidden="true" />
                                 Never tried
                             </span>
                         </>
@@ -135,6 +145,6 @@ export function CocktailCard({ cocktail, makeable, isNeverTried }: Props) {
                     </div>
                 )}
             </div>
-        </Link>
+        </article>
     )
 }

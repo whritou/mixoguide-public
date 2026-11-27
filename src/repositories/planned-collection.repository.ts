@@ -22,6 +22,9 @@ const COCKTAIL_WITH_INGREDIENTS = {
     },
 } as const
 
+/** Upper bound on RSVPs loaded for a collection view. */
+export const MAX_RSVPS_IN_VIEW = 500
+
 class PlannedCollectionRepository extends BaseRepository<
     PlannedCollection,
     Prisma.PlannedCollectionUncheckedCreateInput,
@@ -62,7 +65,7 @@ class PlannedCollectionRepository extends BaseRepository<
                         include: { cocktail: { select: COCKTAIL_WITH_INGREDIENTS } },
                     },
                     _count: { select: { rsvps: { where: { status: 'going' } } } },
-                    ...(includeUser ? { user: true } : {}),
+                    ...(includeUser ? { user: { select: { id: true, name: true, image: true } } } : {}),
                 },
             }),
             prisma.plannedCollection.count({ where: baseWhere }),
@@ -96,7 +99,10 @@ class PlannedCollectionRepository extends BaseRepository<
         occasions?: string[]
         cocktailIds?: string[]
     }) {
-        const collection = await prisma.plannedCollection.create({
+        // DB-008: single nested write — the collection and its cocktails are
+        // created atomically (no empty collection left behind on failure).
+        const cocktailIds = [...new Set(data.cocktailIds ?? [])]
+        return prisma.plannedCollection.create({
             data: {
                 userId,
                 title:      data.title,
@@ -106,20 +112,16 @@ class PlannedCollectionRepository extends BaseRepository<
                 servings:   data.servings ?? 1,
                 occasions:  (data.occasions ?? []) as Occasion[],
                 status:     'planned',
+                ...(cocktailIds.length
+                    ? { cocktails: { createMany: { data: cocktailIds.map(cocktailId => ({ cocktailId })), skipDuplicates: true } } }
+                    : {}),
+            },
+            include: {
+                cocktails: {
+                    include: { cocktail: { select: COCKTAIL_WITH_INGREDIENTS } },
+                },
             },
         })
-
-        if (data.cocktailIds?.length) {
-            await prisma.plannedCollectionCocktail.createMany({
-                data: data.cocktailIds.map(cocktailId => ({
-                    plannedCollectionId: collection.id,
-                    cocktailId,
-                })),
-                skipDuplicates: true,
-            })
-        }
-
-        return this.findWithCocktails(collection.id)
     }
 
     async addCocktail(plannedCollectionId: string, cocktailId: string) {
@@ -134,22 +136,49 @@ class PlannedCollectionRepository extends BaseRepository<
         })
     }
 
-    async completeCocktail(plannedCollectionId: string, cocktailId: string, completedAt: Date) {
-        return prisma.plannedCollectionCocktail.updateMany({
+    /** Claim one collection cocktail (`planned → done`). Returns the number of claimed rows (0 or 1). */
+    async completeCocktail(
+        plannedCollectionId: string,
+        cocktailId: string,
+        completedAt: Date,
+        tx: Prisma.TransactionClient = prisma,
+    ) {
+        return tx.plannedCollectionCocktail.updateMany({
             where: { plannedCollectionId, cocktailId, status: 'planned' },
             data:  { status: 'done', completedAt },
         })
     }
 
-    async completeAllCocktails(plannedCollectionId: string, completedAt: Date) {
-        return prisma.plannedCollectionCocktail.updateMany({
-            where: { plannedCollectionId, status: 'planned' },
-            data:  { status: 'done', completedAt },
-        })
+    /**
+     * Claim every still-planned cocktail of a collection and return the ids of
+     * the rows THIS call flipped to done (so the caller deducts only for those).
+     */
+    async completeAllCocktails(
+        plannedCollectionId: string,
+        completedAt: Date,
+        tx: Prisma.TransactionClient = prisma,
+    ): Promise<string[]> {
+        const rows = await tx.$queryRaw<Array<{ cocktailId: string }>>`
+            UPDATE planned_collection_cocktails
+               SET status = 'done', completed_at = ${completedAt}
+             WHERE planned_collection_id = ${plannedCollectionId}
+               AND status = 'planned'
+         RETURNING cocktail_id AS "cocktailId"
+        `
+        return rows.map((r) => r.cocktailId)
     }
 
-    async hasPlannedCocktails(plannedCollectionId: string) {
-        const count = await prisma.plannedCollectionCocktail.count({
+    /** Claim the collection itself (`planned → done`). Returns true when this caller won. */
+    async claimCompletion(id: string, completedAt: Date, tx: Prisma.TransactionClient = prisma): Promise<boolean> {
+        const result = await tx.plannedCollection.updateMany({
+            where: { id, status: 'planned' },
+            data:  { status: 'done', completedAt },
+        })
+        return result.count === 1
+    }
+
+    async hasPlannedCocktails(plannedCollectionId: string, tx: Prisma.TransactionClient = prisma) {
+        const count = await tx.plannedCollectionCocktail.count({
             where: { plannedCollectionId, status: 'planned' },
         })
         return count > 0
@@ -179,8 +208,21 @@ class PlannedCollectionRepository extends BaseRepository<
                 },
                 rsvps: {
                     orderBy: { createdAt: 'asc' },
+                    take:    MAX_RSVPS_IN_VIEW,
+                    select:  {
+                        id: true, userId: true, name: true, email: true, status: true,
+                        guestCount: true, note: true, createdAt: true,
+                    },
                 },
             },
+        })
+    }
+
+    /** Minimal lookup used by the RSVP write path (no cocktails / RSVP list). */
+    async findShareInfoByToken(token: string) {
+        return prisma.plannedCollection.findUnique({
+            where:  { shareToken: token },
+            select: { id: true, shareEnabled: true },
         })
     }
 
@@ -193,24 +235,27 @@ class PlannedCollectionRepository extends BaseRepository<
         email?: string | null
         userId?: string | null
     }) {
+        // DB-008: logged-in users have exactly one RSVP per collection, enforced
+        // by the (collection_id, user_id) unique index — upsert is race-free.
         if (data.userId) {
-            const existing = await prisma.collectionRsvp.findFirst({
-                where: { collectionId: data.collectionId, userId: data.userId },
-            })
-            if (existing) {
-                return prisma.collectionRsvp.update({
-                    where: { id: existing.id },
-                    data: {
-                        status:     data.status,
-                        guestCount: data.guestCount,
-                        note:       data.note ?? null,
-                        email:      data.email ?? null,
-                        name:       data.name,
-                    },
-                })
+            const fields = {
+                status:     data.status,
+                guestCount: data.guestCount,
+                note:       data.note ?? null,
+                email:      data.email ?? null,
+                name:       data.name,
             }
+            return prisma.collectionRsvp.upsert({
+                where:  { collectionId_userId: { collectionId: data.collectionId, userId: data.userId } },
+                update: fields,
+                create: { ...fields, collectionId: data.collectionId, userId: data.userId },
+            })
         }
-        return prisma.collectionRsvp.create({ data })
+        return prisma.collectionRsvp.create({ data: { ...data, userId: null } })
+    }
+
+    async countGuestRsvps(collectionId: string) {
+        return prisma.collectionRsvp.count({ where: { collectionId, userId: null } })
     }
 
     async getMyRsvps(userId: string) {
@@ -239,6 +284,7 @@ class PlannedCollectionRepository extends BaseRepository<
         return prisma.collectionRsvp.findMany({
             where: { collectionId },
             orderBy: { createdAt: 'asc' },
+            take: MAX_RSVPS_IN_VIEW,
         })
     }
 }

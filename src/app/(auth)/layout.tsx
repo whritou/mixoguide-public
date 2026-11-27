@@ -1,5 +1,3 @@
-﻿"use client";
-
 import Link from "next/link";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -48,9 +46,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                     </Link>
                 </div>
 
-                <div className="flex-1 flex items-center justify-center px-6 py-12">
+                <main id="main" tabIndex={-1} className="flex-1 flex items-center justify-center px-6 py-12 outline-none">
                     <div className="w-full max-w-md">{children}</div>
-                </div>
+                </main>
             </div>
         </div>
     );

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { AppError } from './errors'
 import { ZodError } from 'zod'
+import { Prisma } from '@prisma/client'
 
 export class ApiResponse {
   static success<T>(data: T, status = 200, headers?: Record<string, string>) {
@@ -48,6 +49,20 @@ export class ApiResponse {
         'VALIDATION_ERROR',
         err.flatten().fieldErrors
       )
+    }
+
+    // DB-005: translate known Prisma errors instead of surfacing them as 500s.
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      switch (err.code) {
+        case 'P2002':
+          return ApiResponse.error('Resource already exists', 409, 'CONFLICT')
+        case 'P2003':
+          return ApiResponse.error('Related resource is missing or still in use', 409, 'CONSTRAINT_VIOLATION')
+        case 'P2025':
+          return ApiResponse.error('Resource not found', 404, 'NOT_FOUND')
+        case 'P2034':
+          return ApiResponse.error('Concurrent update conflict, please retry', 409, 'CONFLICT')
+      }
     }
 
     return ApiResponse.error('Internal server error', 500, 'INTERNAL_ERROR')

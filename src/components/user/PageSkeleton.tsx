@@ -1,4 +1,4 @@
-﻿export function PageSkeleton() {
+export function PageSkeleton() {
     return (
         <div className="bg-canvas min-h-screen px-4 md:px-12 py-12 max-w-3xl mx-auto space-y-8 animate-pulse">
             <div className="flex gap-6 items-end">

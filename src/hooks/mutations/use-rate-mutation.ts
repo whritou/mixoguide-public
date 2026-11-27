@@ -1,13 +1,14 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { invalidators } from '@/lib/invalidation'
+import { queryKeys } from '@/lib/query-keys'
+import { ratingsApi, type RatingStats } from '@/lib/api/ratings.api'
 
-export type RatingStats = { avg: number | null; count: number }
+export type { RatingStats }
 
-function computeOptimisticStats(
+export function computeOptimisticStats(
     current: RatingStats,
     prevUserRating: number | null,
     newValue: number,
@@ -31,61 +32,56 @@ function computeOptimisticStats(
 
 interface UseRateMutationOptions {
     cocktailId: string
+    /** Server-rendered aggregate used as the stats query's initial data. */
     initialStats: RatingStats
     userRating: number | null
 }
 
+/**
+ * Rating stats live in the query cache (`ratings.stats(cocktailId)`) seeded from
+ * the server-rendered cocktail, instead of being copied into component state.
+ * The mutation applies an optimistic update, then writes the authoritative stats
+ * it fetched once after the write, and narrowly invalidates the rating list
+ * (for the user's own stars) and the cocktail detail.
+ */
 export function useRateMutation({ cocktailId, initialStats, userRating }: UseRateMutationOptions) {
     const qc = useQueryClient()
-    const [stats, setStats] = useState<RatingStats>(initialStats)
-    // Track which cocktailId's server stats we've last synced so that optimistic
-    // updates on the current cocktail are not clobbered by background refetches.
-    const syncedForRef = useRef<string | null>(null)
+    const statsKey = queryKeys.ratings.stats(cocktailId)
 
-    useEffect(() => {
-        const hasData = initialStats.avg !== null || initialStats.count > 0
-        if (hasData && cocktailId !== syncedForRef.current) {
-            syncedForRef.current = cocktailId
-            setStats(initialStats)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [cocktailId, initialStats.avg, initialStats.count])
+    const { data: stats = initialStats } = useQuery({
+        queryKey: statsKey,
+        queryFn: () => ratingsApi.statsFor(cocktailId),
+        initialData: initialStats,
+        staleTime: 5 * 60_000,
+        enabled: Boolean(cocktailId),
+    })
 
     const mutation = useMutation({
         mutationFn: async (newValue: number) => {
             const isRemoving = newValue === 0 || newValue === userRating
-            if (isRemoving) {
-                const res = await fetch(`/api/ratings/${cocktailId}`, { method: 'DELETE' })
-                if (!res.ok) throw new Error()
-                toast.success('Rating removed')
-            } else {
-                const res = await fetch(`/api/ratings/${cocktailId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ rating: newValue }),
-                })
-                if (!res.ok) throw new Error()
-                toast.success('Rating saved')
-            }
-            invalidators.ratings(qc)
-            const res = await fetch(`/api/ratings/${cocktailId}`)
-            if (!res.ok) return null
-            const json = await res.json()
-            const s = json.data?.stats
-            return s ? ({ avg: s.average ?? null, count: s.count ?? 0 } as RatingStats) : null
+            if (isRemoving) await ratingsApi.unrate(cocktailId)
+            else await ratingsApi.rate(cocktailId, newValue)
+            const fresh = await ratingsApi.statsFor(cocktailId).catch(() => null)
+            return { isRemoving, fresh }
         },
-        onMutate: (newValue) => {
+        onMutate: async (newValue) => {
+            await qc.cancelQueries({ queryKey: statsKey })
+            const prevStats = qc.getQueryData<RatingStats>(statsKey) ?? stats
             const isRemoving = newValue === 0 || newValue === userRating
-            const prevStats = stats
-            setStats(computeOptimisticStats(stats, userRating, isRemoving ? 0 : newValue))
+            qc.setQueryData<RatingStats>(
+                statsKey,
+                computeOptimisticStats(prevStats, userRating, isRemoving ? 0 : newValue),
+            )
             return { prevStats }
         },
         onError: (_e, _v, ctx) => {
-            if (ctx?.prevStats) setStats(ctx.prevStats)
+            if (ctx?.prevStats) qc.setQueryData(statsKey, ctx.prevStats)
             toast.error('Could not save rating')
         },
-        onSuccess: (freshStats) => {
-            if (freshStats) setStats(freshStats)
+        onSuccess: ({ isRemoving, fresh }) => {
+            if (fresh) qc.setQueryData(statsKey, fresh)
+            toast.success(isRemoving ? 'Rating removed' : 'Rating saved')
+            return invalidators.ratings(qc, cocktailId)
         },
     })
 

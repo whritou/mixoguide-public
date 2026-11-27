@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useCallback, useMemo } from 'react'
 import Link from 'next/link'
@@ -205,7 +205,7 @@ export function TonightDashboard() {
                             Current streak
                         </span>
                         <div className="flex items-baseline gap-2">
-                            <span className="font-headline text-5xl text-brand-soft italic leading-none">
+                            <span className="font-headline text-5xl text-brand-soft-strong italic leading-none">
                                 {stats?.currentStreak ?? '—'}
                             </span>
                             <span className="font-headline text-2xl text-fg-on-inverse leading-none">
@@ -378,7 +378,7 @@ export function TonightDashboard() {
                                     >
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="w-10 h-10 rounded-xl bg-surface-muted flex items-center justify-center shrink-0">
-                                                <span className="font-headline italic text-lg text-brand-soft">
+                                                <span className="font-headline italic text-lg text-brand-soft-strong">
                                                     {ing.name.charAt(0)}
                                                 </span>
                                             </div>

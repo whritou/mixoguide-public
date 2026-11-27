@@ -92,7 +92,7 @@ async function fetchGoogleJwks(forceRefresh = false) {
         return googleJwkCache.keys
     }
 
-    const response = await fetch(GOOGLE_JWKS_URL)
+    const response = await fetch(GOOGLE_JWKS_URL, { signal: AbortSignal.timeout(4000) })
     let jwks: GoogleJwkSet
     try {
         jwks = await response.json() as GoogleJwkSet
@@ -163,6 +163,29 @@ function normalizeGoogleProfile(profile: GoogleProfile): VerifiedGoogleProfile {
     }
 }
 
+// ─── Replay protection ───────────────────────────────────────────────────────
+// A Google ID token stays valid for ~1 h. Each one may be exchanged for a
+// MixoGuide session exactly once (SEC-003).
+const consumedIdTokens = new Map<string, number>()
+
+async function markIdTokenConsumed(idToken: string, expSeconds: number): Promise<boolean> {
+    const key = `gid:${crypto.createHash('sha256').update(idToken).digest('hex')}`
+    const ttl = Math.max(60, expSeconds - Math.floor(Date.now() / 1000) + GOOGLE_ID_TOKEN_CLOCK_SKEW_SECONDS)
+
+    const { getRedis } = await import('@/lib/redis')
+    const redis = await getRedis()
+    if (redis) {
+        const ok = await redis.set(key, '1', 'EX', ttl, 'NX').catch(() => null)
+        if (ok !== null) return ok === 'OK'
+    }
+
+    const now = Date.now()
+    for (const [k, until] of consumedIdTokens) if (until < now) consumedIdTokens.delete(k)
+    if (consumedIdTokens.has(key)) return false
+    consumedIdTokens.set(key, now + ttl * 1000)
+    return true
+}
+
 export async function verifyGoogleIdToken(idToken: string): Promise<VerifiedGoogleProfile> {
     const parts = idToken.split('.')
     if (parts.length !== 3 || parts.some((part) => part.length === 0)) {
@@ -192,6 +215,10 @@ export async function verifyGoogleIdToken(idToken: string): Promise<VerifiedGoog
         throw new UnauthorizedError('Invalid Google ID token')
     }
 
+    if (!(await markIdTokenConsumed(idToken, payload.exp))) {
+        throw new UnauthorizedError('Google ID token already used')
+    }
+
     return normalizeGoogleProfile({
         sub: payload.sub,
         email: payload.email,
@@ -201,23 +228,18 @@ export async function verifyGoogleIdToken(idToken: string): Promise<VerifiedGoog
     })
 }
 
-function googleAccountData(tokenData: GoogleTokenResponse, profile: Pick<VerifiedGoogleProfile, 'sub'>) {
-    const expiresAt = typeof tokenData.expires_in === 'number'
-        ? Math.floor(Date.now() / 1000) + tokenData.expires_in
-        : undefined
-
+/**
+ * Account row for a Google identity. Provider tokens are deliberately NOT
+ * persisted: the app never calls Google APIs on the user's behalf, and a stored
+ * ID token is a replayable login credential (SEC-003).
+ */
+function googleAccountData(_tokenData: GoogleTokenResponse, profile: Pick<VerifiedGoogleProfile, 'sub'>) {
+    void _tokenData
     const data: Prisma.AccountUncheckedCreateWithoutUserInput = {
         type: 'oauth',
         provider: 'google',
         providerAccountId: profile.sub,
     }
-
-    if (tokenData.access_token) data.access_token = tokenData.access_token
-    if (expiresAt) data.expires_at = expiresAt
-    if (tokenData.id_token) data.id_token = tokenData.id_token
-    if (tokenData.scope) data.scope = tokenData.scope
-    if (tokenData.token_type) data.token_type = tokenData.token_type
-
     return data
 }
 

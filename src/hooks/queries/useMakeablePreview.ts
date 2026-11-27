@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { MakeablePreview } from '@/types/models/cocktail'
-import type { DemoBottle } from '@/lib/demo-bar/demo-bottles'
+import { makeableApi } from '@/lib/api/makeable.api'
 import { queryKeys } from '@/lib/query-keys'
 
 const DEBOUNCE_MS = 250
@@ -17,12 +17,6 @@ function useDebouncedValue<T>(value: T, delay: number): T {
     return debounced
 }
 
-async function unwrap<T>(res: Response, message: string): Promise<T> {
-    if (!res.ok) throw new Error(message)
-    const body = await res.json()
-    return body.data as T
-}
-
 export function useMakeablePreview(ids: string[], cocktailId?: string) {
     const idsKey = [...ids].sort().join(',')
     const debouncedKey = useDebouncedValue(idsKey, DEBOUNCE_MS)
@@ -30,15 +24,7 @@ export function useMakeablePreview(ids: string[], cocktailId?: string) {
 
     const query = useQuery({
         queryKey: queryKeys.makeablePreview(debouncedIds, cocktailId),
-        queryFn: async () =>
-            unwrap<MakeablePreview>(
-                await fetch('/api/cocktails/makeable-preview', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ingredientIds: debouncedIds, cocktailId }),
-                }),
-                'Failed to load preview',
-            ),
+        queryFn: () => makeableApi.preview(debouncedIds, cocktailId),
         enabled: debouncedIds.length > 0,
         placeholderData: debouncedIds.length > 0 ? (previous: MakeablePreview | undefined) => previous : undefined,
         refetchOnWindowFocus: false,
@@ -49,8 +35,7 @@ export function useMakeablePreview(ids: string[], cocktailId?: string) {
 export function useDemoBottles() {
     return useQuery({
         queryKey: queryKeys.demoBottles,
-        queryFn: async () =>
-            unwrap<DemoBottle[]>(await fetch('/api/cocktails/makeable-preview'), 'Failed to load demo bottles'),
+        queryFn: makeableApi.demoBottles,
         staleTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
     })

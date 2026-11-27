@@ -1,4 +1,4 @@
-﻿import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth'
 
 import { options } from '@/lib/auth/authOptions'
 import { TonightDashboard } from '@/components/home/dashboard/TonightDashboard'

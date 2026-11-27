@@ -50,6 +50,7 @@ export function MainAlcoholSelectField({ value, onChange, disabled }: Props) {
       onSearchChange={handleSearch}
       disabled={disabled}
       placeholder="Select main alcohol…"
+      label="Main alcohol"
     />
   )
 }

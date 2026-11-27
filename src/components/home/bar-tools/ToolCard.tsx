@@ -1,18 +1,20 @@
-﻿'use client'
+'use client'
 
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { CheckCircle2 } from 'lucide-react'
 import { cardVariants, type BarTool } from '@/data/bar-tools'
 
 export function ToolCard({ tool }: { tool: BarTool }) {
+    const reduceMotion = useReducedMotion()
     const Icon = tool.icon
     return (
         <motion.article
-            variants={cardVariants}
+            // Skip the reveal animation when the user prefers reduced motion (A11Y-020).
+            variants={reduceMotion ? undefined : cardVariants}
             className="bg-surface rounded-2xl p-7 flex flex-col gap-5 shadow-xs hover:shadow-md transition-shadow duration-300"
         >
             <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-brand/10 text-brand shrink-0">
-                <Icon size={20} />
+                <Icon size={20} aria-hidden="true" />
             </div>
 
             <div>
@@ -35,7 +37,7 @@ export function ToolCard({ tool }: { tool: BarTool }) {
                 <ul className="space-y-2">
                     {tool.tips.map((tip, i) => (
                         <li key={i} className="flex gap-2.5 items-start">
-                            <CheckCircle2 size={14} className="text-brand-soft mt-0.5 shrink-0" />
+                            <CheckCircle2 size={14} aria-hidden="true" className="text-brand-soft mt-0.5 shrink-0" />
                             <span className="font-body text-xs text-fg-secondary leading-relaxed">{tip}</span>
                         </li>
                     ))}

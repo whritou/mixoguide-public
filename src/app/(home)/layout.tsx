@@ -1,17 +1,10 @@
-"use client"
+import type { ReactNode } from 'react'
+import { AppShell } from '@/components/layout/AppShell'
 
-import AppBar from "@/components/layout/Appbar"
-import "./../globals.css";
-import { Footer } from "@/components/layout/Footer"
-export default function HomeLayout({ children }: { children: React.ReactNode }) {
-
-  return (
-      <>
-        <AppBar />
-        <main className="pt-0 md:pt-[72px]">
-          {children}
-        </main>
-        <Footer />
-      </>
-  )
+/**
+ * Public catalog/landing shell. Deliberately does not read the session on the
+ * server so catalog pages can stay static; the client provider resolves it.
+ */
+export default function HomeLayout({ children }: { children: ReactNode }) {
+    return <AppShell>{children}</AppShell>
 }

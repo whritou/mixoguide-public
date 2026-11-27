@@ -1,7 +1,8 @@
-﻿import { useState, useRef, type TouchEvent } from 'react';
+import { useState, useRef, type TouchEvent } from 'react';
 import { ChevronDown, Search, SlidersHorizontal, X } from 'lucide-react';
 import clsx from 'clsx';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FilterKey } from './FilterConstants';
 import { FilterPanel } from './FilterPanel';
@@ -100,6 +101,8 @@ export function FilterBanner({
   const pill = (label: string, key: FilterKey, count = 0) => (
     <button
       key={key}
+      type="button"
+      aria-expanded={openKey === key}
       onClick={() => openPanel(key)}
       className={clsx(
         'hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-label border transition-colors whitespace-nowrap',
@@ -116,6 +119,7 @@ export function FilterBanner({
       )}
       <ChevronDown
         size={13}
+        aria-hidden="true"
         className={clsx('transition-transform', openKey === key ? 'rotate-180' : '')}
       />
     </button>
@@ -126,8 +130,10 @@ export function FilterBanner({
       <div className="sticky top-0 md:top-[64px] z-[100] bg-canvas/95 backdrop-blur-md border-b border-line">
         <div className="px-4 md:px-12 py-3 flex items-center gap-2 md:flex-wrap">
           <div className="relative flex-1 md:flex-none">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
+            <Search size={13} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
             <input
+              type="search"
+              aria-label="Search ingredients"
               placeholder="Search ingredients..."
               value={p.get('search') ?? ''}
               onChange={e => filters.setDebounced('search', e.target.value || null)}
@@ -138,14 +144,14 @@ export function FilterBanner({
                 type="button"
                 onClick={() => filters.set('search', null)}
                 aria-label="Clear ingredient search"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg-secondary"
+                className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center min-h-6 min-w-6 p-1.5 rounded-full text-fg-muted hover:text-fg-secondary"
               >
-                <X size={13} />
+                <X size={13} aria-hidden="true" />
               </button>
             )}
           </div>
 
-          <div className="hidden md:block w-px h-5 bg-line flex-shrink-0" />
+          <div aria-hidden="true" className="hidden md:block w-px h-5 bg-line flex-shrink-0" />
 
           {pill('Type', 'type', typeCount)}
           {pill('Sub-type', 'subType', subTypeCount)}
@@ -153,6 +159,8 @@ export function FilterBanner({
 
           <div className="relative ml-auto flex-shrink-0 hidden md:block" onClick={e => e.stopPropagation()}>
             <button
+              type="button"
+              aria-expanded={showSortMenu}
               onClick={() => {
                 setShowSortMenu(v => !v);
                 setOpenKey(null);
@@ -163,15 +171,17 @@ export function FilterBanner({
               )}
             >
               <span className="font-normal text-fg-muted">Sort</span>
-              <span>·</span>
+              <span aria-hidden="true">·</span>
               <span className="font-medium">{currentSort.label}</span>
-              <ChevronDown size={13} className={clsx('transition-transform', showSortMenu ? 'rotate-180' : '')} />
+              <ChevronDown size={13} aria-hidden="true" className={clsx('transition-transform', showSortMenu ? 'rotate-180' : '')} />
             </button>
             {showSortMenu && (
               <div className="absolute right-0 top-full mt-1 z-[110] bg-surface rounded-xl shadow-lg border border-line py-1 min-w-[200px]">
                 {SORT_OPTIONS.map(opt => (
                   <button
                     key={opt.label}
+                    type="button"
+                    aria-pressed={currentSort.label === opt.label}
                     onClick={() => setSort(opt.sortBy, opt.sortOrder)}
                     className={clsx(
                       'w-full text-left px-4 py-2 text-sm hover:bg-surface-hover-alt',
@@ -201,7 +211,7 @@ export function FilterBanner({
           aria-label="Open ingredient filters"
           className="md:hidden fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+6.75rem)] z-[120] inline-flex items-center gap-2 px-4 py-3 rounded-full bg-surface-inverse text-fg-on-inverse inset-ring-1 inset-ring-fg/40 shadow-[0_10px_24px_rgba(27,28,26,0.28)]"
         >
-          <SlidersHorizontal size={15} />
+          <SlidersHorizontal size={15} aria-hidden="true" />
           <span className="font-label text-[11px] uppercase tracking-widest">Filters</span>
           {totalActive > 0 && (
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-fg-on-brand">
@@ -211,33 +221,38 @@ export function FilterBanner({
         </button>
       )}
 
-      {isMobileFiltersOpen && (
-        <div className="fixed inset-0 z-50 bg-overlay/53 backdrop-blur-sm md:hidden" onClick={closeMobileSheet}>
-          <div
-            onClick={(e) => e.stopPropagation()}
+      <Sheet open={isMobileFiltersOpen} onOpenChange={(o) => { if (!o) closeMobileSheet(); }}>
+          <SheetContent
+            side="bottom"
+            showCloseButton={false}
+            overlayClassName="z-[150] bg-overlay/53 backdrop-blur-sm md:hidden"
             className={clsx(
-              'absolute bottom-0 inset-x-0 bg-surface rounded-t-3xl p-6 max-h-[82vh] overflow-y-auto',
+              'z-[150] md:hidden block gap-0 border-0 bg-surface rounded-t-3xl p-6 max-h-[82vh] overflow-y-auto',
               !isSheetDragging && 'transition-transform duration-200'
             )}
             style={{ transform: `translateY(${mobileSheetOffset}px)` }}
           >
             <div
+              aria-hidden="true"
               className="w-10 h-1.5 bg-line rounded-full mx-auto mb-5"
               onTouchStart={onMobileSheetTouchStart}
               onTouchMove={onMobileSheetTouchMove}
               onTouchEnd={onMobileSheetTouchEnd}
             />
             <div className="flex justify-between items-center mb-4">
-              <span className="font-label text-base font-semibold">Filters</span>
-              <button onClick={closeMobileSheet} className="text-sm text-fg-muted">Close</button>
+              <SheetTitle className="font-label text-base font-semibold">Filters</SheetTitle>
+              <button type="button" onClick={closeMobileSheet} className="min-h-6 px-2 text-sm text-fg-muted hover:text-fg">Close</button>
             </div>
+            <SheetDescription className="sr-only">Refine the ingredient list by search, type, sub-type, alcohol and sort order.</SheetDescription>
 
             <div className="space-y-5">
               <div>
-                <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Search</span>
+                <label htmlFor="mobile-ingredient-search" className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Search</label>
                 <div className="relative mt-2">
-                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
+                  <Search size={13} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
                   <input
+                    id="mobile-ingredient-search"
+                    type="search"
                     placeholder="Search ingredients..."
                     value={p.get('search') ?? ''}
                     onChange={e => filters.setDebounced('search', e.target.value || null)}
@@ -248,9 +263,9 @@ export function FilterBanner({
                       type="button"
                       onClick={() => filters.set('search', null)}
                       aria-label="Clear ingredient search"
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg-secondary"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center min-h-6 min-w-6 p-1.5 rounded-full text-fg-muted hover:text-fg-secondary"
                     >
-                      <X size={13} />
+                      <X size={13} aria-hidden="true" />
                     </button>
                   )}
                 </div>
@@ -258,17 +273,21 @@ export function FilterBanner({
 
               <div>
                 <button
+                  type="button"
+                  aria-expanded={mobileOpenSection === 'type'}
                   onClick={() => setMobileOpenSection(prev => (prev === 'type' ? null : 'type'))}
                   className="w-full flex items-center justify-between"
                 >
                   <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Type</span>
-                  <ChevronDown size={14} className={clsx('transition-transform', mobileOpenSection === 'type' && 'rotate-180')} />
+                  <ChevronDown size={14} aria-hidden="true" className={clsx('transition-transform', mobileOpenSection === 'type' && 'rotate-180')} />
                 </button>
                 {mobileOpenSection === 'type' && (
                   <div className="flex flex-wrap gap-2 mt-2 max-h-36 overflow-y-auto pr-1">
                     {typeOpts.map((type) => (
                       <button
                         key={type.id}
+                        type="button"
+                        aria-pressed={(p.get('types') || '').split(',').includes(type.name)}
                         onClick={() => filters.toggleCsvValue('types', type.name)}
                         className={clsx(
                           'rounded-full px-3 py-1.5 text-xs font-label border',
@@ -286,17 +305,21 @@ export function FilterBanner({
 
               <div>
                 <button
+                  type="button"
+                  aria-expanded={mobileOpenSection === 'subType'}
                   onClick={() => setMobileOpenSection(prev => (prev === 'subType' ? null : 'subType'))}
                   className="w-full flex items-center justify-between"
                 >
                   <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Sub-type</span>
-                  <ChevronDown size={14} className={clsx('transition-transform', mobileOpenSection === 'subType' && 'rotate-180')} />
+                  <ChevronDown size={14} aria-hidden="true" className={clsx('transition-transform', mobileOpenSection === 'subType' && 'rotate-180')} />
                 </button>
                 {mobileOpenSection === 'subType' && (
                   <div className="flex flex-wrap gap-2 mt-2 max-h-36 overflow-y-auto pr-1">
                     {subTypeOpts.map((subType) => (
                       <button
                         key={subType.id}
+                        type="button"
+                        aria-pressed={(p.get('subTypes') || '').split(',').includes(subType.name)}
                         onClick={() => filters.toggleCsvValue('subTypes', subType.name)}
                         className={clsx(
                           'rounded-full px-3 py-1.5 text-xs font-label border',
@@ -314,11 +337,13 @@ export function FilterBanner({
 
               <div>
                 <button
+                  type="button"
+                  aria-expanded={mobileOpenSection === 'alcohol'}
                   onClick={() => setMobileOpenSection(prev => (prev === 'alcohol' ? null : 'alcohol'))}
                   className="w-full flex items-center justify-between"
                 >
                   <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Alcohol</span>
-                  <ChevronDown size={14} className={clsx('transition-transform', mobileOpenSection === 'alcohol' && 'rotate-180')} />
+                  <ChevronDown size={14} aria-hidden="true" className={clsx('transition-transform', mobileOpenSection === 'alcohol' && 'rotate-180')} />
                 </button>
                 {mobileOpenSection === 'alcohol' && (
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -329,6 +354,8 @@ export function FilterBanner({
                     ].map(({ label, value }) => (
                       <button
                         key={value}
+                        type="button"
+                        aria-pressed={alcoholValue === value}
                         onClick={() => filters.set('alcoholic', value === 'any' ? null : value)}
                         className={clsx(
                           'rounded-full px-3 py-1.5 text-xs font-label border',
@@ -346,17 +373,21 @@ export function FilterBanner({
 
               <div>
                 <button
+                  type="button"
+                  aria-expanded={mobileOpenSection === 'sort'}
                   onClick={() => setMobileOpenSection(prev => (prev === 'sort' ? null : 'sort'))}
                   className="w-full flex items-center justify-between"
                 >
                   <span className="text-[11px] font-label uppercase tracking-widest text-fg-muted">Sort</span>
-                  <ChevronDown size={14} className={clsx('transition-transform', mobileOpenSection === 'sort' && 'rotate-180')} />
+                  <ChevronDown size={14} aria-hidden="true" className={clsx('transition-transform', mobileOpenSection === 'sort' && 'rotate-180')} />
                 </button>
                 {mobileOpenSection === 'sort' && (
                   <div className="mt-2 space-y-1">
                     {SORT_OPTIONS.map(opt => (
                       <button
                         key={opt.label}
+                        type="button"
+                        aria-pressed={currentSort.label === opt.label}
                         onClick={() => setSort(opt.sortBy, opt.sortOrder)}
                         className={clsx(
                           'w-full text-left px-3 py-2 rounded-lg text-sm',
@@ -383,13 +414,12 @@ export function FilterBanner({
               >
                 Reset
               </Button>
-              <Button className="flex-1 bg-brand-soft hover:bg-brand" onClick={closeMobileSheet}>
+              <Button className="flex-1 bg-brand hover:bg-brand/90" onClick={closeMobileSheet}>
                 Done
               </Button>
             </div>
-          </div>
-        </div>
-      )}
+          </SheetContent>
+      </Sheet>
     </>
   );
 }

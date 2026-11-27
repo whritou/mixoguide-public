@@ -6,9 +6,16 @@ on:
   pull_request:
     branches: [main, dev]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   web-ci:
-    name: Web - Lint, Type-check & Coverage
+    name: Web - Audit, Lint, Type-check & Coverage
     runs-on: ubuntu-latest
 
     steps:
@@ -18,11 +25,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: npm ci
+
+      - name: Dependency audit gate (production deps, high+; see audit-allowlist.json)
+        run: node scripts/audit-gate.mjs
 
       - name: Generate Prisma client
         run: npm run db:generate
@@ -30,7 +40,7 @@ jobs:
       - name: Type-check
         run: npm run type-check
 
-      - name: Lint
+      - name: Lint (blocking on errors)
         run: npm run lint
 
       - name: Test coverage gates
@@ -50,7 +60,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16
+        image: postgres:18.1-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -75,17 +85,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: npm ci
 
       - name: Generate Prisma client
         run: npm run db:generate
 
-      - name: Apply database migrations
-        run: npm run db:migrate:prod
+      - name: Apply database migrations (same script as the release job)
+        run: sh scripts/release-migrate.sh
 
       - name: Run DB integration tests
         run: npm run test:db
@@ -101,7 +111,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: mobile/package-lock.json
 

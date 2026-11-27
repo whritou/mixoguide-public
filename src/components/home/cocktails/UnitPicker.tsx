@@ -1,4 +1,4 @@
-﻿import clsx from "clsx"
+import clsx from "clsx"
 
 const units = ["ml", "oz", "cl"] as const
 type Unit = typeof units[number]

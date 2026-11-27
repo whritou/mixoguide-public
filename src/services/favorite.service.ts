@@ -1,5 +1,6 @@
 import { favoriteRepository } from '@/repositories/favorite.repository'
-import { NotFoundError, ConflictError } from '@/utils/errors'
+import { isPrismaErrorCode } from '@/lib/db/transaction'
+import { NotFoundError } from '@/utils/errors'
 
 export class FavoriteService {
     // Returns just cocktailIds for the frontend toggle state
@@ -13,17 +14,22 @@ export class FavoriteService {
         return !!row
     }
 
+    /**
+     * Idempotent: adding an existing favorite returns the existing row
+     * (no check-then-insert race, no 500 on double tap).
+     */
     async add(userId: string, cocktailId: string) {
-        const existing = await favoriteRepository.findByUserAndCocktail(userId, cocktailId)
-        if (existing) throw new ConflictError('Cocktail already in favorites')
-        return favoriteRepository.create({ userId, cocktailId })
+        try {
+            return await favoriteRepository.addIdempotent(userId, cocktailId)
+        } catch (err) {
+            if (isPrismaErrorCode(err, 'P2003')) throw new NotFoundError('Cocktail not found')
+            throw err
+        }
     }
 
     async remove(userId: string, cocktailId: string) {
-        const existing = await favoriteRepository.findByUserAndCocktail(userId, cocktailId)
-        if (!existing) throw new NotFoundError('Favorite not found')
-        const ok = await favoriteRepository.hardDelete(existing.id)
-        if (!ok) throw new NotFoundError('Favorite not found')
+        const deleted = await favoriteRepository.removeByUserAndCocktail(userId, cocktailId)
+        if (deleted === 0) throw new NotFoundError('Favorite not found')
     }
 }
 

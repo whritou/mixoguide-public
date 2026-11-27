@@ -63,7 +63,7 @@ export default function SmartCollectionsSection({ asCta = false, onCreated }: Pr
             <section className={asCta ? 'py-6' : 'mt-8'}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                     {[1, 2, 3].map(i => (
-                        <div key={i} className="h-36 rounded-2xl bg-line/40 animate-pulse" />
+                        <div key={i} className="h-36 rounded-2xl bg-line/40 animate-pulse motion-reduce:animate-none" />
                     ))}
                 </div>
             </section>
@@ -100,7 +100,7 @@ export default function SmartCollectionsSection({ asCta = false, onCreated }: Pr
                             key={theme.slug}
                             type="button"
                             onClick={() => setActive(theme)}
-                            className={`group relative overflow-hidden rounded-2xl border border-line bg-gradient-to-br ${ACCENT_BG[theme.accent]} p-4 text-left transition-transform hover:-translate-y-0.5`}
+                            className={`group relative overflow-hidden rounded-2xl border border-line bg-gradient-to-br ${ACCENT_BG[theme.accent]} p-4 text-left transition-transform motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:hover:translate-y-0`}
                         >
                             <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0 flex-1">

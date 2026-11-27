@@ -20,13 +20,18 @@ export function validateCsrf(req: NextRequest): void {
 
     if (!host) return // Can't validate without host
 
-    const source = origin ?? (referer ? new URL(referer).origin : null)
+    let sourceHost: string | null = null
+    try {
+        const source = origin && origin !== 'null' ? origin : referer
+        sourceHost = source ? new URL(source).host : null
+    } catch {
+        sourceHost = null // malformed Origin/Referer: treat as missing (403, not 500)
+    }
 
-    if (!source) {
+    if (!sourceHost) {
         throw new ForbiddenError('Missing origin header')
     }
 
-    const sourceHost = new URL(source).host
     if (sourceHost !== host) {
         throw new ForbiddenError('Cross-origin request blocked')
     }

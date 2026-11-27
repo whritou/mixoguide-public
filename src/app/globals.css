@@ -56,8 +56,26 @@
 }
 
 @layer base {
+  /* WCAG 2.4.11: keep focused elements clear of the fixed app bar (top) and
+     the mobile bottom nav / sticky action bars (bottom). */
+  html {
+    scroll-padding-top: 9rem;
+    scroll-padding-bottom: 11rem;
+  }
+  @media (min-width: 768px) {
+    html {
+      scroll-padding-top: 8.5rem;
+      scroll-padding-bottom: 2rem;
+    }
+  }
+  /* WCAG 2.4.7: a solid, high-contrast default focus indicator for anything
+     that does not define its own focus-visible ring. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   body {
     @apply bg-background text-foreground;
@@ -86,4 +104,32 @@ body:has([data-landing-page]) [data-app-bar] {
 
 main:has(> [data-landing-page]) {
   padding-top: 0;
+}
+
+/* WCAG 2.2.2 / 2.3.3: honour the OS "reduce motion" setting everywhere —
+   CSS animations (tw-animate-css, animate-spin/pulse, keyframes) and
+   transitions collapse to an instant change. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Loader / skeleton keyframes (pure CSS — no JS animation library). */
+@keyframes mg-loader-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
+  40% { transform: translateY(-6px); opacity: 1; }
+}
+@keyframes mg-shake {
+  0% { transform: translate(-6px, -1px) rotate(-18deg); }
+  100% { transform: translate(6px, 1px) rotate(18deg); }
+}
+@keyframes mg-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
 }

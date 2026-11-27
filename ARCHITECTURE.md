@@ -422,10 +422,7 @@ Multi-stage `Dockerfile`:
 2. **builder** — compile Next.js (standalone output)
 3. **runner** — minimal runtime image (~50 MB); includes Prisma client and compiled seed scripts
 
-Entrypoint (`scripts/deploy.sh`):
-1. `prisma migrate deploy` — apply pending migrations
-2. Optional seed (light data)
-3. `node server.js` — start Next.js
+Entrypoint (`scripts/deploy.sh`) only runs `node server.js`. Migrations run as a separate release job (`scripts/release-migrate.sh`, pinned Prisma CLI, `DIRECT_URL`). `RUN_MIGRATIONS_ON_BOOT=1` and `RUN_SEED=1` exist as opt-in escape hatches. See `docs/RUNBOOK.md`.
 
 ### Local Development
 

@@ -6,55 +6,71 @@ function source(path: string) {
     return readFileSync(resolve(process.cwd(), path), 'utf8')
 }
 
-describe('planner modal layering', () => {
-    it('keeps the collection details overlay full-screen above planner navigation', () => {
-        const modal = source('src/components/home/planned-cocktails/card/CollectionDetailsModal.tsx')
+/** Extracts the numeric z-index from the first `<DialogContent … className="… z-[N] …">`. */
+function dialogContentZ(contents: string): number {
+    const m = /<DialogContent[\s\S]*?className="[^"]*\bz-\[(\d+)\]/.exec(contents)
+    if (!m) throw new Error('No DialogContent with a z-[N] class found')
+    return Number(m[1])
+}
 
-        expect(modal).toContain('className="fixed inset-0 flex items-center justify-center overflow-hidden')
-        expect(modal).toContain('style={{ zIndex: 9999 }}')
-        expect(modal).toContain("style={{ maxHeight: 'calc(100vh - 2rem)' }}")
-        expect(modal).toContain('className="min-h-0 flex-1 overflow-y-auto overscroll-contain')
-        expect(modal).not.toContain('className="fixed inset-0 flex items-start')
-        expect(modal).not.toMatch(/\b(?:top-20|bottom-24|md:top-24|md:bottom-8)\b/)
-    })
+function overlayZ(contents: string): number {
+    const m = /overlayClassName="[^"]*\bz-\[(\d+)\]/.exec(contents)
+    if (!m) throw new Error('No overlayClassName with a z-[N] class found')
+    return Number(m[1])
+}
 
-    it('keeps planner custom overlays above the app bar and mobile bottom nav', () => {
-        const files = [
-            'src/components/home/planned-cocktails/card/ShareCollectionModal.tsx',
-            'src/components/home/planned-cocktails/dialog/PlanCocktailDialog.tsx',
-            'src/components/home/planned-cocktails/dialog/RescheduleDialog.tsx',
-            'src/components/home/planned-cocktails/dialog/RescheduleCollectionDialog.tsx',
-            'src/components/home/planned-cocktails/view/PlannerCalendarView.tsx',
-        ]
+const APP_BAR_Z = 150 // dialog default; app bar / mobile nav sit below this
 
-        for (const file of files) {
+const PLANNER_DIALOGS = [
+    'src/components/home/planned-cocktails/card/CollectionDetailsModal.tsx',
+    'src/components/home/planned-cocktails/card/ShareCollectionModal.tsx',
+    'src/components/home/planned-cocktails/dialog/PlanCocktailDialog.tsx',
+    'src/components/home/planned-cocktails/dialog/RescheduleDialog.tsx',
+    'src/components/home/planned-cocktails/dialog/RescheduleCollectionDialog.tsx',
+    'src/components/home/planned-cocktails/view/PlannerCalendarView.tsx',
+]
+
+describe('planner modal layering (Radix Dialog)', () => {
+    it('uses the shared Radix Dialog instead of hand-rolled fixed overlays', () => {
+        for (const file of PLANNER_DIALOGS) {
             const contents = source(file)
-
-            expect(contents, file).toContain('fixed inset-0 z-[160]')
-            expect(contents, file).not.toMatch(/\bfixed inset-0 z-(?:40|50|60)\b/)
-            expect(contents, file).not.toMatch(/\bfixed inset-0 z-\[(?:40|50|60)\]\b/)
+            expect(contents, file).toMatch(/from '@\/components\/ui\/dialog'/)
+            expect(contents, file).toContain('<DialogContent')
+            expect(contents, file).toContain('<DialogTitle')
+            expect(contents, file).not.toMatch(/className="fixed inset-0/)
+            expect(contents, file).not.toContain("from 'react-dom'")
         }
     })
 
-    it('portals card-owned dialogs above sibling planner cards', () => {
-        const rescheduleDialog = source('src/components/home/planned-cocktails/dialog/RescheduleDialog.tsx')
-        const shareCollectionModal = source('src/components/home/planned-cocktails/card/ShareCollectionModal.tsx')
-
-        expect(rescheduleDialog).toContain("import { createPortal } from 'react-dom'")
-        expect(rescheduleDialog).toContain('return createPortal(')
-        expect(rescheduleDialog).toContain('document.body')
-        expect(rescheduleDialog).toContain('style={{ zIndex: 9999 }}')
-
-        expect(shareCollectionModal).toContain("import { createPortal } from 'react-dom'")
-        expect(shareCollectionModal).toContain('return createPortal(')
-        expect(shareCollectionModal).toContain('document.body')
-        expect(shareCollectionModal).toContain('style={{ zIndex: 9999 }}')
+    it('keeps planner dialogs above the app bar and mobile bottom nav', () => {
+        for (const file of PLANNER_DIALOGS) {
+            const contents = source(file)
+            expect(dialogContentZ(contents), file).toBeGreaterThan(APP_BAR_Z)
+            expect(overlayZ(contents), file).toBe(dialogContentZ(contents))
+        }
     })
 
-    it('keeps confirm dialogs above the event details modal', () => {
-        const confirmDialog = source('src/components/ui/ConfirmDialog.tsx')
+    it('keeps card-owned dialogs above sibling planner cards and the details modal', () => {
+        const details = dialogContentZ(source('src/components/home/planned-cocktails/card/CollectionDetailsModal.tsx'))
+        expect(details).toBe(9999)
+        expect(dialogContentZ(source('src/components/home/planned-cocktails/dialog/RescheduleDialog.tsx'))).toBeGreaterThanOrEqual(details)
+        expect(dialogContentZ(source('src/components/home/planned-cocktails/card/ShareCollectionModal.tsx'))).toBeGreaterThanOrEqual(details)
+    })
 
-        expect(confirmDialog).toContain('className="fixed inset-0 flex items-center justify-center')
-        expect(confirmDialog).toContain('style={{ zIndex: 10000 }}')
+    it('keeps the collection details modal height-bounded with an inner scroll container', () => {
+        const modal = source('src/components/home/planned-cocktails/card/CollectionDetailsModal.tsx')
+        expect(modal).toContain("style={{ maxHeight: 'calc(100vh - 2rem)' }}")
+        expect(modal).toContain('className="min-h-0 flex-1 overflow-y-auto overscroll-contain')
+        expect(modal).not.toMatch(/\b(?:top-20|bottom-24|md:top-24|md:bottom-8)\b/)
+    })
+
+    it('renders confirm dialogs as alertdialogs above the event details modal', () => {
+        const confirmDialog = source('src/components/ui/ConfirmDialog.tsx')
+        expect(confirmDialog).toContain('role="alertdialog"')
+        expect(dialogContentZ(confirmDialog)).toBe(10000)
+        expect(overlayZ(confirmDialog)).toBe(10000)
+        expect(dialogContentZ(confirmDialog)).toBeGreaterThan(
+            dialogContentZ(source('src/components/home/planned-cocktails/card/CollectionDetailsModal.tsx')),
+        )
     })
 })

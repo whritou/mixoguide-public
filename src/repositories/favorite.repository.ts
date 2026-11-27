@@ -34,6 +34,24 @@ class FavoriteRepository extends BaseRepository <
     }
 
     /**
+     * Idempotent add (DB-005): concurrent / repeated requests resolve to the same
+     * row instead of racing a check-then-insert into a unique violation.
+     */
+    async addIdempotent(userId: string, cocktailId: string) {
+        return prisma.userFavoriteCocktail.upsert({
+            where:  { userId_cocktailId: { userId, cocktailId } },
+            create: { userId, cocktailId },
+            update: {},
+        })
+    }
+
+    /** Returns the number of deleted rows (0 or 1). */
+    async removeByUserAndCocktail(userId: string, cocktailId: string): Promise<number> {
+        const result = await prisma.userFavoriteCocktail.deleteMany({ where: { userId, cocktailId } })
+        return result.count
+    }
+
+    /**
      * Returns favorites for one user only. The userId must come from auth context,
      * not from a client-controlled route/query parameter.
      */

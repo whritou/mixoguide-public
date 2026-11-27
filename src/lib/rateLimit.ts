@@ -1,6 +1,7 @@
 import { TooManyRequestsError } from "@/utils/errors"
 import { getRedis } from "@/lib/redis"
 import { env } from "@/lib/env"
+import { logger } from "@/lib/logger"
 import type { NextRequest } from "next/server"
 
 // ─── Self-hosted Redis (production) ──────────────────────────────────────────
@@ -33,18 +34,49 @@ export const RATE_LIMIT_CONFIGS = {
     "bulk-add":            { maxRequests: 10,  windowSeconds: 60 },
     "public-read":         { maxRequests: 60,  windowSeconds: 60 },
     "admin-write":         { maxRequests: 60,  windowSeconds: 60 },
+    "signin-account":      { maxRequests: 10,  windowSeconds: 15 * 60 }, // keyed by lowercased email
+    "mobile-register":     { maxRequests: 3,   windowSeconds: 60 * 60 },
+    barcode:               { maxRequests: 60,  windowSeconds: 60 * 60 },
+    rsvp:                  { maxRequests: 10,  windowSeconds: 60 * 60 },
+    device:                { maxRequests: 20,  windowSeconds: 60 * 60 },
+    "token-refresh":       { maxRequests: 30,  windowSeconds: 60 * 60 },
 } as const satisfies Record<string, RateLimitConfig>
 
 export type RateLimitAction = keyof typeof RATE_LIMIT_CONFIGS
 
 // ── In-memory fallback ────────────────────────────────────────────────────────
+// Per-instance only (not shared across replicas). Bounded: expired entries are
+// swept periodically and the map is capped at MEM_STORE_MAX_ENTRIES, evicting
+// the oldest-inserted keys first (Map preserves insertion order).
+export const MEM_STORE_MAX_ENTRIES = 10_000
+const MEM_SWEEP_INTERVAL_MS = 60_000
+
 const memStore = new Map<string, { count: number; resetAt: number }>()
+let lastSweepAt = 0
+
+function sweepExpired(now: number): void {
+    for (const [key, entry] of memStore) {
+        if (now > entry.resetAt) memStore.delete(key)
+    }
+    lastSweepAt = now
+}
 
 function memCheck(key: string, cfg: RateLimitConfig): boolean {
     const now = Date.now()
+    if (now - lastSweepAt >= MEM_SWEEP_INTERVAL_MS) sweepExpired(now)
+
     const entry = memStore.get(key)
 
     if (!entry || now > entry.resetAt) {
+        if (entry) memStore.delete(key) // re-insert at the end (newest)
+        if (memStore.size >= MEM_STORE_MAX_ENTRIES) {
+            sweepExpired(now)
+            while (memStore.size >= MEM_STORE_MAX_ENTRIES) {
+                const oldest = memStore.keys().next().value
+                if (oldest === undefined) break
+                memStore.delete(oldest)
+            }
+        }
         memStore.set(key, { count: 1, resetAt: now + cfg.windowSeconds * 1000 })
         return true
     }
@@ -53,6 +85,33 @@ function memCheck(key: string, cfg: RateLimitConfig): boolean {
 
     entry.count++
     return true
+}
+
+/** Test/diagnostic helpers for the in-memory store. */
+export function __memStoreSize(): number {
+    return memStore.size
+}
+
+export function __resetMemStore(): void {
+    memStore.clear()
+    lastSweepAt = 0
+    lastFallbackLogAt = 0
+}
+
+// Log the fallback in every environment, but at most once per minute per instance.
+const FALLBACK_LOG_INTERVAL_MS = 60_000
+let lastFallbackLogAt = 0
+
+function logFallback(action: RateLimitAction, reason: string): void {
+    const now = Date.now()
+    if (now - lastFallbackLogAt < FALLBACK_LOG_INTERVAL_MS) return
+    lastFallbackLogAt = now
+    logger.warn("rateLimit.memory_fallback", {
+        action,
+        reason,
+        memStoreSize: memStore.size,
+        note: "rate limits are per-instance until Redis is reachable",
+    })
 }
 
 // Fixed-window counter via INCR + EXPIRE (atomic enough for auth rate limiting)
@@ -79,12 +138,13 @@ export async function checkRateLimit(
 
     const redis = await getRedis()
 
-    if (!redis && env.NODE_ENV !== "production") {
-        console.warn(`[rateLimit] Redis unavailable -- using in-memory fallback for ${action}.`)
-    }
+    if (!redis) logFallback(action, env.REDIS_PASSWORD ? "redis_unavailable" : "redis_not_configured")
 
     const allowed = redis
-        ? await redisCheck(redis, key, cfg).catch(() => memCheck(key, cfg))
+        ? await redisCheck(redis, key, cfg).catch((err: unknown) => {
+            logFallback(action, err instanceof Error ? err.message : "redis_command_failed")
+            return memCheck(key, cfg)
+        })
         : memCheck(key, cfg)
 
     if (!allowed) throw new TooManyRequestsError("Too many attempts. Please try again later.")

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect, useId } from 'react'
 import { Switch } from '@/components/ui/switch'
 import { toast }  from 'sonner'
 import { X }      from 'lucide-react'
@@ -6,6 +6,7 @@ import clsx       from 'clsx'
 import { usePantryMutations } from '@/hooks/mutations/use-pantry-mutations'
 import type { UserPantryItem } from '@/types/models/pantry'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
 const UNITS = ['cl', 'ml', 'oz', 'g', 'pcs', 'zest', 'slice', 'twist'] as const
 
@@ -48,6 +49,7 @@ export default function EditPantryItemDialog({
     const [destination,  setDestination]  = useState<Destination>('pantry')
     const [submitting,   setSubmitting]   = useState(false)
     const [confirmDelete, setConfirmDelete] = useState(false)
+    const fid = useId()
 
     useEffect(() => {
         if (open) {
@@ -65,8 +67,6 @@ export default function EditPantryItemDialog({
             setDestination(contextMode === 'shopping' ? 'shopping' : (item.isInPantry ? 'pantry' : 'shopping'))
         }
     }, [open, item, contextMode])
-
-    if (!open) return null
 
     const setSwitch = (key: SwitchKey, val: boolean) =>
         setSwitches(prev => ({ ...prev, [key]: val }))
@@ -139,22 +139,30 @@ export default function EditPantryItemDialog({
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-overlay/67 backdrop-blur-sm">
-            <div className="w-full max-w-lg bg-canvas rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent
+                showCloseButton={false}
+                overlayClassName="backdrop-blur-sm"
+                className="w-full max-w-lg sm:max-w-lg bg-canvas rounded-2xl shadow-2xl flex flex-col gap-0 p-0 border-0 max-h-[90vh]"
+            >
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-line">
-                    <h2 className="font-headline text-xl text-fg">
+                    <DialogTitle className="font-headline text-xl font-normal leading-normal text-fg">
                         Edit {item.ingredient?.name ?? 'item'}
-                    </h2>
+                    </DialogTitle>
                     <button
+                        type="button"
                         onClick={() => onOpenChange(false)}
                         aria-label="Close"
                         className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-line transition-colors"
                     >
-                        <X size={16} className="text-fg-muted" />
+                        <X size={16} className="text-fg-muted" aria-hidden="true" />
                     </button>
                 </div>
+                <DialogDescription className="sr-only">
+                    Update quantity, unit, expiration date, flags and note for this ingredient.
+                </DialogDescription>
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-y-auto">
@@ -163,10 +171,11 @@ export default function EditPantryItemDialog({
                         {/* Quantity + Unit */}
                         <div className="grid grid-cols-5 gap-3">
                             <div className="col-span-3">
-                                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                                <label htmlFor={`${fid}-qty`} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                     {contextMode === 'shopping' ? 'Shopping quantity' : 'Quantity'}
                                 </label>
                                 <input
+                                    id={`${fid}-qty`}
                                     type="number"
                                     value={qty}
                                     onChange={e => setQty(e.target.value)}
@@ -179,10 +188,11 @@ export default function EditPantryItemDialog({
                             </div>
 
                             <div className="col-span-2">
-                                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                                <label htmlFor={`${fid}-unit`} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                     Unit
                                 </label>
                                 <select
+                                    id={`${fid}-unit`}
                                     value={unit}
                                     onChange={e => setUnit(e.target.value)}
                                     className="w-full px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body text-fg
@@ -195,11 +205,12 @@ export default function EditPantryItemDialog({
 
                         {/* Expiration date */}
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                            <label htmlFor={`${fid}-expiry`} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 Expiration date
-                                <span className="ml-1 text-fg-muted/60 normal-case font-body tracking-normal">(optional)</span>
+                                <span className="ml-1 text-fg-muted normal-case font-body tracking-normal">(optional)</span>
                             </label>
                             <input
+                                id={`${fid}-expiry`}
                                 type="date"
                                 value={expiryDate}
                                 onChange={e => setExpiryDate(e.target.value)}
@@ -211,10 +222,10 @@ export default function EditPantryItemDialog({
 
                         {contextMode !== 'shopping' && (
                             <div>
-                                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                                <span id={`${fid}-dest`} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                     Add to
-                                </label>
-                                <div className="flex rounded-xl border border-line overflow-hidden">
+                                </span>
+                                <div role="group" aria-labelledby={`${fid}-dest`} className="flex rounded-xl border border-line overflow-hidden">
                                     {([
                                         { value: 'pantry' as Destination, label: 'Pantry', sub: 'Available in your bar' },
                                         { value: 'shopping' as Destination, label: 'Shopping list', sub: 'Buy it later' },
@@ -222,6 +233,7 @@ export default function EditPantryItemDialog({
                                         <button
                                             key={value}
                                             type="button"
+                                            aria-pressed={destination === value}
                                             onClick={() => setDestination(value)}
                                             className={clsx(
                                                 'flex-1 px-4 py-3 text-left transition-colors',
@@ -247,10 +259,12 @@ export default function EditPantryItemDialog({
                             {SWITCHES.map(({ key, label, sub }) => (
                                 <div key={key} className="flex items-center justify-between px-4 py-3 bg-surface">
                                     <div>
-                                        <p className="text-sm font-body text-fg leading-none mb-0.5">{label}</p>
-                                        <p className="text-xs text-fg-muted">{sub}</p>
+                                        <p id={`${fid}-${key}-label`} className="text-sm font-body text-fg leading-none mb-0.5">{label}</p>
+                                        <p id={`${fid}-${key}-desc`} className="text-xs text-fg-muted">{sub}</p>
                                     </div>
                                     <Switch
+                                        aria-labelledby={`${fid}-${key}-label`}
+                                        aria-describedby={`${fid}-${key}-desc`}
                                         checked={switches[key]}
                                         onCheckedChange={v => setSwitch(key, v)}
                                     />
@@ -260,10 +274,11 @@ export default function EditPantryItemDialog({
 
                         {/* Note */}
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                            <label htmlFor={`${fid}-note`} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 Note
                             </label>
                             <textarea
+                                id={`${fid}-note`}
                                 value={note}
                                 onChange={e => setNote(e.target.value)}
                                 rows={2}
@@ -292,7 +307,7 @@ export default function EditPantryItemDialog({
                                 type="button"
                                 onClick={() => onOpenChange(false)}
                                 className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full
-                           bg-line/60 text-fg-secondary"
+                           bg-line text-fg-secondary"
                             >
                                 Cancel
                             </button>
@@ -309,7 +324,6 @@ export default function EditPantryItemDialog({
                     </div>
 
                 </form>
-            </div>
             {confirmDelete && (
                 <ConfirmDialog
                     title={`Delete ${item.ingredient?.name ?? 'item'}?`}
@@ -319,6 +333,7 @@ export default function EditPantryItemDialog({
                     onCancel={() => setConfirmDelete(false)}
                 />
             )}
-        </div>
+            </DialogContent>
+        </Dialog>
     )
 }

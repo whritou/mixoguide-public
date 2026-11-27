@@ -1,7 +1,10 @@
 import { prisma } from '@/lib/db/prisma'
 import { BaseRepository, toDelegate, type RepositoryConfig } from '@/repositories/base.repository'
 import { QueryBuilder } from '@/lib/query/QueryBuilder'
-import { NotFoundError } from '@/utils/errors'
+import { ConflictError, NotFoundError } from '@/utils/errors'
+import { isPrismaErrorCode } from '@/lib/db/transaction'
+import { invalidateDerivationCache } from '@/lib/derivations/derivation-cache'
+import { bumpCatalogVersion } from '@/lib/cache/makeable-cache'
 import type { QueryParams, PaginatedResult } from '@/lib/query/types'
 import type { CreateIngredientInput, UpdateIngredientInput } from '@/validations'
 import type { Ingredient, Prisma } from '@prisma/client'
@@ -23,7 +26,8 @@ class IngredientRepository extends BaseRepository<
             // surfaces the most-used ingredients first by default.
             allowedSortFields: ['name', 'createdAt', 'abv', 'usageCount'],
             allowedFilters:    ['typeId', 'subTypeId', 'isAlcoholic', 'unit'],
-            allowedIncludes:   ['type', 'subType', 'pantryItems'],
+            // 'pantryItems' intentionally NOT allowed: it exposes every user's pantry (SEC-001).
+            allowedIncludes:   ['type', 'subType'],
             searchFields:      ['name', 'brand'],
             defaultSortField:  'usageCount',
             defaultOrderBy: [
@@ -121,12 +125,44 @@ class IngredientService {
     async update(id: string, data: UpdateIngredientInput) {
         const ingredient = await ingredientRepository.update(id, data)
         if (!ingredient) throw new NotFoundError('Ingredient not found')
+        // Name / type changes affect makeable classification (garnish rules).
+        invalidateDerivationCache()
+        await bumpCatalogVersion()
         return ingredient
     }
 
+    /**
+     * Delete an ingredient only when nothing references it (DB-004). Recipes and
+     * pantries reference ingredients with ON DELETE RESTRICT; we check first so
+     * the admin gets a 409 with usage counts instead of a constraint error.
+     */
     async delete(id: string) {
-        const ok = await ingredientRepository.hardDelete(id)
+        const [cocktailCount, pantryCount] = await Promise.all([
+            prisma.cocktailIngredient.count({ where: { ingredientId: id } }),
+            prisma.userPantryItem.count({ where: { ingredientId: id } }),
+        ])
+        if (cocktailCount > 0 || pantryCount > 0) {
+            throw new ConflictError(
+                `Ingredient is still in use: ${cocktailCount} cocktail recipe(s) and ${pantryCount} pantry item(s). ` +
+                'Replace or merge it before deleting.',
+            )
+        }
+
+        let ok: boolean
+        try {
+            ok = await ingredientRepository.hardDelete(id)
+        } catch (err) {
+            // Race: a recipe / pantry row referenced it after the check.
+            if (isPrismaErrorCode(err, 'P2003')) {
+                throw new ConflictError('Ingredient is still in use and cannot be deleted')
+            }
+            throw err
+        }
         if (!ok) throw new NotFoundError('Ingredient not found')
+
+        // Derivations of this ingredient were cascaded away.
+        invalidateDerivationCache()
+        await bumpCatalogVersion()
     }
 }
 

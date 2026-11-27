@@ -14,13 +14,13 @@ export const POST = withUser(async (req: NextRequest, _ctx, session) => {
         appVersion: data.appVersion,
     })
 
-    return ApiResponse.success(device)
-})
+    return ApiResponse.success({ id: device.id, platform: device.platform, lastSeenAt: device.lastSeenAt })
+}, { rateLimit: 'device' })
 
 export const DELETE = withUser(async (req: NextRequest, _ctx, session) => {
-    const { fcmToken } = await req.json()
+    const { fcmToken } = await req.json().catch(() => ({})) as { fcmToken?: unknown }
 
-    if (!fcmToken || typeof fcmToken !== 'string') {
+    if (!fcmToken || typeof fcmToken !== 'string' || fcmToken.length > 4096) {
         return ApiResponse.error('Missing fcmToken', 400, 'BAD_REQUEST')
     }
 

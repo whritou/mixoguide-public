@@ -39,7 +39,7 @@ Built with **Next.js (App Router)**, **React Native (Expo)**, **Prisma**, **Post
 
 ## Monorepo Structure
 
-This is a **pnpm workspace** monorepo:
+This is an **npm** repository (the mobile app in `mobile/` has its own `package.json`/lockfile):
 
 ```
 MixoGuide/
@@ -60,16 +60,16 @@ MixoGuide/
 ├── prisma/                 # Schema, migrations, seed scripts
 ├── tests/                  # Vitest unit and integration tests
 ├── e2e/                    # Playwright end-to-end tests
-└── docker-compose.yml      # Local PostgreSQL + MinIO
+└── docker-compose.yml      # Local PostgreSQL + Redis
 ```
 
 ---
 
 ## Prerequisites
 
-- **Node.js** 20+
-- **pnpm** 9+
-- **Docker** (for local PostgreSQL and MinIO via `docker-compose`)
+- **Node.js** 22 (see `.nvmrc`; `nvm use`)
+- **npm** 10 (bundled with Node 22; the version is pinned in `package.json` `packageManager`)
+- **Docker** (for local PostgreSQL and Redis via `docker compose`)
 
 ---
 
@@ -77,23 +77,25 @@ MixoGuide/
 
 ### 1. Prerequisites
 
-- **Node.js** 20+ and **pnpm** 9+
-- **Docker** (for PostgreSQL and MinIO)
+- **Node.js** 22 and **npm** 10
+- **Docker** (for PostgreSQL and Redis)
 - **Google Cloud** account (for OAuth) — see [Environment Setup](#environment-setup)
 
-### 2. Start local database and storage
+### 2. Start local database and Redis
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
-This starts PostgreSQL 18 and MinIO (S3-compatible storage). Buckets are auto-created on first start.
+This starts PostgreSQL 18 and Redis 7 bound to `127.0.0.1`. Set `REDIS_PASSWORD=devredis` (the compose default) in `.env` to use Redis for rate limiting; without it the app falls back to an in-memory limiter.
 
 ### 3. Install dependencies
 
 ```bash
-pnpm install
+npm ci
 ```
+
+`package-lock.json` is committed; use `npm install <pkg>` to change dependencies and commit the updated lockfile.
 
 ### 4. Configure environment
 
@@ -106,14 +108,14 @@ See the [Environment Setup](#environment-setup) section below to fill in your va
 ### 5. Run migrations and generate Prisma client
 
 ```bash
-pnpm db:migrate
-pnpm db:generate
+npm run db:migrate
+npm run db:generate
 ```
 
 ### 6. (Optional) Seed with sample data
 
 ```bash
-pnpm db:seed
+npm run db:seed
 ```
 
 This seeds ~450 cocktails, ingredients, techniques, and other master data.
@@ -121,7 +123,7 @@ This seeds ~450 cocktails, ingredients, techniques, and other master data.
 ### 7. Start dev server
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 The app will be available at `http://localhost:3000`.
@@ -293,12 +295,12 @@ For automated Play Store releases via Expo EAS:
 
 ```bash
 cd mobile
-pnpm install
+npm ci
 cp .env.example .env.local
 # Fill in EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID and other vars (see above)
 
-pnpm start        # Start Expo dev server
-pnpm android      # Run on Android emulator
+npm run start    # Start Expo dev server
+npm run android  # Run on Android emulator
 ```
 
 See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for detailed Google OAuth configuration on mobile.
@@ -409,15 +411,18 @@ This replaces the old single `done` state on `PlannedCocktail`. The **"Made"** t
 |---|---|
 | `npm run dev` | Start Next.js dev server |
 | `npm run build` | Build for production |
-| `npm run lint` | ESLint for web source |
+| `npm run lint` | ESLint for web source (CI blocks on errors) |
+| `npm run format` / `npm run format:check` | Prettier write / check (not yet enforced in CI, see below) |
 | `npm run type-check` | TypeScript check |
 | `npm run db:migrate` | Prisma migrate dev |
-| `npm run db:migrate:prod` | Prisma migrate deploy |
+| `npm run db:migrate:prod` | Prisma migrate deploy (local CLI) |
+| `npm run db:migrate:release` | Release migration job (`scripts/release-migrate.sh`, uses `DIRECT_URL`) |
 | `npm run db:generate` | Generate Prisma client |
 | `npm run test:api` | API integration tests only (`tests/integration`, excluding `tests/integration/db/**`) |
 | `npm run test:db` | Real Postgres DB integration tests (`tests/integration/db/**`) |
 | `npm run test:coverage:check` | Web/API coverage gate run (excludes DB integration tests) |
-| `npm run test:webapp` | Playwright E2E suite (`e2e/**`) |
+| `npm run test:webapp` | Playwright E2E suite (`e2e/**`); starts `npm run start` via `webServer` (build first) |
+| `npm run test:a11y` | axe-core accessibility scans only (`@a11y` tag) |
 | `npm run test:all` | Full local chain: coverage gate + DB integration + Playwright + mobile coverage gate |
 
 ### Mobile (`mobile/`)
@@ -437,9 +442,16 @@ This replaces the old single `done` state on `PlannedCocktail`. The **"Made"** t
 
 ### Coverage thresholds
 
+Vitest measures coverage over all of `src/**/*.{ts,tsx}` (excluding `src/components/ui/**`, Next.js
+page/layout/error shells, OG images, `src/types/**` and `*.d.ts`). The global gate in `vitest.config.ts`
+is set just below the measured baseline so it passes today, and is **ratcheted**: whenever coverage
+improves, raise each threshold to the new floor; never lower it. Targets: 60% lines/statements
+globally, then per-glob thresholds of 80% for `src/lib`, `src/middlewares`, `src/services` and
+`src/repositories`.
+
 | Surface | Statements | Branches | Functions | Lines |
 |---|---:|---:|---:|---:|
-| Web/API/DB (Vitest) | 90 | 85 | 85 | 90 |
+| Web/API (Vitest, global) | 19 | 65 | 40 | 19 |
 | Mobile (Jest) | 85 | 80 | 80 | 85 |
 
 ### Test folders and frameworks
@@ -498,21 +510,27 @@ Android smoke is intentionally manual/local, not CI-gated:
 
 ## CI pipeline
 
-GitHub Actions workflow: `.github/workflows/ci.yml`
+GitHub Actions, Node from `.nvmrc` (22), Postgres 18 (same major as `docker-compose.yml`), branches `main` and `dev`.
 
-- `web-ci`: install, Prisma generate, type-check, lint, `npm run test:coverage:check`, upload coverage artifact.
-- `db-integration`: starts Postgres service, runs Prisma migrate deploy, runs `npm run test:db`.
+`.github/workflows/ci.yml`
+- `web-ci`: `npm ci`, `npm audit --omit=dev --audit-level=high` (blocking), Prisma generate, type-check, lint (blocking on errors), `npm run test:coverage:check`, upload coverage artifact.
+- `db-integration`: Postgres service, `scripts/release-migrate.sh`, `npm run test:db`.
 - `mobile-ci`: install in `mobile/`, type-check, lint, `npm run test:coverage:check`, upload mobile coverage artifact.
 
-Note: Playwright (`npm run test:webapp`) is part of local `test:all` but is not currently a CI job in this workflow.
+`.github/workflows/playwright.yml`
+- Postgres service, release migrations, `npm run db:seed`, `npm run build`, then Playwright (its `webServer` runs `npm run start`). Uses Cloudflare's always-pass Turnstile test keys and `DISABLE_RATE_LIMIT=1`.
+
+Not yet enforced: `format:check` (the codebase has not been reformatted) and pre-commit hooks
+(husky/lint-staged). Suggested once the tree is formatted: `npx prettier --write .` in one dedicated
+commit, then add `npm run format:check` to `web-ci`.
 
 ---
 
 ## Deployment
 
-The app ships as a **Docker image** (multi-stage build, ~50 MB runtime). The entrypoint runs `prisma migrate deploy` + optional seeding before starting the server.
+The app ships as a **Docker image** (multi-stage build). The entrypoint only starts the server; database migrations run once per release as a separate job (`sh scripts/release-migrate.sh` with the same image, using the lockfile-pinned Prisma CLI baked into the image). Seeding runs on demand only (`RUN_SEED=1`). See [docs/RUNBOOK.md](./docs/RUNBOOK.md) for deploy, rollback, backups, incident response and the env var checklist. Health: `/api/health/live` (liveness), `/api/health/ready` (DB + Redis).
 
-**Local dev:** `docker-compose.yml` provides PostgreSQL 18 + MinIO (S3-compatible storage). MinIO buckets are auto-bootstrapped on first start.
+**Local dev:** `docker-compose.yml` provides PostgreSQL 18 + Redis 7 (localhost-only ports).
 
 **Production:** Self-hosted on Hetzner via [Coolify](https://coolify.io). See `COOLIFY_SETUP.sh` for the full provisioning guide.
 

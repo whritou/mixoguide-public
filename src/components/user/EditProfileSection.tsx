@@ -1,6 +1,6 @@
-﻿'use client'
+'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { User } from 'lucide-react'
 import { Section } from './Section'
 import type { ProfileData } from './types'
@@ -14,6 +14,7 @@ export function EditProfileSection({ profile, onUpdate }: EditProfileSectionProp
     const [name,     setName]     = useState(profile.name ?? '')
     const [saving,   setSaving]   = useState(false)
     const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; msg: string } | null>(null)
+    const id = useId()
 
     async function handleSave(e: React.FormEvent) {
         e.preventDefault()
@@ -42,29 +43,39 @@ export function EditProfileSection({ profile, onUpdate }: EditProfileSectionProp
         <Section icon={User} title="Edit Profile">
             <form onSubmit={handleSave} className="space-y-4">
                 <div>
-                    <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
+                    <label htmlFor={`${id}-name`} className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                         Display name
                     </label>
                     <input
+                        id={`${id}-name`}
+                        name="name"
+                        autoComplete="name"
+                        aria-invalid={feedback?.type === 'err' || undefined}
+                        aria-describedby={feedback ? `${id}-feedback` : undefined}
                         value={name}
                         onChange={(e) => { setName(e.target.value); setFeedback(null) }}
                         minLength={2}
                         maxLength={100}
                         required
                         className="w-full px-4 py-3 rounded-xl border border-line-control bg-line/50 text-sm font-body text-fg
-                                   placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring"
+                                   placeholder:text-fg-muted focus:outline-none focus:ring-2 focus:ring-ring aria-[invalid=true]:border-danger"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
+                    <label htmlFor={`${id}-email`} className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                         Email
                     </label>
                     <input
+                        id={`${id}-email`}
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        aria-describedby={`${id}-email-hint`}
                         value={profile.email}
                         readOnly
-                        className="w-full px-4 py-3 rounded-xl bg-line/30 text-sm font-body text-fg/50 cursor-not-allowed"
+                        className="w-full px-4 py-3 rounded-xl bg-surface-muted text-sm font-body text-fg-muted cursor-not-allowed"
                     />
-                    <p className="text-xs text-fg-secondary/50 font-body mt-1">Email cannot be changed.</p>
+                    <p id={`${id}-email-hint`} className="text-xs text-fg-muted font-body mt-1">Email cannot be changed.</p>
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -73,13 +84,17 @@ export function EditProfileSection({ profile, onUpdate }: EditProfileSectionProp
                         disabled={saving || name === (profile.name ?? '')}
                         className="px-6 py-2.5 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full
                                    font-label text-xs uppercase tracking-widest
-                                   hover:scale-[0.98] transition-transform
+                                   motion-safe:hover:scale-[0.98] transition-transform
                                    disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {saving ? 'Saving…' : 'Save changes'}
                     </button>
                     {feedback && (
-                        <p className={`text-sm font-body ${feedback.type === 'ok' ? 'text-brand' : 'text-danger'}`}>
+                        <p
+                            id={`${id}-feedback`}
+                            role={feedback.type === 'err' ? 'alert' : 'status'}
+                            className={`text-sm font-body ${feedback.type === 'ok' ? 'text-brand' : 'text-danger'}`}
+                        >
                             {feedback.msg}
                         </p>
                     )}

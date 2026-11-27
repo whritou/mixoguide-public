@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db/prisma'
 import { BaseRepository, RepositoryConfig, toDelegate } from './base.repository'
-import { findFulfillingIngredient, getDerivableAmount, convertUnit, type DerivationMap } from '@/lib/derivations/derivation-cache'
+import { findFulfillingIngredient, getDerivableAmount, convertUnit, getIngredientCatalog, type DerivationMap } from '@/lib/derivations/derivation-cache'
 import { isBlockingCocktailIngredient } from '@/utils/cocktailIngredientImportance'
 import { toArchivedCocktailJson } from '@/lib/cocktails/cocktailMadeLogArchive'
 import { Prisma, type Cocktail, type MeasureUnit } from '@prisma/client'
@@ -41,6 +41,9 @@ type PantryMakeableRow = {
     isInfinite: boolean
 }
 
+/** Max cocktails hydrated per query while evaluating makeable candidates. */
+const MAKEABLE_HYDRATE_CHUNK = 500
+
 function isNotFoundError(err: unknown): boolean {
     return err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025'
 }
@@ -67,7 +70,7 @@ class CocktailRepository extends BaseRepository<
                 'ingredients.type',
                 'ingredients.subType',
                 'barTools',
-                'favoritedBy',
+                // 'favoritedBy' intentionally NOT allowed: it reaches user rows (SEC-001).
             ],
             searchFields:      ['name', 'description', 'origin'],
             defaultSortField:  'name',
@@ -302,10 +305,8 @@ class CocktailRepository extends BaseRepository<
     const dm: DerivationMap = derivationMap ?? new Map()
 
     // Build the full set of ingredient IDs the user can satisfy (direct + derived).
-    // This lets us pre-filter cocktails at the SQL level, avoiding a full table scan.
-    // Note: cocktails that match *only* via substitute ingredients are an accepted
-    // edge-case trade-off — they are vanishingly rare and skipping them avoids
-    // loading the entire cocktail table on every request.
+    // Coverage (direct, derived or via substitutes) is then computed in SQL and
+    // only qualifying cocktails are hydrated (DB-003 / BPERF-001).
     const satisfiableIds = new Set(userIngredientIds)
     for (const [derivedId, entries] of dm.entries()) {
       if (entries.some(e => userIdSet.has(e.baseIngredientId))) {
@@ -313,60 +314,97 @@ class CocktailRepository extends BaseRepository<
       }
     }
 
-    const cocktails = (await prisma.cocktail.findMany({
-      where: {
-        // Only load cocktails that have at least one ingredient the user can satisfy
-        ingredients: {
-          some: { ingredientId: { in: Array.from(satisfiableIds) } },
-        },
-      },
-      select: CocktailRepository.makeableSelect,
-      // Safety cap before JS filtering — pre-filter above should already keep this small
-      take: Math.min(resultLimit * 4, 800),
-    })) as MakeableCocktailRow[]
+    const catalog = await getIngredientCatalog()
+    const candidates = await this.findMakeableCandidateIds(Array.from(satisfiableIds), catalog.nonBlockingIds, maxMissing)
+    if (candidates.length === 0) return []
 
-    // Batch all name lookups (substitutes + derivation bases) into a single
-    // query. The two sets often overlap, and round-tripping twice is wasteful.
-    const lookupIds = new Set<string>()
-    for (const c of cocktails) {
-      for (const i of c.ingredients) {
-        for (const subId of i.substitutes) lookupIds.add(subId)
-      }
-    }
-    for (const entries of dm.values()) {
-      for (const e of entries) lookupIds.add(e.baseIngredientId)
+    const ingredientMetaMap = catalog.byId as Map<string, IngredientMeta>
+    const nameMap = new Map(Array.from(catalog.byId.values(), (i) => [i.id, i.name]))
+
+    // Candidates are ordered by their existence-based missing count, which is a
+    // lower bound of the final (quantity-aware) missing count. Process them level
+    // by level and stop once `resultLimit` results with missingCount <= level are
+    // known: no later candidate can rank above them. This keeps the hydration
+    // small while returning exactly the top results, deterministically.
+    const levels = new Map<number, string[]>()
+    for (const c of candidates) {
+      const list = levels.get(c.missing)
+      if (list) list.push(c.id)
+      else levels.set(c.missing, [c.id])
     }
 
-    const nameRows = lookupIds.size > 0
-      ? (await prisma.ingredient.findMany({
-          where: { id: { in: Array.from(lookupIds) } },
-          select: {
-              id: true,
-              name: true,
-              isAlcoholic: true,
-              type: { select: { name: true } },
-              subType: { select: { name: true } },
-          },
-        })) as IngredientMeta[]
-      : []
-    const ingredientMetaMap = new Map(nameRows.map((i) => [i.id, i]))
-    const nameMap = new Map(nameRows.map((i) => [i.id, i.name]))
-
-    return cocktails
-      .map((cocktail) => this.evaluateCoverage(cocktail, userIdSet, dm, nameMap, ingredientMetaMap, pantryQuantities))
-        .filter((c) =>
-            c.missingCount <= maxMissing &&
-            c.requiredCount > 0 &&
-            c.satisfiedCount > 0
-        )
-      .sort((a, b) => {
-        const order: Record<string, number> = { full: 0, withDerivates: 1, withSubstitutes: 2, missing: 3 }
-        if (order[a.makeableStatus] !== order[b.makeableStatus]) {
-          return order[a.makeableStatus] - order[b.makeableStatus]
+    type Evaluated = ReturnType<CocktailRepository['evaluateCoverage']>
+    const results: Evaluated[] = []
+    for (const level of [...levels.keys()].sort((a, b) => a - b)) {
+      const ids = levels.get(level)!
+      for (let i = 0; i < ids.length; i += MAKEABLE_HYDRATE_CHUNK) {
+        const chunk = ids.slice(i, i + MAKEABLE_HYDRATE_CHUNK)
+        const cocktails = (await prisma.cocktail.findMany({
+          where: { id: { in: chunk } },
+          select: CocktailRepository.makeableSelect,
+        })) as MakeableCocktailRow[]
+        for (const cocktail of cocktails) {
+          const evaluated = this.evaluateCoverage(cocktail, userIdSet, dm, nameMap, ingredientMetaMap, pantryQuantities)
+          if (evaluated.missingCount <= maxMissing && evaluated.requiredCount > 0 && evaluated.satisfiedCount > 0) {
+            results.push(evaluated)
+          }
         }
-        return a.missingCount - b.missingCount
-      })
+      }
+      if (results.filter((r) => r.missingCount <= level).length >= resultLimit) break
+    }
+
+    const order: Record<string, number> = { full: 0, withDerivates: 1, withSubstitutes: 2, missing: 3 }
+    return results
+      .sort((a, b) =>
+        order[a.makeableStatus] - order[b.makeableStatus] ||
+        a.missingCount - b.missingCount ||
+        a.name.localeCompare(b.name) ||
+        a.id.localeCompare(b.id),
+      )
       .slice(0, resultLimit)
+  }
+
+  /**
+   * Set coverage computed in SQL (DB-003): for every cocktail, count its blocking
+   * ingredients and how many of them the user can cover (directly, via a
+   * derivation, or via a substitute — existence only). Returns the ids whose
+   * uncovered count is <= maxMissing, ordered by that count then id.
+   *
+   * "Blocking" mirrors `isBlockingCocktailIngredient`: row-level rules (optional,
+   * no amount, twist/zest/slice unit) are evaluated here; ingredient-level rules
+   * (garnish types, peels, wedges…) come pre-computed as `nonBlockingIds`.
+   */
+  async findMakeableCandidateIds(
+      satisfiableIds: string[],
+      nonBlockingIds: string[],
+      maxMissing: number,
+  ): Promise<Array<{ id: string; missing: number }>> {
+    if (satisfiableIds.length === 0) return []
+    const missingCap = Math.max(0, Math.floor(maxMissing))
+    return prisma.$queryRaw<Array<{ id: string; missing: number }>>(Prisma.sql`
+      SELECT cov.cocktail_id AS id, (cov.required - cov.covered)::int AS missing
+        FROM (
+          SELECT ci.cocktail_id,
+                 count(*) FILTER (WHERE b.blocking) AS required,
+                 count(*) FILTER (
+                   WHERE b.blocking
+                     AND (ci.ingredient_id = ANY(${satisfiableIds}::text[])
+                          OR ci.substitutes && ${satisfiableIds}::text[])
+                 ) AS covered
+            FROM cocktail_ingredients ci
+            CROSS JOIN LATERAL (
+              SELECT (NOT ci.optional
+                      AND ci.amount IS NOT NULL
+                      AND ci.unit::text NOT IN ('twist', 'zest', 'slice')
+                      AND NOT (ci.ingredient_id = ANY(${nonBlockingIds}::text[]))) AS blocking
+            ) b
+           GROUP BY ci.cocktail_id
+        ) cov
+       WHERE cov.required > 0
+         AND cov.covered > 0
+         AND cov.required - cov.covered <= ${missingCap}
+       ORDER BY missing, cov.cocktail_id
+    `)
   }
 
   async findMakeableTarget(

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useMemo } from 'react'
 import { ChevronsUpDown } from 'lucide-react'
 import {
@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/command'
 import { Check } from 'lucide-react'
 import clsx from 'clsx'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 
 type TinyIngredient = { id: string; name: string }
 
@@ -21,12 +21,19 @@ interface Props {
   onSearchChange?: (v: string) => void
   disabled?      : boolean
   placeholder?   : string
+  /** Accessible name prefix for the trigger (announced together with the current value). */
+  label?         : string
 }
 
 export function LocalIngredientSelect({
-  value, onChange, options, onSearchChange, disabled, placeholder = 'Select…',
+  value, onChange, options, onSearchChange, disabled, placeholder = 'Select…', label = 'Ingredient',
 }: Props) {
   const [open, setOpen] = useState(false)
+  // A11Y-022: per-instance ids; the trigger reads "label, current value".
+  // Radix PopoverTrigger supplies aria-controls/aria-expanded/aria-haspopup itself.
+  const uid = useId()
+  const labelId = `${uid}-label`
+  const valueId = `${uid}-value`
 
   // Always include the currently selected item even if not in filtered options list
   const displayOptions = useMemo(() => {
@@ -41,19 +48,17 @@ export function LocalIngredientSelect({
       <PopoverTrigger asChild>
         <button
           type="button"
-          role="combobox"
-          aria-label="Select ingredient"
-          aria-controls="ingredient-list"
-          aria-expanded={open}
+          aria-labelledby={`${labelId} ${valueId}`}
           disabled={disabled}
           className="flex-1 min-w-[180px] flex items-center justify-between px-4 py-2 rounded-xl bg-surface border border-line-control
-                     text-sm font-body text-fg focus:outline-none focus:ring-1 focus:ring-ring/40
+                     text-sm font-body text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring
                      hover:border-brand-soft/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span className={value ? 'text-fg' : 'text-fg-muted'}>
+          <span id={labelId} className="sr-only">{label}</span>
+          <span id={valueId} className={value ? 'text-fg' : 'text-fg-muted'}>
             {value ? value.name : placeholder}
           </span>
-          <ChevronsUpDown size={14} className="shrink-0 text-fg-muted" />
+          <ChevronsUpDown size={14} aria-hidden="true" className="shrink-0 text-fg-muted" />
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -64,6 +69,7 @@ export function LocalIngredientSelect({
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search…"
+            aria-label={`Search ${label.toLowerCase()}s`}
             onValueChange={(v) => onSearchChange?.(v)}
             className="text-sm font-body"
           />
@@ -84,6 +90,7 @@ export function LocalIngredientSelect({
                 >
                   <span className="flex-1">{ing.name}</span>
                   <Check
+                    aria-hidden="true"
                     size={14}
                     className={clsx('shrink-0 text-brand-soft-strong', value?.id === ing.id ? 'opacity-100' : 'opacity-0')}
                   />

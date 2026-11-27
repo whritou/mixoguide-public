@@ -132,6 +132,8 @@ export interface GenericFormConfig<T> {
   isLoading?: boolean
   title?: string
   description?: string
+  /** Element used for the title. Admin pages use it as the page's main heading, hence "h1". */
+  titleAs?: "h1" | "h2" | "div"
 }
 
 export interface GenericViewConfig<T> {
@@ -139,6 +141,8 @@ export interface GenericViewConfig<T> {
   data: T
   title?: string
   description?: string
+  /** Element used for the title. Admin pages use it as the page's main heading, hence "h1". */
+  titleAs?: "h1" | "h2" | "div"
   actions?: Array<{
     label: string
     icon?: ReactNode

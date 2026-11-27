@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import type { TagsFieldConfig } from "../types"
@@ -43,8 +43,7 @@ export function TagsField({ field, control, disabled }: TagsFieldProps) {
                     {field.label}
                     {field.required && <span className="text-brand-soft-strong ml-1">*</span>}
                   </FormLabel>
-                  <FormControl>
-                    <div className="space-y-2">
+                  <div className="space-y-2">
                       {tags.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
                             {tags.map((tag, index) => (
@@ -56,10 +55,11 @@ export function TagsField({ field, control, disabled }: TagsFieldProps) {
                                   {!disabled && !field.readOnly && (
                                       <button
                                           type="button"
-                                          className="text-brand/60 hover:text-brand transition-colors"
+                                          aria-label={`Remove ${tag}`}
+                                          className="-my-1 -mr-1.5 inline-flex min-h-6 min-w-6 items-center justify-center rounded-full p-1.5 text-brand-soft-strong hover:text-brand transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                           onClick={() => removeTag(index)}
                                       >
-                                        <X className="h-3 w-3" />
+                                        <X className="h-3 w-3" aria-hidden="true" />
                                       </button>
                                   )}
                                 </span>
@@ -68,6 +68,8 @@ export function TagsField({ field, control, disabled }: TagsFieldProps) {
                       )}
                       {(!field.maxTags || tags.length < field.maxTags) && !disabled && !field.readOnly && (
                           <div className="flex gap-2">
+                            {/* A11Y-006: FormControl wraps the actual input so label/description/error ids land on it. */}
+                            <FormControl>
                             <Input
                                 type="text"
                                 value={inputValue}
@@ -80,8 +82,9 @@ export function TagsField({ field, control, disabled }: TagsFieldProps) {
                                 }}
                                 placeholder={field.placeholder || "Add a tag…"}
                                 disabled={disabled || field.readOnly}
-                                className="rounded-xl bg-surface border-line-control text-sm font-body text-fg placeholder:text-fg-muted focus-visible:ring-ring/40 focus-visible:border-brand-soft"
+                                className="rounded-xl bg-surface border-line-control text-sm font-body text-fg placeholder:text-fg-muted focus-visible:ring-ring focus-visible:border-brand-soft"
                             />
+                            </FormControl>
                           </div>
                       )}
                       {field.suggestions && field.suggestions.length > 0 && (
@@ -92,6 +95,7 @@ export function TagsField({ field, control, disabled }: TagsFieldProps) {
                                     <button
                                         key={suggestion}
                                         type="button"
+                                        aria-label={`Add tag ${suggestion}`}
                                         onClick={() => addTag(suggestion)}
                                         className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-label uppercase tracking-wider border border-line text-fg-muted hover:border-brand-soft/40 hover:text-brand hover:bg-brand-soft/5 transition-colors"
                                     >
@@ -101,8 +105,7 @@ export function TagsField({ field, control, disabled }: TagsFieldProps) {
                           </div>
                       )}
                     </div>
-                  </FormControl>
-                  {field.description && <FormDescription className="text-xs text-fg-muted/70 font-body">{field.description}</FormDescription>}
+                  {field.description && <FormDescription className="text-xs text-fg-muted font-body">{field.description}</FormDescription>}
                   <FormMessage className="text-xs" />
                 </FormItem>
             )

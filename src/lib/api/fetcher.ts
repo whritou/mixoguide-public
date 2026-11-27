@@ -48,6 +48,9 @@ export const api = {
         request<Paginated<T>>(`/api/${path}${buildQueryString(params)}`),
     getOne: <T>(path: string, id: string) =>
         request<Single<T>>(`/api/${path}/${id}`),
+    /** GET a non-list resource, e.g. `api.get('planned-cocktails/exist', { cocktailId })`. */
+    get: <T>(path: string, params: ListParams = {}) =>
+        request<Single<T>>(`/api/${path}${buildQueryString(params)}`),
     post: <T, B>(path: string, body: B) =>
         request<Single<T>>(`/api/${path}`, { method: 'POST', body: JSON.stringify(body) }),
     put: <T, B>(path: string, body: B) =>

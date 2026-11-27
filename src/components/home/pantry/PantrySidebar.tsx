@@ -1,6 +1,7 @@
-﻿'use client';
+'use client';
 
 import { X } from 'lucide-react';
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import type { ScopeFilter } from './pantry.constants';
 
 interface Props {
@@ -20,7 +21,7 @@ export function PantrySidebar({
     selectedCategory, onCategorySelect, mobileOpen, onMobileClose,
 }: Props) {
     const statusList = (
-        <ul className="space-y-0.5 mb-4 pb-4 border-b border-line">
+        <ul aria-label="Pantry status" className="space-y-0.5 mb-4 pb-4 border-b border-line">
             <NavItem
                 label="All"
                 active={selectedStatus === 'all'}
@@ -42,7 +43,7 @@ export function PantrySidebar({
     );
 
     const navList = (
-        <ul className="space-y-0.5">
+        <ul aria-label="Categories" className="space-y-0.5">
             <NavItem
                 label="All ingredients"
                 count={pantryCount}
@@ -64,7 +65,7 @@ export function PantrySidebar({
     return (
         <>
             {/* ── Desktop sidebar ─────────────────────────────────── */}
-            <aside className="hidden md:block w-72 flex-shrink-0 border-r border-line/60 self-start sticky top-[72px] h-[calc(100vh-72px)] overflow-y-auto">
+            <aside aria-label="Pantry filters" className="hidden md:block w-72 flex-shrink-0 border-r border-line/60 self-start sticky top-[72px] h-[calc(100vh-72px)] overflow-y-auto">
                 <div className="flex flex-col gap-1 py-6 px-4">
                     {statusList}
                     {navList}
@@ -72,23 +73,26 @@ export function PantrySidebar({
             </aside>
 
             {/* ── Mobile drawer ────────────────────────────────────── */}
-            {mobileOpen && (
-                <div className="fixed inset-0 z-50 flex md:hidden">
-                    <div className="absolute inset-0 bg-overlay/40 backdrop-blur-sm" onClick={onMobileClose} />
-                    <div className="relative z-10 w-72 bg-canvas h-full overflow-y-auto shadow-xl">
+            <Sheet open={mobileOpen} onOpenChange={(o) => { if (!o) onMobileClose(); }}>
+                <SheetContent
+                    side="left"
+                    showCloseButton={false}
+                    overlayClassName="z-[150] md:hidden bg-overlay/40 backdrop-blur-sm"
+                    className="z-[150] md:hidden block gap-0 border-0 w-72 sm:max-w-72 bg-canvas h-full overflow-y-auto shadow-xl"
+                >
                         <div className="flex items-center justify-between px-4 pt-5 pb-2">
-                            <span className="font-label text-xs uppercase tracking-widest text-fg-muted">My Pantry</span>
-                            <button onClick={onMobileClose} aria-label="Close sidebar" className="text-fg-muted hover:text-fg-secondary p-1">
-                                <X size={18} />
+                            <SheetTitle className="font-label text-xs font-normal uppercase tracking-widest text-fg-muted">My Pantry</SheetTitle>
+                            <button type="button" onClick={onMobileClose} aria-label="Close sidebar" className="text-fg-muted hover:text-fg-secondary p-1 rounded-full">
+                                <X size={18} aria-hidden="true" />
                             </button>
                         </div>
+                        <SheetDescription className="sr-only">Filter your pantry by status and category.</SheetDescription>
                         <div className="flex flex-col gap-1 py-6 px-4">
                             {statusList}
                             {navList}
                         </div>
-                    </div>
-                </div>
-            )}
+                </SheetContent>
+            </Sheet>
         </>
     );
 }
@@ -100,19 +104,22 @@ function NavItem({ label, count, active, onClick }: {
     return (
         <li>
             <button
+                type="button"
+                aria-pressed={active}
                 onClick={onClick}
                 className={`w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm transition-all ${
                     active
                         ? 'bg-surface-subtle text-brand font-medium'
                         : empty
-                            ? 'text-fg-muted/70 hover:bg-canvas-hover-alt'
+                            ? 'text-fg-muted hover:bg-canvas-hover-alt'
                             : 'text-fg-secondary hover:bg-canvas-hover-alt'
                 }`}
             >
                 <span>{label}</span>
                 {count !== undefined && (
-                    <span className={`text-xs ${active ? 'text-brand-soft-strong' : empty ? 'text-fg-muted/60' : 'text-fg-muted'}`}>
+                    <span className={`text-xs ${active ? 'text-brand-soft-strong' : 'text-fg-muted'}`}>
                         {count}
+                        <span className="sr-only"> {count === 1 ? 'item' : 'items'}</span>
                     </span>
                 )}
             </button>

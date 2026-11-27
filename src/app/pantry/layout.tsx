@@ -1,19 +1,13 @@
-import { guardUser } from '@/lib/auth/guards'
-import AppBar from '@/components/layout/Appbar'
-import './../globals.css'
 import type { ReactNode } from 'react'
-import { Footer } from "@/components/layout/Footer"
+import { guardUser } from '@/lib/auth/guards'
+import { AppShell } from '@/components/layout/AppShell'
 
 export default async function PantryLayout({ children }: { children: ReactNode }) {
-  await guardUser()
+    const session = await guardUser()
 
-  return (
-    <>
-      <AppBar />
-        <main className="pt-0 md:pt-[72px] pb-24 md:pb-0">
-          {children}
-      </main>
-        <Footer />
-    </>
-  )
+    return (
+        <AppShell session={session} mainClassName="pb-24 md:pb-0">
+            {children}
+        </AppShell>
+    )
 }

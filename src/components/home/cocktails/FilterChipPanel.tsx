@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import clsx from 'clsx'
 import {
@@ -35,12 +35,14 @@ export function FilterChipPanel({ openPanel, filters, ingredientOpts }: FilterCh
     const p = filters.params
 
     return (
-        <div className="hidden md:block px-4 md:px-12 py-4 bg-canvas-hover-alt border-t border-line">
+        <div className="hidden md:block px-4 md:px-12 py-4 bg-canvas-hover-alt border-t border-line" role="group" aria-label="Filter options">
             {openPanel === 'flavor' && (
                 <div className="flex flex-wrap gap-2">
                     {[...COCKTAIL_FLAVORS].sort().map(fl => (
                         <button
                             key={fl}
+                            type="button"
+                            aria-pressed={(p.get('flavors') ?? '').split(',').includes(fl)}
                             className={chipCls((p.get('flavors') ?? '').split(',').includes(fl))}
                             onClick={() => filters.toggleCsvValue('flavors', fl)}
                         >
@@ -55,6 +57,8 @@ export function FilterChipPanel({ openPanel, filters, ingredientOpts }: FilterCh
                     {[...ingredientOpts].sort((a, b) => a.name.localeCompare(b.name)).map(ing => (
                         <button
                             key={ing.id}
+                            type="button"
+                            aria-pressed={(p.get('ingredients') ?? '').split(',').includes(ing.name)}
                             className={chipCls((p.get('ingredients') ?? '').split(',').includes(ing.name))}
                             onClick={() => filters.toggleCsvValue('ingredients', ing.name)}
                         >
@@ -69,6 +73,8 @@ export function FilterChipPanel({ openPanel, filters, ingredientOpts }: FilterCh
                     {[...COCKTAIL_OCCASIONS].sort().map(o => (
                         <button
                             key={o}
+                            type="button"
+                            aria-pressed={(p.get('occasions') ?? '').split(',').includes(o)}
                             className={chipCls((p.get('occasions') ?? '').split(',').includes(o))}
                             onClick={() => filters.toggleCsvValue('occasions', o)}
                         >
@@ -83,6 +89,8 @@ export function FilterChipPanel({ openPanel, filters, ingredientOpts }: FilterCh
                     {COCKTAIL_DIFFICULTIES.map(d => (
                         <button
                             key={d}
+                            type="button"
+                            aria-pressed={(p.get('difficulty') ?? '').split(',').includes(d)}
                             className={chipCls((p.get('difficulty') ?? '').split(',').includes(d))}
                             onClick={() => filters.toggleCsvValue('difficulty', d)}
                         >
@@ -101,6 +109,8 @@ export function FilterChipPanel({ openPanel, filters, ingredientOpts }: FilterCh
                     ].map(({ label, value }) => (
                         <button
                             key={value}
+                            type="button"
+                            aria-pressed={(p.get('alcoholic') ?? 'any') === value}
                             className={chipCls((p.get('alcoholic') ?? 'any') === value)}
                             onClick={() => filters.set('alcoholic', value === 'any' ? null : value)}
                         >
