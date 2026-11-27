@@ -21,6 +21,15 @@ export function usePlannedCocktailExists(cocktailId: string) {
     })
 }
 
+/** Full plan state (planned / done + id) of one cocktail for the current user. */
+export function usePlannedCocktailState(cocktailId: string, options: { enabled?: boolean } = {}) {
+    return useQuery({
+        queryKey: queryKeys.plannedCocktails.state(cocktailId),
+        queryFn:  () => plannedCocktailsApi.state(cocktailId),
+        enabled:  (options.enabled ?? true) && Boolean(cocktailId),
+    })
+}
+
 export function usePlannedCocktailsWithDetails(params: ListParams = {}) {
     const planned = usePlannedCocktailsQuery(params)
     const ids = planned.data?.items.map((p) => p.cocktailId) ?? []

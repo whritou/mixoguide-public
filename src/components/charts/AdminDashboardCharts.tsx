@@ -15,6 +15,7 @@ import {
 } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import type { AdminDashboardStats } from '@/services/admin-stats.service'
+import { ChartDataTable } from './ChartDataTable'
 
 const PRIMARY_ACCENT = 'var(--chart-1)'
 const CHART_COLORS = [
@@ -96,6 +97,7 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                         <CardDescription className="text-fg-muted">Top 10 by average rating (min. 1 review)</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[340px] pt-4">
+                        <div aria-hidden="true" className="h-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={bestRatedData} margin={{ bottom: 60 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--line)" />
@@ -113,6 +115,8 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                                 <Bar dataKey="rating" fill={PRIMARY_ACCENT} radius={[4, 4, 0, 0]} barSize={40} />
                             </BarChart>
                         </ResponsiveContainer>
+                        </div>
+                        <ChartDataTable caption="Best rated cocktails" columns={['Cocktail', 'Average rating', 'Reviews']} rows={bestRatedData.map((d) => [d.fullName, d.rating, d.reviews])} />
                     </CardContent>
                 </Card>
             )}
@@ -123,6 +127,7 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                     <CardDescription className="text-fg-muted">Alcoholic vs non-alcoholic cocktails</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[300px]">
+                    <div aria-hidden="true" className="h-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
@@ -144,6 +149,8 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                             <Legend wrapperStyle={{ fontSize: '14px', color: 'var(--fg-secondary)' }} />
                         </PieChart>
                     </ResponsiveContainer>
+                    </div>
+                    <ChartDataTable caption="Alcohol distribution" columns={['Type', 'Cocktails']} rows={alcoholData.map((d) => [d.name, d.value])} />
                 </CardContent>
             </Card>
 
@@ -153,6 +160,7 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                     <CardDescription className="text-fg-muted">Cocktails by difficulty level</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[300px]">
+                    <div aria-hidden="true" className="h-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
@@ -174,6 +182,8 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                             <Legend wrapperStyle={{ fontSize: '14px', color: 'var(--fg-secondary)' }} />
                         </PieChart>
                     </ResponsiveContainer>
+                    </div>
+                    <ChartDataTable caption="Difficulty breakdown" columns={['Difficulty', 'Cocktails']} rows={difficultyData.map((d) => [d.name, d.value])} />
                 </CardContent>
             </Card>
 
@@ -183,6 +193,7 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                     <CardDescription className="text-fg-muted">Number of ratings per star level</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[300px] pt-4">
+                    <div aria-hidden="true" className="h-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={ratingsData}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--line)" />
@@ -192,6 +203,8 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                             <Bar dataKey="count" fill={CHART_COLORS[2]} radius={[4, 4, 0, 0]} barSize={40} />
                         </BarChart>
                     </ResponsiveContainer>
+                    </div>
+                    <ChartDataTable caption="Ratings distribution" columns={['Stars', 'Ratings']} rows={stats.ratingsDistribution.map((r) => [`${r.rating} star${r.rating === 1 ? '' : 's'}`, r.count])} />
                 </CardContent>
             </Card>
 
@@ -201,6 +214,7 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                     <CardDescription className="text-fg-muted">Most used across all cocktails</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[300px] pt-4">
+                    <div aria-hidden="true" className="h-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                             data={stats.topIngredients}
@@ -221,6 +235,8 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                             <Bar dataKey="count" fill={CHART_COLORS[1]} radius={[0, 4, 4, 0]} barSize={24} />
                         </BarChart>
                     </ResponsiveContainer>
+                    </div>
+                    <ChartDataTable caption="Top ingredients" columns={['Ingredient', 'Cocktails']} rows={stats.topIngredients.map((d) => [d.name, d.count])} />
                 </CardContent>
             </Card>
 
@@ -231,6 +247,7 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                         <CardDescription className="text-fg-muted">Cocktail preparation techniques used</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[320px] pt-4">
+                        <div aria-hidden="true" className="h-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={techniqueData} margin={{ bottom: 40 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--line)" />
@@ -248,6 +265,8 @@ export default function AdminDashboardCharts({ stats }: { stats: AdminDashboardS
                                 <Bar dataKey="count" fill={CHART_COLORS[4]} radius={[4, 4, 0, 0]} barSize={40} />
                             </BarChart>
                         </ResponsiveContainer>
+                        </div>
+                        <ChartDataTable caption="Techniques" columns={['Technique', 'Cocktails']} rows={techniqueData.map((d) => [d.name, d.count])} />
                     </CardContent>
                 </Card>
             )}

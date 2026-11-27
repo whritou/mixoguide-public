@@ -1,11 +1,12 @@
-﻿"use client";
+"use client";
 
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState, useRef } from "react";
+import { useId, useState, useRef } from "react";
 import Link from "next/link";
 import TurnstileWidget from "@/components/ui/TurnstileWidget";
 import type { TurnstileInstance } from "@marsidev/react-turnstile";
+import { storePendingVerificationEmail } from "@/components/auth/pending-verification-email";
 
 export default function SignInPage() {
     const router = useRouter();
@@ -21,6 +22,11 @@ export default function SignInPage() {
     const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
     const turnstileRef = useRef<TurnstileInstance>(null);
     const submittingRef = useRef(false);
+    const emailId = useId();
+    const passwordId = useId();
+    const errorId = useId();
+
+    const hasCredError = error === "Invalid email or password.";
 
     async function handleCredSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -41,9 +47,9 @@ export default function SignInPage() {
             });
 
             if (res?.error === "EmailNotVerified") {
-                router.push(
-                    `/check-email?email=${encodeURIComponent(fd.get("email") as string)}&callbackUrl=${encodeURIComponent(callbackUrl)}`
-                );
+                // SEC-018: don't put the email address in the URL.
+                storePendingVerificationEmail(fd.get("email") as string);
+                router.push(`/check-email?callbackUrl=${encodeURIComponent(callbackUrl)}`);
                 return;
             }
 
@@ -91,12 +97,13 @@ export default function SignInPage() {
             </div>
 
             <button
+                type="button"
                 onClick={() => signIn("google", { callbackUrl })}
                 className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl
                            bg-surface text-fg text-sm font-body font-medium
                            shadow-sm hover:bg-surface-hover transition-colors duration-200"
             >
-                <svg viewBox="0 0 24 24" width="18" height="18">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -115,32 +122,40 @@ export default function SignInPage() {
 
             <form onSubmit={handleCredSubmit} className="space-y-4" autoComplete="on">
                 <div>
-                    <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
+                    <label htmlFor={emailId} className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                         Email
                     </label>
                     <input
+                        id={emailId}
+                        aria-invalid={hasCredError || undefined}
+                        aria-describedby={error ? errorId : undefined}
                         name="email"
                         type="email"
                         required
                         autoComplete="email"
                         className="w-full px-4 py-3 rounded-xl bg-line/50 text-sm font-body text-fg
                                    placeholder:text-fg-muted border border-line-control
-                                   focus:outline-none focus:ring-1 focus:ring-ring"
+                                   focus:outline-none focus:ring-2 focus:ring-ring
+                                   aria-[invalid=true]:border-danger"
                         placeholder="you@example.com"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
+                    <label htmlFor={passwordId} className="block text-xs font-label uppercase tracking-widest text-fg-secondary mb-1.5">
                         Password
                     </label>
                     <input
+                        id={passwordId}
+                        aria-invalid={hasCredError || undefined}
+                        aria-describedby={error ? errorId : undefined}
                         name="password"
                         type="password"
                         required
                         autoComplete="current-password"
                         className="w-full px-4 py-3 rounded-xl bg-line/50 text-sm font-body text-fg
                                    placeholder:text-fg-muted border border-line-control
-                                   focus:outline-none focus:ring-1 focus:ring-ring"
+                                   focus:outline-none focus:ring-2 focus:ring-ring
+                                   aria-[invalid=true]:border-danger"
                         placeholder="Enter your password"
                     />
                 </div>
@@ -157,6 +172,7 @@ export default function SignInPage() {
                 <div className="flex justify-center">
                     <TurnstileWidget
                         ref={turnstileRef}
+                        action="signin"
                         onSuccess={setTurnstileToken}
                         onExpire={() => setTurnstileToken(null)}
                         onError={() => setTurnstileToken(null)}
@@ -168,7 +184,7 @@ export default function SignInPage() {
                     disabled={loading || !turnstileToken}
                     className="w-full py-3 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand rounded-full
                                font-label text-sm uppercase tracking-widest
-                               hover:scale-[0.98] transition-transform duration-200
+                               motion-safe:hover:scale-[0.98] transition-transform duration-200
                                disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                     {loading ? "Signing in..." : "Sign in"}
@@ -176,13 +192,13 @@ export default function SignInPage() {
             </form>
 
             {error && error !== "OAuthAccountNotLinked" && (
-                <p className="mt-4 text-sm text-center text-danger bg-danger-bg rounded-xl px-4 py-3 font-body">
+                <p id={errorId} role="alert" className="mt-4 text-sm text-center text-danger bg-danger-bg rounded-xl px-4 py-3 font-body">
                     {error}
                 </p>
             )}
 
             {error === "OAuthAccountNotLinked" && (
-                <p className="mt-4 text-sm text-center text-danger bg-danger-bg rounded-xl px-4 py-3 font-body">
+                <p id={errorId} role="alert" className="mt-4 text-sm text-center text-danger bg-danger-bg rounded-xl px-4 py-3 font-body">
                     This email is already registered with another provider.
                 </p>
             )}

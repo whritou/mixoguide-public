@@ -80,8 +80,11 @@ class CocktailMadeLogRepository extends BaseRepository<
         return QueryBuilder.buildPaginatedResult(data, total, safePage, safeLimit)
     }
 
-    override async create(data: Prisma.CocktailMadeLogUncheckedCreateInput) {
-        return prisma.cocktailMadeLog.create({
+    override async create(
+        data: Prisma.CocktailMadeLogUncheckedCreateInput,
+        tx: Prisma.TransactionClient = prisma,
+    ) {
+        return tx.cocktailMadeLog.create({
             data: {
                 userId:    data.userId,
                 cocktailId: data.cocktailId,
@@ -121,6 +124,69 @@ class CocktailMadeLogRepository extends BaseRepository<
             distinct: ['cocktailId'],
         })
         return rows.flatMap((r) => r.cocktailId ? [r.cocktailId] : [])
+    }
+
+    /**
+     * One row per distinct cocktail the user made (visible logs), with the most
+     * recent `madeAt`. Replaces two separate distinct-id loads (DB-011).
+     */
+    async findLastMadeByCocktail(userId: string): Promise<Array<{ cocktailId: string; lastMadeAt: Date }>> {
+        const rows = await prisma.cocktailMadeLog.groupBy({
+            by: ['cocktailId'],
+            where: { userId, cocktailId: { not: null }, ...visibleMadeLogWhere() },
+            _max: { madeAt: true },
+        })
+        return rows.flatMap((r) => (r.cocktailId && r._max.madeAt ? [{ cocktailId: r.cocktailId, lastMadeAt: r._max.madeAt }] : []))
+    }
+
+    /**
+     * Stats inputs aggregated in SQL (DB-011) instead of loading every log row:
+     *  - drinks per local calendar day (`tz` = IANA zone, validated by the caller),
+     *  - top cocktails by quantity (live id or archived snapshot id).
+     * Includes user-archived (hidden) entries, like the previous implementation.
+     */
+    async getStatsAggregates(userId: string, tz: string, topLimit = 5) {
+        const [days, top] = await Promise.all([
+            prisma.$queryRaw<Array<{ day: string; drinks: number }>>`
+                SELECT to_char((made_at AT TIME ZONE 'UTC') AT TIME ZONE ${tz}, 'YYYY-MM-DD') AS day,
+                       SUM(quantity)::int AS drinks
+                  FROM cocktail_made_logs
+                 WHERE user_id = ${userId}
+                 GROUP BY 1
+                 ORDER BY 1
+            `,
+            prisma.$queryRaw<Array<{ cocktailKey: string; count: number }>>`
+                SELECT COALESCE(cocktail_id, archived_cocktail->>'id') AS "cocktailKey",
+                       SUM(quantity)::int AS count
+                  FROM cocktail_made_logs
+                 WHERE user_id = ${userId}
+                   AND COALESCE(cocktail_id, archived_cocktail->>'id') IS NOT NULL
+                 GROUP BY 1
+                 ORDER BY 2 DESC, 1
+                 LIMIT ${topLimit * 3}
+            `,
+        ])
+        return { days, top }
+    }
+
+    /** Display data (live cocktail or archived snapshot) for the given cocktail keys. */
+    async findDisplayForCocktailKeys(userId: string, keys: string[]) {
+        if (keys.length === 0) return { live: [], archived: [] }
+        const [live, archived] = await Promise.all([
+            prisma.cocktail.findMany({
+                where: { id: { in: keys } },
+                select: { id: true, name: true, imageUrl: true },
+            }),
+            prisma.$queryRaw<Array<{ id: string; snapshot: unknown }>>`
+                SELECT DISTINCT ON (archived_cocktail->>'id') archived_cocktail->>'id' AS id, archived_cocktail AS snapshot
+                  FROM cocktail_made_logs
+                 WHERE user_id = ${userId}
+                   AND cocktail_id IS NULL
+                   AND archived_cocktail->>'id' = ANY(${keys}::text[])
+                 ORDER BY archived_cocktail->>'id', made_at DESC
+            `,
+        ])
+        return { live, archived }
     }
 
     async findAllByUserForStats(userId: string) {

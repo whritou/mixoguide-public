@@ -1,11 +1,13 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { Check, ShoppingCart, Package } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogFooter,
@@ -119,9 +121,9 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                     <DialogTitle className="font-headline text-fg text-left">
                         Stock up ingredients
                     </DialogTitle>
-                    <p className="text-xs text-fg-muted text-left">
+                    <DialogDescription className="text-xs text-fg-muted text-left">
                         Select which ingredients to add and choose a destination.
-                    </p>
+                    </DialogDescription>
                 </DialogHeader>
 
                 {/* Body */}
@@ -130,7 +132,7 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                     {/* In-stock summary */}
                     {inStockCount > 0 && (
                         <div className="flex items-center gap-1.5 text-xs text-brand pb-1">
-                            <Check size={12} />
+                            <Check size={12} aria-hidden="true" />
                             <span>
                                 {inStockCount} ingredient{inStockCount !== 1 ? 's' : ''} already in stock
                             </span>
@@ -150,6 +152,7 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                                     {needAction.length} need{needAction.length === 1 ? 's' : ''} attention
                                 </span>
                                 <button
+                                    type="button"
                                     onClick={selectAll}
                                     className="text-xs text-brand hover:underline"
                                 >
@@ -167,22 +170,18 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                                         key={g.ingredientId}
                                         className={`rounded-lg border p-3 transition-colors ${
                                             row.selected
-                                                ? 'border-brand-soft/50 bg-brand-soft/5'
+                                                ? 'border-brand-soft bg-brand-soft/5'
                                                 : 'border-line bg-surface'
                                         }`}
                                     >
                                         {/* Top row: checkbox + name + badge */}
                                         <div className="flex items-start gap-2">
-                                            <button
-                                                onClick={() => toggle(g.ingredientId)}
-                                                className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                                                    row.selected
-                                                        ? 'bg-brand border-brand'
-                                                        : 'border-line-control bg-surface'
-                                                }`}
-                                            >
-                                                {row.selected && <Check size={10} className="text-fg-on-brand" />}
-                                            </button>
+                                            <Checkbox
+                                                checked={row.selected}
+                                                onCheckedChange={() => toggle(g.ingredientId)}
+                                                aria-label={`Select ${g.ingredientName}`}
+                                                className="relative mt-0.5 size-5 shrink-0 focus-visible:ring-ring after:absolute after:-inset-1 after:content-['']"
+                                            />
 
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 flex-wrap">
@@ -200,7 +199,7 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                                                     )}
                                                     {g.inWishlist && (
                                                         <span className="flex items-center gap-0.5">
-                                                            · <ShoppingCart size={9} className="inline" /> In list
+                                                            · <ShoppingCart size={9} aria-hidden="true" className="inline" /> In list
                                                         </span>
                                                     )}
                                                 </div>
@@ -212,41 +211,47 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                                             <div className="mt-3 ml-6 flex items-center gap-3 flex-wrap">
                                                 {/* Quantity */}
                                                 <div className="flex items-center gap-1.5">
-                                                    <label className="text-[10px] font-label uppercase tracking-widest text-fg-muted">
+                                                    <label htmlFor={`grocery-qty-${g.ingredientId}`} className="text-[10px] font-label uppercase tracking-widest text-fg-muted">
                                                         Qty
                                                     </label>
                                                     <input
+                                                        id={`grocery-qty-${g.ingredientId}`}
+                                                        aria-label={`Quantity for ${g.ingredientName}, in ${g.unit}`}
                                                         type="number"
                                                         min={0.01}
                                                         step={0.01}
                                                         value={row.quantity}
                                                         onChange={e => setQty(g.ingredientId, parseFloat(e.target.value) || 0)}
-                                                        className="w-16 text-xs text-center border border-line-control rounded px-1.5 py-1 focus:outline-none focus:border-brand-soft"
+                                                        className="w-16 text-xs text-center border border-line-control rounded px-1.5 py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus:border-brand-soft"
                                                     />
                                                     <span className="text-[11px] text-fg-muted">{g.unit}</span>
                                                 </div>
 
                                                 {/* Destination toggle */}
-                                                <div className="flex rounded-full border border-line overflow-hidden text-[10px] font-label uppercase tracking-widest">
+                                                <div role="group" aria-label={`Destination for ${g.ingredientName}`} className="flex rounded-full border border-line overflow-hidden text-[10px] font-label uppercase tracking-widest">
                                                     <button
+                                                        type="button"
+                                                        aria-pressed={row.destination === 'shopping'}
                                                         onClick={() => setDest(g.ingredientId, 'shopping')}
-                                                        className={`flex items-center gap-1 px-2.5 py-1 transition-colors ${
+                                                        className={`flex items-center gap-1 px-2.5 py-1 min-h-6 transition-colors ${
                                                             row.destination === 'shopping'
                                                                 ? 'bg-brand text-fg-on-brand'
                                                                 : 'text-fg-muted hover:bg-line/60'
                                                         }`}
                                                     >
-                                                        <ShoppingCart size={9} /> Shopping
+                                                        <ShoppingCart size={9} aria-hidden="true" /> Shopping
                                                     </button>
                                                     <button
+                                                        type="button"
+                                                        aria-pressed={row.destination === 'pantry'}
                                                         onClick={() => setDest(g.ingredientId, 'pantry')}
-                                                        className={`flex items-center gap-1 px-2.5 py-1 transition-colors ${
+                                                        className={`flex items-center gap-1 px-2.5 py-1 min-h-6 transition-colors ${
                                                             row.destination === 'pantry'
                                                                 ? 'bg-brand text-fg-on-brand'
                                                                 : 'text-fg-muted hover:bg-line/60'
                                                         }`}
                                                     >
-                                                        <Package size={9} /> Pantry
+                                                        <Package size={9} aria-hidden="true" /> Pantry
                                                     </button>
                                                 </div>
 
@@ -268,12 +273,14 @@ export default function AddIngredientsModal({ open, onClose, collectionId, submi
                 {/* Footer */}
                 <DialogFooter className="px-6 py-4 border-t border-line bg-surface shrink-0 sm:justify-between">
                     <button
+                        type="button"
                         onClick={onClose}
                         className="px-4 py-2 text-xs font-label uppercase tracking-widest text-fg-muted hover:text-fg transition-colors"
                     >
                         Cancel
                     </button>
                     <button
+                        type="button"
                         onClick={handleSubmit}
                         disabled={selectedRows.length === 0 || submitting}
                         className="px-5 py-2 text-xs font-label uppercase tracking-widest rounded-full bg-brand text-fg-on-brand hover:bg-brand/90 disabled:opacity-40 transition-colors"

@@ -1,4 +1,4 @@
-﻿import type {MakeableCocktail} from "@/types/models/cocktail";
+import type {MakeableCocktail} from "@/types/models/cocktail";
 import Link from 'next/link'
 import Image from 'next/image'
 import { Clock } from 'lucide-react'

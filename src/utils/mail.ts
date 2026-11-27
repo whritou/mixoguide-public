@@ -12,6 +12,45 @@ function getResend(): Resend {
 }
 
 const FROM = "MixoGuide <noreply@mixoguide.com>";
+const SEND_TIMEOUT_MS = 8000;
+
+type SendPayload = Parameters<Resend["emails"]["send"]>[0];
+
+/**
+ * Send through Resend with a hard timeout so a slow provider cannot hold a
+ * request open indefinitely (BPERF-002). Provider-side errors are surfaced.
+ */
+async function sendMail(payload: SendPayload): Promise<void> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`Email send timed out after ${SEND_TIMEOUT_MS}ms`)), SEND_TIMEOUT_MS);
+    });
+    try {
+        const result = await Promise.race([getResend().emails.send(payload), timeout]);
+        if (result && typeof result === "object" && "error" in result && result.error) {
+            throw new Error(`Email provider error: ${(result.error as { message?: string }).message ?? "unknown"}`);
+        }
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+// ─── Escaping (SEC-006) ───────────────────────────────────────────────────────
+// Every value interpolated into HTML must go through esc(): titles, names and
+// locations are user-controlled and these mails are sent from our own domain.
+
+const HTML_ESCAPES: Record<string, string> = {
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+}
+
+export function esc(value: unknown): string {
+    return String(value ?? "").replace(/[&<>"']/g, (c) => HTML_ESCAPES[c])
+}
+
+/** Subjects: single line, bounded length. */
+export function subjectLine(value: string, max = 120): string {
+    return value.replace(/[\r\n\t]+/g, " ").trim().slice(0, max)
+}
 
 // ─── Templates ────────────────────────────────────────────────────────────────
 
@@ -21,7 +60,7 @@ function baseTemplate(title: string, body: string): string {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${title}</title>
+  <title>${esc(title)}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#fbf9f6;font-family:Georgia,serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#fbf9f6;padding:40px 16px;">
@@ -66,12 +105,12 @@ function ctaButton(href: string, label: string): string {
     return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0;">
   <tr>
     <td align="center">
-      <a href="${href}"
+      <a href="${esc(href)}"
          style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#7a5830,#bc9366);
                 color:#ffffff;text-decoration:none;border-radius:999px;
                 font-family:Arial,sans-serif;font-size:13px;font-weight:600;
                 letter-spacing:1.5px;text-transform:uppercase;">
-        ${label}
+        ${esc(label)}
       </a>
     </td>
   </tr>
@@ -80,7 +119,7 @@ function ctaButton(href: string, label: string): string {
 
 function fallbackLink(href: string): string {
     return `<p style="font-size:12px;color:#9e9289;font-family:Arial,sans-serif;text-align:center;word-break:break-all;margin-top:8px;">
-  Or copy this link: <a href="${href}" style="color:#bc9366;">${href}</a>
+  Or copy this link: <a href="${esc(href)}" style="color:#bc9366;">${esc(href)}</a>
 </p>`;
 }
 
@@ -97,7 +136,7 @@ export async function sendVerificationEmail(to: string, link: string) {
       ${fallbackLink(link)}
     `;
 
-    await getResend().emails.send({
+    await sendMail({
         from: FROM,
         to,
         subject: "Verify your MixoGuide account",
@@ -129,36 +168,36 @@ export async function sendSuggestionEmail(
     const body = `
       <h1 style="margin:0 0 8px;font-size:22px;color:#1b1c1a;">New suggestion received</h1>
       <p style="margin:0 0 20px;font-size:15px;color:#4f453b;line-height:1.6;font-family:Arial,sans-serif;">
-        <strong>${suggestion.userName}</strong> submitted a suggestion.
+        <strong>${esc(suggestion.userName)}</strong> submitted a suggestion.
       </p>
 
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5f1;border-radius:10px;padding:20px;margin-bottom:24px;">
         <tr>
           <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#81756a;width:120px;">Type</td>
-          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#1b1c1a;font-weight:600;">${typeLabel}</td>
+          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#1b1c1a;font-weight:600;">${esc(typeLabel)}</td>
         </tr>
         ${suggestion.targetName ? `
         <tr>
           <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#81756a;">Target</td>
-          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#1b1c1a;">${suggestion.targetName}</td>
+          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#1b1c1a;">${esc(suggestion.targetName)}</td>
         </tr>` : ''}
         <tr>
           <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#81756a;vertical-align:top;">Title</td>
-          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#1b1c1a;">${suggestion.title}</td>
+          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#1b1c1a;">${esc(suggestion.title)}</td>
         </tr>
         <tr>
           <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#81756a;vertical-align:top;">Details</td>
-          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#1b1c1a;white-space:pre-wrap;">${suggestion.content}</td>
+          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#1b1c1a;white-space:pre-wrap;">${esc(suggestion.content)}</td>
         </tr>
       </table>
 
       ${ctaButton(reviewUrl, 'Review in admin panel')}
     `
 
-    await getResend().emails.send({
+    await sendMail({
         from: FROM,
         to,
-        subject: `[MixoGuide] New suggestion — ${suggestion.title}`,
+        subject: subjectLine(`[MixoGuide] New suggestion — ${suggestion.title}`),
         html: baseTemplate('New suggestion', body),
         text: `New suggestion from ${suggestion.userName}\n\nType: ${typeLabel}\nTitle: ${suggestion.title}\n\n${suggestion.content}\n\nReview at: ${reviewUrl}`,
     })
@@ -187,18 +226,18 @@ export async function sendCollectionInviteEmail(params: {
     const body = `
       <h1 style="margin:0 0 8px;font-size:22px;color:#1b1c1a;">You're invited!</h1>
       <p style="margin:0 0 20px;font-size:15px;color:#4f453b;line-height:1.6;font-family:Arial,sans-serif;">
-        <strong>${hostName}</strong> is hosting <strong>${collectionTitle}</strong> and would love for you to come.
+        <strong>${esc(hostName)}</strong> is hosting <strong>${esc(collectionTitle)}</strong> and would love for you to come.
       </p>
 
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5f1;border-radius:10px;padding:20px;margin-bottom:24px;">
         <tr>
           <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#81756a;width:90px;">When</td>
-          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#1b1c1a;font-weight:600;">${whenLine}</td>
+          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#1b1c1a;font-weight:600;">${esc(whenLine)}</td>
         </tr>
         ${location ? `
         <tr>
           <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#81756a;">Where</td>
-          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#1b1c1a;">${location}</td>
+          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#1b1c1a;">${esc(location)}</td>
         </tr>` : ''}
       </table>
 
@@ -209,10 +248,10 @@ export async function sendCollectionInviteEmail(params: {
       ${fallbackLink(inviteUrl)}
     `
 
-    await getResend().emails.send({
+    await sendMail({
         from: FROM,
         to,
-        subject: `You're invited: ${collectionTitle}`,
+        subject: subjectLine(`You're invited: ${collectionTitle}`),
         html: baseTemplate(`Invite — ${collectionTitle}`, body),
         text: `${hostName} invited you to ${collectionTitle}.\n\nWhen: ${whenLine}${location ? `\nWhere: ${location}` : ''}\n\nView the cocktail list and RSVP:\n${inviteUrl}`,
     })
@@ -233,11 +272,38 @@ export async function sendResetPasswordEmail(to: string, link: string) {
       </p>
     `;
 
-    await getResend().emails.send({
+    await sendMail({
         from: FROM,
         to,
         subject: "Your MixoGuide password reset link",
         html: baseTemplate("Reset your password", body),
         text: `MixoGuide — Password Reset\n\nWe received a request to reset your password.\nClick the link below to choose a new password. This link expires in 15 minutes.\n\n${link}\n\nIf you did not request this, no action is needed — your password remains unchanged.`,
     });
+}
+
+export async function sendAccountExistsEmail(to: string, signInLink: string, resetLink: string) {
+    const body = `
+      <h1 style="margin:0 0 8px;font-size:22px;color:#1b1c1a;">You already have an account</h1>
+      <p style="margin:0 0 24px;font-size:15px;color:#4f453b;line-height:1.6;font-family:Arial,sans-serif;">
+        Someone tried to create a MixoGuide account with this email address. You already have one,
+        so no new account was created. If this was you, sign in below or reset your password.
+      </p>
+      ${ctaButton(signInLink, "Sign in")}
+      <p style="font-size:13px;color:#4f453b;font-family:Arial,sans-serif;text-align:center;">
+        Forgot your password? <a href="${esc(resetLink)}" style="color:#7a5830;">Reset it here</a>.
+      </p>
+    `
+
+    await sendMail({
+        from: FROM,
+        to,
+        subject: "Your MixoGuide account",
+        html: baseTemplate("Your MixoGuide account", body),
+        text: `Someone tried to create a MixoGuide account with this email address. You already have one, so no new account was created.
+
+Sign in: ${signInLink}
+Reset your password: ${resetLink}
+
+If this wasn't you, you can ignore this email.`,
+    })
 }

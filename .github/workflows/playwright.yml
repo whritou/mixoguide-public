@@ -1,27 +1,89 @@
 name: Playwright Tests
+
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, dev]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, dev]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playwright-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  e2e:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18.1-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mixoguide_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d mixoguide_e2e"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      CI: true
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/mixoguide_e2e
+      DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:5432/mixoguide_e2e
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      # Dummy secret for CI only (never used outside this ephemeral job).
+      NEXTAUTH_SECRET: ci-only-dummy-nextauth-secret-0123456789abcdef
+      # Cloudflare Turnstile documented test keys (always pass):
+      # https://developers.cloudflare.com/turnstile/troubleshooting/testing/
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+      TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
+      # Production-required by src/lib/env.ts; mail is never actually sent in e2e.
+      RESEND_API_KEY: re_ci_dummy_key
+      TRUSTED_PROXY: x-forwarded-for
+      DISABLE_RATE_LIMIT: '1'
+      NEXT_TELEMETRY_DISABLED: '1'
+
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      - name: Apply migrations
+        run: sh scripts/release-migrate.sh
+
+      - name: Seed database
+        run: npm run db:seed
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      # playwright.config.ts `webServer` starts `npm run start` on :3000.
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

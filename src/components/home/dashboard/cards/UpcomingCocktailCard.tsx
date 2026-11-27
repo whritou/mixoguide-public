@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useMemo, useState, type MouseEvent } from 'react'
 import Image from 'next/image'
@@ -87,7 +87,7 @@ export default function UpcomingCocktailCard({
         <article
             className="group relative min-h-[112px] overflow-hidden rounded-2xl border border-line bg-surface cursor-pointer"
         >
-            <Link href="/planner?view=planned" className="absolute inset-0 z-10" aria-label="View planned cocktails" />
+            <Link href="/planner?view=planned" className="absolute inset-0 z-10" aria-label={`View ${item.cocktail?.name ?? "cocktail"} in your planner`} />
             <div className="absolute inset-y-0 right-0 w-[38%] overflow-hidden">
                 <Image
                     src={item.cocktail?.imageUrl ?? '/placeholder.svg'}
@@ -102,7 +102,7 @@ export default function UpcomingCocktailCard({
             <div className="relative z-10 flex h-full flex-col justify-between p-5 pr-[40%]">
                 <div className="flex items-start justify-between gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-inverse/75 px-2.5 py-1 text-[10px] font-label uppercase tracking-widest text-fg-on-inverse inset-ring-1 inset-ring-fg/40 backdrop-blur-sm">
-                        <span className={`h-1.5 w-1.5 rounded-full ${badge.dot}`} />
+                        <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${badge.dot}`} />
                         {badge.label}
                     </span>
                     {overdue && (
@@ -117,7 +117,7 @@ export default function UpcomingCocktailCard({
                         {item.cocktail?.name ?? '-'}
                     </h3>
                     <p className="mt-1 flex items-center gap-1.5 text-xs text-fg-muted">
-                        <CalendarDays size={12} />
+                        <CalendarDays size={12} aria-hidden="true" />
                         {formatMonthDay(plannedDate)} - {relativeDateLabel(plannedDate, now, { eventStyle: true })}
                     </p>
                     {item.quantity > 1 && (
@@ -133,9 +133,9 @@ export default function UpcomingCocktailCard({
                 onClick={openConfirm}
                 disabled={removing}
                 className="absolute right-2 top-2 z-30 rounded-full bg-surface/85 p-1.5 text-fg-muted backdrop-blur-sm transition-colors hover:bg-danger-bg hover:text-danger disabled:opacity-50"
-                aria-label="Remove from planner"
+                aria-label={`Remove ${item.cocktail?.name ?? 'cocktail'} from planner`}
             >
-                {removing ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                {removing ? <Loader2 size={14} aria-hidden="true" className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={14} aria-hidden="true" />}
             </button>
 
             {confirmRemove && (

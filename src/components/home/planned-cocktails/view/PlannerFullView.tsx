@@ -93,14 +93,14 @@ function LoadMoreButton({
 }
 
 function SkeletonLine({ className }: { className: string }) {
-    return <div className={`animate-pulse rounded-full bg-line/60 ${className}`} />
+    return <div className={`animate-pulse motion-reduce:animate-none rounded-full bg-line/60 ${className}`} />
 }
 
 function CocktailCardSkeleton() {
     return (
         <article className="max-w-xl overflow-hidden rounded-2xl bg-surface shadow-xs">
             <div className="flex min-h-[148px]">
-                <div className="w-32 shrink-0 animate-pulse bg-line sm:w-40" />
+                <div className="w-32 shrink-0 animate-pulse motion-reduce:animate-none bg-line sm:w-40" />
                 <div className="flex min-w-0 flex-1 flex-col gap-3 p-3 pr-8 sm:p-4 sm:pr-14">
                     <div className="flex gap-2">
                         <SkeletonLine className="h-5 w-16" />
@@ -121,7 +121,7 @@ function CocktailCardSkeleton() {
 function CollectionCardSkeleton() {
     return (
         <article className="overflow-hidden rounded-xl bg-surface shadow-xs">
-            <div className="h-28 animate-pulse bg-line" />
+            <div className="h-28 animate-pulse motion-reduce:animate-none bg-line" />
             <div className="space-y-3 p-5">
                 <div className="flex items-start justify-between gap-3">
                     <SkeletonLine className="h-6 w-2/3" />
@@ -142,7 +142,7 @@ function MadeCardSkeleton() {
     return (
         <article className="rounded-2xl border border-line bg-surface">
             <div className="flex items-start gap-3">
-                <div className="h-24 w-24 shrink-0 animate-pulse rounded-l-xl bg-line" />
+                <div className="h-24 w-24 shrink-0 animate-pulse motion-reduce:animate-none rounded-l-xl bg-line" />
                 <div className="min-w-0 flex-1 space-y-3 p-3">
                     <SkeletonLine className="h-6 w-3/4" />
                     <SkeletonLine className="h-4 w-1/2" />
@@ -441,7 +441,8 @@ export default function PlannerFullView({
                                     <button
                                         type="button"
                                         onClick={() => { setBulkMode(m => !m); setBulkSelected(new Set()) }}
-                                        className="text-xs font-label uppercase tracking-widest text-fg-muted hover:text-brand transition-colors"
+                                        aria-pressed={bulkMode}
+                                        className="min-h-6 px-1 text-xs font-label uppercase tracking-widest text-fg-muted hover:text-brand transition-colors"
                                     >
                                         {bulkMode ? 'Cancel' : 'Select'}
                                     </button>

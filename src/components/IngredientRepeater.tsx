@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState, useEffect, useTransition } from 'react'
 import { X, Plus, Minus } from 'lucide-react'
 import { LocalIngredientSelect } from '@/components/LocalIngredientSelect'
@@ -39,8 +39,8 @@ function toList(v: unknown): RepeaterIngredient[] {
   return Array.isArray(v) ? (v as RepeaterIngredient[]) : []
 }
 
-const inputCls  = "rounded-xl bg-surface border border-line-control px-3 py-2 text-sm font-body text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring/40 focus:border-brand-soft disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-const selectCls = "rounded-xl bg-surface border border-line-control px-3 py-2 text-sm font-body text-fg focus:outline-none focus:ring-1 focus:ring-ring/40 focus:border-brand-soft disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+const inputCls  = "rounded-xl bg-surface border border-line-control px-3 py-2 text-sm font-body text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring focus:border-brand-soft disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+const selectCls = "rounded-xl bg-surface border border-line-control px-3 py-2 text-sm font-body text-fg focus:outline-none focus:ring-1 focus:ring-ring focus:border-brand-soft disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 
 export default function IngredientRepeater({ value, onChange, disabled, error }: Props) {
   const [items, setItems] = useState<RepeaterIngredient[]>(toList(value))
@@ -93,7 +93,12 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
   return (
     <div className="space-y-3">
       {items.map((ing, rowIdx) => (
-        <div key={rowIdx} className="rounded-xl border border-line bg-surface overflow-hidden">
+        <div
+          key={rowIdx}
+          role="group"
+          aria-label={`Ingredient ${rowIdx + 1}${ing.ingredient ? `: ${ing.ingredient.name}` : ''}`}
+          className="rounded-xl border border-line bg-surface overflow-hidden"
+        >
 
           {/* ── main ingredient line ── */}
           <div className="flex flex-wrap gap-2 items-end p-4">
@@ -103,18 +108,21 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
               options={ingredientOptions}
               onSearchChange={handleSearch}
               disabled={disabled}
+              label={`Ingredient ${rowIdx + 1}`}
             />
 
             <input
               type="number" step="0.1"
               className={`w-24 text-right ${inputCls}`}
               placeholder="Qty"
+              aria-label={`Quantity for ${ing.ingredient?.name ?? `ingredient ${rowIdx + 1}`}`}
               value={ing.amount}
               disabled={disabled}
               onChange={e => patchRow(rowIdx, { amount: e.target.value })}
             />
 
             <select
+              aria-label={`Unit for ${ing.ingredient?.name ?? `ingredient ${rowIdx + 1}`}`}
               className={`w-24 ${selectCls}`}
               value={ing.unit}
               disabled={disabled}
@@ -140,9 +148,10 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
               type="button"
               disabled={disabled}
               onClick={() => rmRow(rowIdx)}
+              aria-label={`Remove ${ing.ingredient?.name ?? `ingredient ${rowIdx + 1}`}`}
               className="ml-auto w-7 h-7 flex items-center justify-center rounded-full bg-danger-bg/30 border border-danger/30 text-danger hover:bg-danger-bg/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <X size={13} />
+              <X size={13} aria-hidden="true" />
             </button>
           </div>
 
@@ -150,7 +159,7 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
           <div className="border-t border-line bg-canvas px-4 py-3 space-y-2">
             {ing.substitutes.map((sub, subIdx) => (
               <div key={subIdx} className="flex flex-wrap gap-2 items-end">
-                <span className="text-xs font-label uppercase tracking-widest text-brand-soft/70 self-center">↳</span>
+                <span aria-hidden="true" className="text-xs font-label uppercase tracking-widest text-brand-soft-strong self-center">↳</span>
                 <LocalIngredientSelect
                   value={sub.ingredient}
                   onChange={v => patchSub(rowIdx, subIdx, { ingredient: v })}
@@ -158,18 +167,21 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
                   onSearchChange={handleSearch}
                   disabled={disabled}
                   placeholder="Substitute…"
+                  label={`Substitute ${subIdx + 1} for ${ing.ingredient?.name ?? `ingredient ${rowIdx + 1}`}`}
                 />
 
                 <input
                   type="number" step="0.1"
                   className={`w-20 text-right ${inputCls}`}
                   placeholder="Qty"
+                  aria-label={`Quantity for substitute ${sub.ingredient?.name ?? subIdx + 1}`}
                   value={sub.amount}
                   disabled={disabled}
                   onChange={e => patchSub(rowIdx, subIdx, { amount: e.target.value })}
                 />
 
                 <select
+                  aria-label={`Unit for substitute ${sub.ingredient?.name ?? subIdx + 1}`}
                   className={`w-20 ${selectCls}`}
                   value={sub.unit}
                   disabled={disabled}
@@ -181,6 +193,7 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
                 </select>
 
                 <select
+                  aria-label={`Show substitute ${sub.ingredient?.name ?? subIdx + 1} in recipe`}
                   className={`w-28 ${selectCls}`}
                   value={sub.show ? 'show' : 'hide'}
                   disabled={disabled}
@@ -194,9 +207,10 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
                   type="button"
                   disabled={disabled}
                   onClick={() => rmSub(rowIdx, subIdx)}
+                  aria-label={`Remove substitute ${sub.ingredient?.name ?? subIdx + 1}`}
                   className="w-7 h-7 flex items-center justify-center rounded-full border border-line text-fg-muted hover:bg-line hover:text-fg-secondary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Minus size={13} />
+                  <Minus size={13} aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -207,7 +221,7 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
               onClick={() => addSub(rowIdx)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-label uppercase tracking-widest border border-line text-fg-muted hover:border-brand-soft/40 hover:text-brand hover:bg-brand-soft/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <Plus size={11} />
+              <Plus size={11} aria-hidden="true" />
               Add substitute
             </button>
           </div>
@@ -218,13 +232,13 @@ export default function IngredientRepeater({ value, onChange, disabled, error }:
         type="button"
         disabled={disabled}
         onClick={addRow}
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-label uppercase tracking-widest bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand hover:scale-[0.98] transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-label uppercase tracking-widest bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand motion-safe:hover:scale-[0.98] transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
       >
-        <Plus size={13} />
+        <Plus size={13} aria-hidden="true" />
         Add ingredient
       </button>
 
-      {error && <p className="text-xs font-body text-danger">{error}</p>}
+      {error && <p role="alert" className="text-xs font-body text-danger">{error}</p>}
     </div>
   )
 }

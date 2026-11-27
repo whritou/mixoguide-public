@@ -21,7 +21,7 @@ export default function MyRsvpsSection() {
         return (
             <div className="space-y-2">
                 {[1, 2].map(i => (
-                    <div key={i} className="h-20 rounded-xl bg-line/40 animate-pulse" />
+                    <div key={i} className="h-20 rounded-xl bg-line/40 animate-pulse motion-reduce:animate-none" />
                 ))}
             </div>
         )
@@ -31,7 +31,7 @@ export default function MyRsvpsSection() {
         return (
             <div className="rounded-2xl border border-line bg-surface p-8 text-center">
                 <p className="text-sm text-fg-muted">You haven&apos;t RSVP&apos;d to any events yet.</p>
-                <p className="text-xs text-fg-muted/70 mt-1">When a host shares an invite link with you, your RSVP will appear here.</p>
+                <p className="text-xs text-fg-muted mt-1">When a host shares an invite link with you, your RSVP will appear here.</p>
             </div>
         )
     }
@@ -65,9 +65,10 @@ export default function MyRsvpsSection() {
                                         href={inviteUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="shrink-0 text-fg-muted hover:text-brand transition-colors mt-0.5"
+                                        aria-label={`Open invite for ${rsvp.collection.title} in a new tab`}
+                                        className="shrink-0 -m-1.5 inline-flex size-6 items-center justify-center rounded-full text-fg-muted hover:text-brand transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                     >
-                                        <ExternalLink size={12} />
+                                        <ExternalLink size={12} aria-hidden="true" />
                                     </a>
                                 )}
                             </div>
@@ -89,7 +90,7 @@ export default function MyRsvpsSection() {
                                 )}
                             </div>
                             {rsvp.note && (
-                                <p className="text-xs text-fg-muted/80 mt-1 italic truncate">&ldquo;{rsvp.note}&rdquo;</p>
+                                <p className="text-xs text-fg-muted mt-1 italic truncate">&ldquo;{rsvp.note}&rdquo;</p>
                             )}
                         </div>
                         <span className={`shrink-0 text-[10px] font-label uppercase tracking-widest px-2.5 py-1 rounded-full ${STATUS_STYLE[rsvp.status]}`}>

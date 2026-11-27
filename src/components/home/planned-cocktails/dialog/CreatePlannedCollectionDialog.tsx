@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { X, Plus, Search, Minus, Check, Clock, MapPin, MessageSquare, ChevronDown } from 'lucide-react'
 import { COCKTAIL_OCCASIONS } from '@/types/models/cocktail'
@@ -62,6 +62,19 @@ export default function CreatePlannedCollectionDialog({
     const [submitting,       setSubmitting]       = useState(false)
     const [showOccasions,    setShowOccasions]    = useState(false)
     const [occasionSearch,   setOccasionSearch]   = useState('')
+    const fieldId = useId()
+    const ids = {
+        title:        `${fieldId}-title`,
+        cocktails:    `${fieldId}-cocktails`,
+        cocktailList: `${fieldId}-cocktail-results`,
+        location:     `${fieldId}-location`,
+        date:         `${fieldId}-date`,
+        time:         `${fieldId}-time`,
+        servings:     `${fieldId}-servings`,
+        occasions:    `${fieldId}-occasions`,
+        occasionList: `${fieldId}-occasion-list`,
+        note:         `${fieldId}-note`,
+    }
 
     /* ── Cocktail search via store ───────────────────────── */
 
@@ -159,11 +172,11 @@ export default function CreatePlannedCollectionDialog({
 
     return (
         <Dialog open onOpenChange={(nextOpen) => { if (!nextOpen) onClose() }}>
-            <DialogContent className="w-full bg-canvas shadow-2xl flex flex-col p-0 border-0 gap-0 overflow-hidden [&>button]:hidden rounded-t-2xl rounded-b-none top-auto bottom-0 left-0 right-0 translate-x-0 translate-y-0 max-h-[95vh] md:max-h-[85vh] max-w-full sm:rounded-2xl sm:top-[50%] sm:bottom-auto sm:left-[50%] sm:right-auto sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-h-[90vh] sm:max-w-lg">
+            <DialogContent showCloseButton={false} aria-describedby={undefined} className="w-full bg-canvas shadow-2xl flex flex-col p-0 border-0 gap-0 overflow-hidden rounded-t-2xl rounded-b-none top-auto bottom-0 left-0 right-0 translate-x-0 translate-y-0 max-h-[95vh] md:max-h-[85vh] max-w-full sm:rounded-2xl sm:top-[50%] sm:bottom-auto sm:left-[50%] sm:right-auto sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-h-[90vh] sm:max-w-lg">
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-line">
-                    <DialogTitle className="font-headline text-xl text-fg">New Event</DialogTitle>
+                    <DialogTitle className="font-headline text-xl font-normal leading-normal text-fg">New Event</DialogTitle>
                     <button
                         type="button"
                         onClick={onClose}
@@ -180,31 +193,34 @@ export default function CreatePlannedCollectionDialog({
 
                         {/* Title */}
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                            <label htmlFor={ids.title} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 Event name *
                             </label>
                             <input
+                                id={ids.title}
                                 type="text"
+                                required
                                 value={title}
                                 onChange={e => setTitle(e.target.value)}
                                 placeholder="e.g. Tom's Birthday"
                                 maxLength={200}
                                 className="w-full px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body text-fg
-                                           placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring"
+                                           placeholder:text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             />
                         </div>
                       {/* Cocktail search */}
                       <div>
-                        <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                        <label htmlFor={ids.cocktails} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                           Cocktails
                         </label>
 
                         {/* Added cocktails as badges */}
                         {cocktails.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-3">
+                          <div className="flex flex-wrap gap-2 mb-3" role="list" aria-label="Selected cocktails">
                             {cocktails.map(c => (
                               <span
                                 key={c.id}
+                                role="listitem"
                                 className="flex items-center gap-1 px-2.5 py-1 text-xs font-body rounded-full
                                                        bg-brand-soft/15 text-brand"
                               >
@@ -213,7 +229,7 @@ export default function CreatePlannedCollectionDialog({
                                   type="button"
                                   onClick={() => removeCocktail(c.id)}
                                   aria-label={`Remove ${c.name}`}
-                                  className="ml-0.5 hover:text-danger transition-colors"
+                                  className="ml-0.5 -my-1 inline-flex size-6 items-center justify-center rounded-full hover:text-danger transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 >
                                                 <X size={10} />
                                             </button>
@@ -224,22 +240,25 @@ export default function CreatePlannedCollectionDialog({
 
                         {/* Search input */}
                         <div className="relative">
-                          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
+                          <Search size={13} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
                           <input
-                            type="text"
+                            id={ids.cocktails}
+                            type="search"
+                            autoComplete="off"
+                            aria-controls={showDropdown ? ids.cocktailList : undefined}
                             value={cocktailSearch}
                             onChange={e => setCocktailSearch(e.target.value)}
                             onFocus={() => setSearchFocused(true)}
                             onBlur={() => setSearchFocused(false)}
                             placeholder="Search cocktails to add…"
                             className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body text-fg
-                                               placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring"
+                                               placeholder:text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           />
                         </div>
 
                         {/* Search results dropdown */}
                         {showDropdown && (
-                          <div className="mt-1 bg-surface border border-line-strong rounded-xl shadow-md overflow-hidden">
+                          <div id={ids.cocktailList} role="group" aria-label="Matching cocktails" className="mt-1 bg-surface border border-line-strong rounded-xl shadow-md overflow-hidden">
                             {searchResults.slice(0, 20).map(c => (
                               <button
                                 key={c.id}
@@ -249,7 +268,8 @@ export default function CreatePlannedCollectionDialog({
                                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-body text-fg
                                                        hover:bg-brand-soft/10 transition-colors text-left"
                               >
-                                <Plus size={12} className="text-brand shrink-0" />
+                                <Plus size={12} aria-hidden="true" className="text-brand shrink-0" />
+                                <span className="sr-only">Add </span>
                                 {c.name}
                               </button>
                             ))}
@@ -257,24 +277,25 @@ export default function CreatePlannedCollectionDialog({
                         )}
 
                         {(searching || searchPending) && searchFocused && (
-                          <p className="mt-1 text-xs text-fg-muted">Searching…</p>
+                          <p role="status" className="mt-1 text-xs text-fg-muted">Searching…</p>
                         )}
                       </div>
                         {/* Location */}
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                            <label htmlFor={ids.location} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 Location
                             </label>
                             <div className="relative">
                                 <MapPin size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
                                 <input
+                                    id={ids.location}
                                     type="text"
                                     value={location}
                                     onChange={e => setLocation(e.target.value)}
                                     placeholder="e.g. Home bar"
                                     maxLength={200}
                                     className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body text-fg
-                                               placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring"
+                                               placeholder:text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 />
                             </div>
                         </div>
@@ -282,40 +303,43 @@ export default function CreatePlannedCollectionDialog({
                         {/* Date + time + servings */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                                <label htmlFor={ids.date} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                     Date *
                                 </label>
                                 <input
+                                    id={ids.date}
                                     type="date"
+                                    required
                                     value={plannedFor}
                                     onChange={e => setPlannedFor(e.target.value)}
                                     min={todayDate}
                                     className="w-full px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body text-fg
-                                               focus:outline-none focus:ring-1 focus:ring-ring"
+                                               focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                                <label htmlFor={ids.time} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                     Time
                                 </label>
                                 <div className="relative">
                                     <Clock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
                                     <input
+                                        id={ids.time}
                                         type="time"
                                         value={plannedTime}
                                         onChange={e => setPlannedTime(e.target.value)}
                                         className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body text-fg
-                                                   focus:outline-none focus:ring-1 focus:ring-ring"
+                                                   focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                                <span id={ids.servings} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                     Servings
-                                </label>
-                                <div className="flex items-center gap-2">
+                                </span>
+                                <div role="group" aria-labelledby={ids.servings} className="flex items-center gap-2">
                                     <button
                                         type="button"
                                         onClick={() => setServings(s => Math.max(1, s - 1))}
@@ -325,7 +349,7 @@ export default function CreatePlannedCollectionDialog({
                                     >
                                         <Minus size={14} />
                                     </button>
-                                    <span className="w-8 text-center font-body text-sm font-medium text-fg">
+                                    <span aria-live="polite" className="w-8 text-center font-body text-sm font-medium text-fg">
                                         {servings}
                                     </span>
                                     <button
@@ -342,20 +366,23 @@ export default function CreatePlannedCollectionDialog({
                         </div>
                       {/* Occasions */}
                       <div>
-                        <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                        <span id={ids.occasions} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                           Occasions
-                        </label>
+                        </span>
 
                         {/* Trigger */}
                         <button
                           type="button"
                           onClick={() => setShowOccasions(o => !o)}
+                          aria-expanded={showOccasions}
+                          aria-controls={ids.occasionList}
+                          aria-labelledby={`${ids.occasions} ${ids.occasions}-value`}
                           className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body hover:border-brand-soft transition-colors"
                         >
-                                <span className={occasions.length === 0 ? 'text-fg-muted' : 'text-fg'}>
+                                <span id={`${ids.occasions}-value`} className={occasions.length === 0 ? 'text-fg-muted' : 'text-fg'}>
                                     {occasions.length === 0 ? 'Select occasions…' : `${occasions.length} selected`}
                                 </span>
-                          <ChevronDown size={14} className={`text-fg-muted transition-transform duration-200 ${showOccasions ? 'rotate-180' : ''}`} />
+                          <ChevronDown size={14} className={`text-fg-muted transition-transform motion-reduce:transition-none duration-200 ${showOccasions ? 'rotate-180' : ''}`} />
                         </button>
 
                         {/* Selected chips */}
@@ -364,7 +391,7 @@ export default function CreatePlannedCollectionDialog({
                             {occasions.map(occ => (
                               <span key={occ} className="flex items-center gap-1 px-2.5 py-0.5 text-xs font-label uppercase tracking-widest rounded-full bg-brand text-fg-on-brand">
                                             {formatLabel(occ)}
-                                <button type="button" onClick={() => toggleOccasion(occ)} aria-label={`Remove ${formatLabel(occ)}`} className="hover:opacity-70 transition-opacity">
+                                <button type="button" onClick={() => toggleOccasion(occ)} aria-label={`Remove ${formatLabel(occ)}`} className="-my-1 inline-flex size-6 items-center justify-center rounded-full hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-fg-on-brand">
                                                 <X size={9} />
                                             </button>
                                         </span>
@@ -374,14 +401,16 @@ export default function CreatePlannedCollectionDialog({
 
                         {/* Dropdown panel */}
                         {showOccasions && (
-                          <div className="mt-1 border border-line-strong rounded-xl bg-surface shadow-md overflow-hidden">
+                          <div id={ids.occasionList} className="mt-1 border border-line-strong rounded-xl bg-surface shadow-md overflow-hidden">
                             <div className="p-2 border-b border-line-strong/50">
                               <input
-                                type="text"
+                                type="search"
+                                aria-label="Filter occasions"
+                                autoComplete="off"
                                 value={occasionSearch}
                                 onChange={e => setOccasionSearch(e.target.value)}
                                 placeholder="Filter occasions…"
-                                className="w-full px-3 py-1.5 rounded-lg bg-canvas text-xs font-body text-fg placeholder:text-fg-muted focus:outline-none"
+                                className="w-full px-3 py-1.5 rounded-lg bg-canvas text-xs font-body text-fg placeholder:text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               />
                             </div>
                             <div className="max-h-44 overflow-y-auto">
@@ -392,9 +421,11 @@ export default function CreatePlannedCollectionDialog({
                                     key={occ}
                                     type="button"
                                     onClick={() => toggleOccasion(occ)}
+                                    role="checkbox"
+                                    aria-checked={selected}
                                     className="w-full flex items-center gap-3 px-4 py-2 text-sm font-body text-fg hover:bg-brand-soft/10 transition-colors text-left"
                                   >
-                                                    <span className={`w-4 h-4 rounded shrink-0 border flex items-center justify-center transition-colors ${selected ? 'bg-brand border-brand' : 'border-line-control'}`}>
+                                                    <span aria-hidden="true" className={`w-4 h-4 rounded shrink-0 border flex items-center justify-center transition-colors ${selected ? 'bg-brand border-brand' : 'border-line-control'}`}>
                                                         {selected && <Check size={10} className="text-fg-on-brand" />}
                                                     </span>
                                     {formatLabel(occ)}
@@ -410,19 +441,20 @@ export default function CreatePlannedCollectionDialog({
                       </div>
                         {/* Guest note */}
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                            <label htmlFor={ids.note} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 Note for guests
                             </label>
                             <div className="relative">
                                 <MessageSquare size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
                                 <input
+                                    id={ids.note}
                                     type="text"
                                     value={guestNote}
                                     onChange={e => setGuestNote(e.target.value)}
                                     placeholder="e.g. Bring citrus if you have some"
                                     maxLength={280}
                                     className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body text-fg
-                                               placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-ring"
+                                               placeholder:text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 />
                             </div>
                         </div>
@@ -434,7 +466,7 @@ export default function CreatePlannedCollectionDialog({
                             type="button"
                             onClick={onClose}
                             className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full
-                                       bg-line/60 text-fg-secondary hover:bg-line transition-colors"
+                                       bg-line text-fg-secondary hover:bg-line-strong transition-colors"
                         >
                             Cancel
                         </button>
@@ -443,7 +475,7 @@ export default function CreatePlannedCollectionDialog({
                             disabled={submitting || !title.trim() || !plannedFor}
                             className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full
                                        bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to text-fg-on-brand
-                                       hover:scale-[0.98] transition-transform duration-200
+                                       hover:scale-[0.98] motion-reduce:hover:scale-100 transition-transform duration-200
                                        disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
                         >
                             {submitting ? 'Creating…' : 'Create event'}

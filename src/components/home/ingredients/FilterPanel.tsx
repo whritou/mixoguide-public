@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { FilterKey } from './FilterConstants';
 import clsx from 'clsx';
 
@@ -18,6 +18,8 @@ export function FilterPanel({ openKey, filters, typeOpts = [], subTypeOpts = [] 
   const chip = (text: string, active: boolean, onClick: () => void) => (
     <button
       key={text}
+      type="button"
+      aria-pressed={active}
       className={clsx(
         'rounded-full px-3 py-1.5 text-xs font-label cursor-pointer transition-colors border',
         active
@@ -31,7 +33,7 @@ export function FilterPanel({ openKey, filters, typeOpts = [], subTypeOpts = [] 
   );
 
   return (
-    <div className="animate-fade-in px-4 md:px-12 py-4 bg-canvas-hover-alt border-b border-line">
+    <div role="group" aria-label="Filter options" className="animate-fade-in motion-reduce:animate-none px-4 md:px-12 py-4 bg-canvas-hover-alt border-b border-line">
       {openKey === 'type' && (
         <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
           {typeOpts.map(t =>

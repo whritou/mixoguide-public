@@ -14,14 +14,17 @@ import {
 } from '@/components/ui/breadcrumb'
 import type { ReactNode } from 'react'
 import { Home } from "lucide-react"
+import AuthProvider from '@/components/AuthProvider'
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  await guardAdmin()
+  const session = await guardAdmin()
 
   return (
+    <AuthProvider session={session}>
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      {/* SidebarInset renders the page's single <main> landmark (skip-link target). */}
+      <SidebarInset id="main" tabIndex={-1} className="outline-none">
           <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
               <div className="flex items-center gap-2 px-4 w-full">
                   {/* LEFT SIDE */}
@@ -52,8 +55,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                   </div>
               </div>
           </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 pt-0 bg-canvas">{children}</main>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 bg-canvas">{children}</div>
       </SidebarInset>
     </SidebarProvider>
+    </AuthProvider>
   )
 }

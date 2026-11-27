@@ -230,6 +230,7 @@ describe('rate-limited public auth routes', () => {
             nextRequest({
                 method: 'POST',
                 path:   '/api/auth/resend-verification',
+                headers: csrfHeaders(),
                 body:   { email: 'user@example.com', callbackUrl: '/verify-email' },
             }),
             routeContext(),

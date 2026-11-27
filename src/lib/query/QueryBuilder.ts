@@ -7,6 +7,12 @@ import type {
   FilterValue,
 } from './types'
 
+/** Public projection of a User row — the only shape a generic include may return. */
+export const SAFE_USER_SELECT = { select: { id: true, name: true, image: true } } as const
+
+/** Relation names that point at the User model. */
+const USER_RELATIONS = new Set(['user', 'users', 'host', 'owner'])
+
 export class QueryBuilder {
 
   static getPaginationArgs(params: QueryParams) {
@@ -180,24 +186,32 @@ export class QueryBuilder {
     return parts.reduceRight((acc, part) => ({ [part]: acc }), condition as object)
   }
 
+  /**
+   * Build a Prisma `include` from client-supplied include paths.
+   *
+   * SECURITY: only paths listed *exactly* in `allowedIncludes` are honoured
+   * (no prefix matching — `favoritedBy.user.accounts` must never be reachable
+   * because `favoritedBy` is allowed). Any relation segment named `user` is
+   * projected to {@link SAFE_USER_SELECT} so password hashes, emails and roles
+   * can never be returned through a generic include.
+   */
   static buildIncludeArgs(
     params: QueryParams,
     allowedIncludes: string[]
   ) {
     if (!params.include?.length) return {}
 
+    const allowed = new Set(allowedIncludes)
     const includes: Record<string, unknown> = {}
 
     for (const includeStr of params.include) {
-      if (!allowedIncludes.some((allowed) => includeStr === allowed || includeStr.startsWith(allowed + '.'))) {
-        continue
-      }
+      if (!allowed.has(includeStr)) continue
 
       const parts = includeStr.split('.')
       QueryBuilder.setNestedInclude(includes, parts)
     }
 
-    return { include: includes }
+    return Object.keys(includes).length > 0 ? { include: includes } : {}
   }
 
   private static setNestedInclude(
@@ -205,6 +219,11 @@ export class QueryBuilder {
     parts: string[]
   ) {
     const [first, ...rest] = parts
+    if (USER_RELATIONS.has(first)) {
+      // Never traverse past a user relation, and never return its full row.
+      obj[first] = SAFE_USER_SELECT
+      return
+    }
     if (rest.length === 0) {
       if (!obj[first]) obj[first] = true
     } else {

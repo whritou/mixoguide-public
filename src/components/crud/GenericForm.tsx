@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useForm }  from "react-hook-form";
@@ -39,6 +39,7 @@ export function GenericForm<T extends FieldValues>({
                                                              isLoading,
                                                              title,
                                                              description,
+                                                             titleAs = "h1",
                                                            }: GenericFormConfig<T>) {
 
   /* ────────────────────────── dynamic Zod schema ───────────────────────── */
@@ -101,7 +102,7 @@ export function GenericForm<T extends FieldValues>({
       <Card className="bg-canvas border-line shadow-sm">
         {(title || description) && (
             <CardHeader className="border-b border-line pb-5">
-              {title       && <CardTitle className="font-headline text-fg text-lg">{title}</CardTitle>}
+              {title       && <CardTitle as={titleAs} className="font-headline text-fg text-lg">{title}</CardTitle>}
               {description && <CardDescription className="text-fg-muted font-body text-sm">{description}</CardDescription>}
             </CardHeader>
         )}

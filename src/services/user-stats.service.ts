@@ -17,50 +17,59 @@ export interface UserStats {
     monthlyTrend:  MonthlyPoint[]
 }
 
-function startOf(unit: 'week' | 'month' | 'year'): Date {
-    const d = new Date()
-    if (unit === 'week') {
-        const day = d.getDay()
-        d.setDate(d.getDate() - day)
-    } else if (unit === 'month') {
-        d.setDate(1)
-    } else {
-        d.setMonth(0, 1)
+// ─── Calendar helpers (pure date-string arithmetic, DST-safe) ───────────────
+
+/** Server timezone: keeps the historical behaviour when the client sends none. */
+function defaultTimeZone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+}
+
+/** Returns a valid IANA timezone, falling back to the server timezone. */
+export function resolveTimeZone(tz?: string | null): string {
+    if (!tz) return defaultTimeZone()
+    try {
+        new Intl.DateTimeFormat('en-US', { timeZone: tz })
+        return tz
+    } catch {
+        return defaultTimeZone()
     }
-    d.setHours(0, 0, 0, 0)
-    return d
 }
 
-function startOfDay(d: Date): Date {
-    const out = new Date(d)
-    out.setHours(0, 0, 0, 0)
-    return out
+/** YYYY-MM-DD of `d` in timezone `tz`. */
+export function toDateStrInZone(d: Date, tz: string): string {
+    return new Intl.DateTimeFormat('en-CA', {
+        timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
+    }).format(d)
 }
 
-function startOfWeek(d: Date): Date {
-    const out = startOfDay(d)
-    out.setDate(out.getDate() - out.getDay())
-    return out
+function parseDay(day: string): Date {
+    const [y, m, d] = day.split('-').map(Number)
+    return new Date(Date.UTC(y, m - 1, d))
 }
 
-/** Local date key YYYY-MM-DD for a Date */
-function toDateStr(d: Date): string {
-    const y = d.getFullYear()
-    const m = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    return `${y}-${m}-${day}`
+function formatDay(d: Date): string {
+    return d.toISOString().slice(0, 10)
 }
 
-/** Compute current + longest consecutive-day streaks from a set of active date strings */
-function computeStreaks(activeDates: Set<string>): { current: number; longest: number } {
+function addDays(day: string, n: number): string {
+    const d = parseDay(day)
+    d.setUTCDate(d.getUTCDate() + n)
+    return formatDay(d)
+}
+
+/** Sunday-based week start of a YYYY-MM-DD day. */
+function weekStartOf(day: string): string {
+    return addDays(day, -parseDay(day).getUTCDay())
+}
+
+/** Compute current + longest consecutive-day streaks from a set of active date strings. */
+export function computeStreaks(activeDates: Set<string>, today: string): { current: number; longest: number } {
     if (activeDates.size === 0) return { current: 0, longest: 0 }
 
     const sorted = [...activeDates].sort()
     let longest = 1, run = 1
     for (let i = 1; i < sorted.length; i++) {
-        const prev = new Date(sorted[i - 1])
-        prev.setDate(prev.getDate() + 1)
-        if (toDateStr(prev) === sorted[i]) {
+        if (addDays(sorted[i - 1], 1) === sorted[i]) {
             run++
             if (run > longest) longest = run
         } else {
@@ -68,114 +77,98 @@ function computeStreaks(activeDates: Set<string>): { current: number; longest: n
         }
     }
 
-    // Current streak: count backwards from today
+    // Current streak: count backwards from today; also accept yesterday as the
+    // start (don't break the streak mid-day).
+    let probe = activeDates.has(today) ? today : addDays(today, -1)
     let current = 0
-    const today = toDateStr(new Date())
-    let probe = new Date()
-    while (activeDates.has(toDateStr(probe))) {
+    while (activeDates.has(probe)) {
         current++
-        probe.setDate(probe.getDate() - 1)
+        probe = addDays(probe, -1)
     }
-    // Also accept yesterday as start (don't break streak mid-day)
-    if (current === 0) {
-        probe = new Date()
-        probe.setDate(probe.getDate() - 1)
-        while (activeDates.has(toDateStr(probe))) {
-            current++
-            probe.setDate(probe.getDate() - 1)
-        }
-    }
-    void today
 
     return { current, longest }
 }
 
 class UserStatsService {
-    async getStats(userId: string): Promise<UserStats> {
-        const now       = new Date()
-        const weekStart  = startOf('week')
-        const monthStart = startOf('month')
-        const yearStart  = startOf('year')
-        const twelveWeeksAgo  = new Date(now); twelveWeeksAgo.setDate(now.getDate() - 7 * 12)
-        const twelveMonthsAgo = new Date(now); twelveMonthsAgo.setMonth(now.getMonth() - 11, 1)
+    /**
+     * Aggregates are computed in SQL (DB-011): only one row per active day and
+     * the top cocktails are loaded, not every log. `tz` (IANA, optional)
+     * controls day boundaries; it defaults to the server timezone.
+     */
+    async getStats(userId: string, tz?: string | null): Promise<UserStats> {
+        const zone = resolveTimeZone(tz)
+        const today = toDateStrInZone(new Date(), zone)
+        const weekStart  = weekStartOf(today)
+        const monthStart = `${today.slice(0, 7)}-01`
+        const yearStart  = `${today.slice(0, 4)}-01-01`
 
-        const [allLogs, recentLogs] = await Promise.all([
-            cocktailMadeLogRepository.findAllByUserForStats(userId),
-            cocktailMadeLogRepository.findByUserSince(userId, twelveWeeksAgo),
-        ])
+        const { days, top } = await cocktailMadeLogRepository.getStatsAggregates(userId, zone, 5)
 
-        // ── Totals ────────────────────────────────────────────────────────────
+        // ── Totals + active days ──────────────────────────────────────────────
         let thisWeek = 0, thisMonth = 0, thisYear = 0, allTime = 0
         const activeDates = new Set<string>()
-        const countByCocktail = new Map<string, { name: string; imageUrl: string | null; count: number; archived: boolean }>()
-
-        for (const log of allLogs) {
-            const at = new Date(log.madeAt)
-            allTime += log.quantity
-            if (at >= yearStart)  thisYear  += log.quantity
-            if (at >= monthStart) thisMonth += log.quantity
-            if (at >= weekStart)  thisWeek  += log.quantity
-            activeDates.add(toDateStr(at))
-
-            const archivedCocktail = parseArchivedCocktailSnapshot(log.archivedCocktail)
-            const cocktailId = log.cocktailId ?? archivedCocktail?.id
-            const name = log.cocktail?.name ?? archivedCocktail?.name
-            if (!cocktailId || !name) continue
-
-            const imageUrl = log.cocktail?.imageUrl ?? archivedCocktail?.imageUrl ?? null
-            const archived = !log.cocktail
-            const entry = countByCocktail.get(cocktailId) ?? { name, imageUrl, count: 0, archived }
-            entry.count += log.quantity
-            entry.archived = entry.archived || archived
-            countByCocktail.set(cocktailId, entry)
+        for (const { day, drinks } of days) {
+            allTime += drinks
+            if (day >= yearStart)  thisYear  += drinks
+            if (day >= monthStart) thisMonth += drinks
+            if (day >= weekStart)  thisWeek  += drinks
+            activeDates.add(day)
         }
 
         // ── Streaks ───────────────────────────────────────────────────────────
-        const { current: currentStreak, longest: longestStreak } = computeStreaks(activeDates)
+        const { current: currentStreak, longest: longestStreak } = computeStreaks(activeDates, today)
 
         // ── Top 5 cocktails ───────────────────────────────────────────────────
-        const topCocktails: TopCocktail[] = [...countByCocktail.entries()]
-            .sort((a, b) => b[1].count - a[1].count)
-            .slice(0, 5)
-            .map(([cocktailId, v]) => ({ cocktailId, ...v }))
+        const display = await cocktailMadeLogRepository.findDisplayForCocktailKeys(
+            userId,
+            top.map((t) => t.cocktailKey),
+        )
+        const liveById = new Map(display.live.map((c) => [c.id, c]))
+        const archivedById = new Map<string, { name: string; imageUrl: string | null }>()
+        for (const row of display.archived) {
+            const snapshot = parseArchivedCocktailSnapshot(row.snapshot)
+            if (snapshot) archivedById.set(row.id, snapshot)
+        }
+        const topCocktails: TopCocktail[] = []
+        for (const { cocktailKey, count } of top) {
+            if (topCocktails.length >= 5) break
+            const live = liveById.get(cocktailKey)
+            if (live) {
+                topCocktails.push({ cocktailId: cocktailKey, name: live.name, imageUrl: live.imageUrl ?? null, count, archived: false })
+                continue
+            }
+            const snapshot = archivedById.get(cocktailKey)
+            if (snapshot) {
+                topCocktails.push({ cocktailId: cocktailKey, name: snapshot.name, imageUrl: snapshot.imageUrl, count, archived: true })
+            }
+        }
 
         // ── Weekly trend (last 12 weeks) ──────────────────────────────────────
         const weeklyMap = new Map<string, number>()
-        const currentWeekStart = startOfWeek(now)
-        for (let i = 11; i >= 0; i--) {
-            const d = new Date(currentWeekStart)
-            d.setDate(d.getDate() - 7 * i)
-            weeklyMap.set(toDateStr(d), 0)
-        }
-        for (const log of recentLogs) {
-            const d = startOfWeek(new Date(log.madeAt))
-            const key = toDateStr(d)
-            if (weeklyMap.has(key)) weeklyMap.set(key, (weeklyMap.get(key) ?? 0) + log.quantity)
+        for (let i = 11; i >= 0; i--) weeklyMap.set(addDays(weekStart, -7 * i), 0)
+        for (const { day, drinks } of days) {
+            const key = weekStartOf(day)
+            if (weeklyMap.has(key)) weeklyMap.set(key, (weeklyMap.get(key) ?? 0) + drinks)
         }
         const weeklyTrend: WeeklyPoint[] = [...weeklyMap.entries()].map(([dateStr, drinks]) => {
-            const [, month, day] = dateStr.split('-').map(Number)
-            const label = `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}`
-            return { label, drinks }
+            const [, month, day] = dateStr.split('-')
+            return { label: `${day}-${month}`, drinks }
         })
 
         // ── Monthly trend (last 12 months) ────────────────────────────────────
-        const monthlyLogs = allLogs.filter(l => new Date(l.madeAt) >= twelveMonthsAgo)
-        const monthlyMap  = new Map<string, number>()
+        const monthlyMap = new Map<string, number>()
+        const [curYear, curMonth] = today.split('-').map(Number)
         for (let i = 11; i >= 0; i--) {
-            const d = new Date(now)
-            d.setMonth(d.getMonth() - i, 1)
-            d.setHours(0, 0, 0, 0)
-            monthlyMap.set(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, 0)
+            monthlyMap.set(formatDay(new Date(Date.UTC(curYear, curMonth - 1 - i, 1))).slice(0, 7), 0)
         }
-        for (const log of monthlyLogs) {
-            const d   = new Date(log.madeAt)
-            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-            if (monthlyMap.has(key)) monthlyMap.set(key, (monthlyMap.get(key) ?? 0) + log.quantity)
+        for (const { day, drinks } of days) {
+            const key = day.slice(0, 7)
+            if (monthlyMap.has(key)) monthlyMap.set(key, (monthlyMap.get(key) ?? 0) + drinks)
         }
         const monthlyTrend: MonthlyPoint[] = [...monthlyMap.entries()].map(([key, drinks]) => {
-            const [year, month] = key.split('-')
-            const d = new Date(Number(year), Number(month) - 1, 1)
-            const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+            const [year, month] = key.split('-').map(Number)
+            const label = new Date(Date.UTC(year, month - 1, 1))
+                .toLocaleDateString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' })
             return { label, drinks }
         })
 

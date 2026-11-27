@@ -24,7 +24,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
     const { idToken } = idTokenSchema.parse(await req.json())
     const profile = await verifyGoogleIdToken(idToken)
-    const linkedUser = await getOrCreateGoogleUserFromVerifiedProfile(profile, { id_token: idToken })
+    const linkedUser = await getOrCreateGoogleUserFromVerifiedProfile(profile)
 
     const user = await prisma.user.findUnique({ where: { id: linkedUser.id } })
     if (!user) throw new UnauthorizedError('Invalid Google account')

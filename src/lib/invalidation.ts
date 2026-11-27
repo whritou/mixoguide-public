@@ -1,63 +1,129 @@
-import type { QueryClient } from '@tanstack/react-query'
+import type { QueryClient, QueryKey } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-keys'
+
+/**
+ * Cache invalidators shared by mutations. Every invalidator returns a promise
+ * that resolves once the active queries it touched have refetched, so callers
+ * can `return`/`await` it from `onSuccess`/`onSettled` and keep the mutation
+ * pending until fresh data is on screen.
+ *
+ * `stale(...)` marks queries stale without refetching active observers — used
+ * for broad, expensive or rarely-visible caches that only need to be fresh on
+ * their next mount.
+ */
+function refetch(qc: QueryClient, queryKey: QueryKey) {
+    return qc.invalidateQueries({ queryKey })
+}
+
+function stale(qc: QueryClient, queryKey: QueryKey) {
+    return qc.invalidateQueries({ queryKey, refetchType: 'none' })
+}
 
 export const invalidators = {
     pantry(qc: QueryClient) {
-        qc.invalidateQueries({ queryKey: queryKeys.pantry.all })
-        qc.invalidateQueries({ queryKey: queryKeys.makeable.all })
+        return Promise.all([
+            refetch(qc, queryKeys.pantry.all),
+            refetch(qc, queryKeys.makeable.all),
+        ])
     },
-    ratings(qc: QueryClient) {
-        qc.invalidateQueries({ queryKey: queryKeys.ratings.all })
-        qc.invalidateQueries({ queryKey: queryKeys.cocktails.all })
-        qc.invalidateQueries({ queryKey: queryKeys.makeable.bestRated() })
+    /**
+     * Narrow: only the rated cocktail's rating list + detail; cocktail lists are marked stale.
+     * Aggregate stats (`ratings.stats`) are written by the rate mutation from its response,
+     * so they are not refetched here.
+     */
+    ratings(qc: QueryClient, cocktailId?: string) {
+        if (!cocktailId) {
+            return Promise.all([
+                refetch(qc, queryKeys.ratings.all),
+                stale(qc, queryKeys.cocktails.all),
+                refetch(qc, queryKeys.makeable.bestRated()),
+            ])
+        }
+        return Promise.all([
+            refetch(qc, queryKeys.ratings.list({ cocktailId })),
+            refetch(qc, queryKeys.cocktails.detail(cocktailId)),
+            stale(qc, queryKeys.cocktails.lists()),
+            refetch(qc, queryKeys.makeable.bestRated()),
+        ])
     },
     favorites(qc: QueryClient) {
-        qc.invalidateQueries({ queryKey: queryKeys.favorites.all })
+        return refetch(qc, queryKeys.favorites.all)
     },
     cocktails(qc: QueryClient) {
-        qc.invalidateQueries({ queryKey: queryKeys.cocktails.all })
-        qc.invalidateQueries({ queryKey: queryKeys.makeable.all })
+        return Promise.all([
+            refetch(qc, queryKeys.cocktails.all),
+            refetch(qc, queryKeys.makeable.all),
+        ])
     },
     cocktailDetail(qc: QueryClient, id: string) {
-        qc.invalidateQueries({ queryKey: queryKeys.cocktails.detail(id) })
-        qc.invalidateQueries({ queryKey: queryKeys.makeable.all })
+        return Promise.all([
+            refetch(qc, queryKeys.cocktails.detail(id)),
+            stale(qc, queryKeys.cocktails.lists()),
+            refetch(qc, queryKeys.makeable.all),
+        ])
     },
     plannedCocktails(qc: QueryClient) {
-        qc.invalidateQueries({ queryKey: queryKeys.plannedCocktails.all })
-        qc.invalidateQueries({ queryKey: queryKeys.plannedCollections.all })
+        return Promise.all([
+            refetch(qc, queryKeys.plannedCocktails.all),
+            refetch(qc, queryKeys.plannedCollections.all),
+        ])
     },
     plannedCollectionGrocery(qc: QueryClient, id: string) {
-        qc.invalidateQueries({ queryKey: queryKeys.plannedCollections.grocery(id) })
-        qc.invalidateQueries({ queryKey: queryKeys.pantry.all })
-        qc.invalidateQueries({ queryKey: queryKeys.pantryStats.all })
-        qc.invalidateQueries({ queryKey: queryKeys.makeable.all })
+        return Promise.all([
+            refetch(qc, queryKeys.plannedCollections.grocery(id)),
+            refetch(qc, queryKeys.pantry.all),
+            refetch(qc, queryKeys.pantryStats.all),
+            refetch(qc, queryKeys.makeable.all),
+        ])
     },
     plannedCollectionComplete(qc: QueryClient, id: string) {
-        qc.invalidateQueries({ queryKey: queryKeys.plannedCocktails.all })
-        qc.invalidateQueries({ queryKey: queryKeys.plannedCollections.all })
-        qc.invalidateQueries({ queryKey: queryKeys.plannedCollections.grocery(id) })
-        qc.invalidateQueries({ queryKey: queryKeys.pantry.all })
-        qc.invalidateQueries({ queryKey: queryKeys.pantryStats.all })
-        qc.invalidateQueries({ queryKey: queryKeys.makeable.all })
-        qc.invalidateQueries({ queryKey: queryKeys.userStats.all })
+        return Promise.all([
+            refetch(qc, queryKeys.plannedCocktails.all),
+            refetch(qc, queryKeys.plannedCollections.all),
+            refetch(qc, queryKeys.plannedCollections.grocery(id)),
+            refetch(qc, queryKeys.pantry.all),
+            refetch(qc, queryKeys.pantryStats.all),
+            refetch(qc, queryKeys.makeable.all),
+            refetch(qc, queryKeys.userStats.all),
+        ])
     },
     cocktailMade(qc: QueryClient, cocktailId: string) {
-        qc.invalidateQueries({ queryKey: queryKeys.cocktailMadeLogs.all })
-        qc.invalidateQueries({ queryKey: queryKeys.plannedCocktails.all })
-        qc.invalidateQueries({ queryKey: queryKeys.pantry.all })
-        qc.invalidateQueries({ queryKey: queryKeys.makeable.all })
-        qc.invalidateQueries({ queryKey: queryKeys.userStats.all })
-        qc.invalidateQueries({ queryKey: queryKeys.cocktails.detail(cocktailId) })
+        return Promise.all([
+            refetch(qc, queryKeys.cocktailMadeLogs.all),
+            refetch(qc, queryKeys.plannedCocktails.all),
+            refetch(qc, queryKeys.pantry.all),
+            refetch(qc, queryKeys.makeable.all),
+            refetch(qc, queryKeys.userStats.all),
+            ...(cocktailId ? [refetch(qc, queryKeys.cocktails.detail(cocktailId))] : []),
+        ])
     },
+    cocktailMadeLogRemoved(qc: QueryClient) {
+        return Promise.all([
+            refetch(qc, queryKeys.cocktailMadeLogs.all),
+            refetch(qc, queryKeys.userStats.all),
+        ])
+    },
+    /**
+     * Ingredient edits (admin) change names/types embedded in cocktails and
+     * makeable results, but those caches are large: mark them stale instead of
+     * refetching every active list immediately.
+     */
     ingredients(qc: QueryClient) {
-        qc.invalidateQueries({ queryKey: queryKeys.ingredients.all })
-        qc.invalidateQueries({ queryKey: queryKeys.cocktails.all })
-        qc.invalidateQueries({ queryKey: queryKeys.makeable.all })
+        return Promise.all([
+            refetch(qc, queryKeys.ingredients.all),
+            stale(qc, queryKeys.cocktails.all),
+            stale(qc, queryKeys.makeable.all),
+        ])
     },
     staticCatalog(qc: QueryClient) {
-        qc.invalidateQueries({ queryKey: queryKeys.barTools.all })
-        qc.invalidateQueries({ queryKey: queryKeys.glasses.all })
-        qc.invalidateQueries({ queryKey: queryKeys.ingredientTypes.all })
-        qc.invalidateQueries({ queryKey: queryKeys.ingredientSubTypes.all })
+        return Promise.all([
+            refetch(qc, queryKeys.barTools.all),
+            refetch(qc, queryKeys.glasses.all),
+            refetch(qc, queryKeys.ingredientTypes.all),
+            refetch(qc, queryKeys.ingredientSubTypes.all),
+        ])
+    },
+    suggestions(qc: QueryClient) {
+        return refetch(qc, queryKeys.suggestions.all)
     },
 } as const

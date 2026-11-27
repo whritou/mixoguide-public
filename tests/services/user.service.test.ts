@@ -46,10 +46,16 @@ describe('UserService.getByEmail', () => {
 describe('UserService.getWithStats', () => {
     beforeEach(() => { vi.clearAllMocks() })
 
-    it('returns user with stats when found', async () => {
-        const user = { id: UID, pantryCount: 5, favoriteCount: 3 }
-        mockUserRepo.findWithStats.mockResolvedValue(user)
-        await expect(userService.getWithStats(UID)).resolves.toBe(user)
+    it('returns user with stats and a derived hasPassword flag, never the hash (SEC-017)', async () => {
+        mockUserRepo.findWithStats.mockResolvedValue({ id: UID, password: 'hash', accounts: [], _count: { ratings: 1 } })
+        const result = await userService.getWithStats(UID)
+        expect(result).toMatchObject({ id: UID, hasPassword: true, _count: { ratings: 1 } })
+        expect(result).not.toHaveProperty('password')
+    })
+
+    it('treats Google-linked accounts as password-less for re-auth purposes', async () => {
+        mockUserRepo.findWithStats.mockResolvedValue({ id: UID, password: 'hash', accounts: [{ provider: 'google' }] })
+        await expect(userService.getWithStats(UID)).resolves.toMatchObject({ hasPassword: false })
     })
 
     it('throws NotFoundError when not found', async () => {
@@ -132,9 +138,17 @@ describe('UserService.delete', () => {
 describe('UserService.verifyPassword', () => {
     beforeEach(() => { vi.clearAllMocks() })
 
-    it('returns null when email is not found', async () => {
+    it('returns null when email is not found, still running bcrypt (timing-safe, SEC-008)', async () => {
         mockUserRepo.findByEmail.mockResolvedValue(null)
+        mockBcrypt.compare.mockResolvedValue(true)
         await expect(userService.verifyPassword(EMAIL, 'pw')).resolves.toBeNull()
+        expect(mockBcrypt.compare).toHaveBeenCalled()
+    })
+
+    it('normalises the email before lookup', async () => {
+        mockUserRepo.findByEmail.mockResolvedValue(null)
+        await userService.verifyPassword('  Alice@Example.COM ', 'pw')
+        expect(mockUserRepo.findByEmail).toHaveBeenCalledWith('alice@example.com')
     })
 
     it('returns null when user has no stored password', async () => {

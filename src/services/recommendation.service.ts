@@ -3,6 +3,7 @@ import { cocktailMadeLogRepository } from '@/repositories/cocktail-made-log.repo
 import { favoriteRepository } from '@/repositories/favorite.repository'
 import { ratingRepository } from '@/repositories/rating.repository'
 import { cocktailService } from './cocktail.service'
+import { getRecommendationsCache, setRecommendationsCache } from '@/lib/cache/makeable-cache'
 
 export interface RecommendedCocktail {
     id: string
@@ -22,16 +23,32 @@ export interface Recommendations {
 }
 
 class RecommendationService {
+    /**
+     * Per-user recommendations, cached for 5 minutes (BPERF-001). The cache is
+     * dropped on pantry writes / completions (invalidateMakeableCache) and keyed
+     * by the global catalog version.
+     */
     async getRecommendations(userId: string): Promise<Recommendations> {
+        const cached = await getRecommendationsCache<Recommendations>(userId)
+        if (cached) return cached
+
+        const result = await this.computeRecommendations(userId)
+        await setRecommendationsCache(userId, result)
+        return result
+    }
+
+    private async computeRecommendations(userId: string): Promise<Recommendations> {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
-        const [makeable, loggedIds, recentIds, highRatedIds, favorites] = await Promise.all([
+        const [makeable, lastMade, highRatedIds, favorites] = await Promise.all([
             cocktailService.getMakeable(userId, 0),
-            cocktailMadeLogRepository.findCocktailIdsByUser(userId).then((ids) => new Set(ids)),
-            cocktailMadeLogRepository.findCocktailIdsByUser(userId, thirtyDaysAgo).then((ids) => new Set(ids)),
+            // One grouped query instead of two distinct-id loads (DB-011).
+            cocktailMadeLogRepository.findLastMadeByCocktail(userId),
             ratingRepository.findHighRatedCocktailIdsByUser(userId, 4),
             favoriteRepository.findAllByUserWithCocktailProfile(userId),
         ])
+        const loggedIds = new Set(lastMade.map((r) => r.cocktailId))
+        const recentIds = new Set(lastMade.filter((r) => r.lastMadeAt >= thirtyDaysAgo).map((r) => r.cocktailId))
 
         const neverTried: RecommendedCocktail[] = makeable
             .filter((c) => !loggedIds.has(c.id))

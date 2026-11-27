@@ -1,12 +1,13 @@
-﻿'use client'
+'use client'
 
-import { motion } from 'motion/react'
+import { MotionConfig, motion } from 'motion/react'
 import { ToolCard } from '@/components/home/bar-tools/ToolCard'
 import { TechniqueCard } from '@/components/home/bar-tools/TechniqueCard'
 import { BAR_TOOLS, TECHNIQUES, containerVariants } from '@/data/bar-tools'
 
 export default function BarToolsPage() {
     return (
+        <MotionConfig reducedMotion="user">
         <div className="min-h-screen bg-canvas text-fg">
 
             <div className="bg-gradient-to-b from-surface-muted to-canvas py-16 lg:py-24 px-4 md:px-12">
@@ -89,5 +90,6 @@ export default function BarToolsPage() {
 
             </div>
         </div>
+        </MotionConfig>
     )
 }

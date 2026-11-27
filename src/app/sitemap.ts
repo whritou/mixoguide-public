@@ -4,6 +4,9 @@ import { env } from "@/lib/env";
 
 const baseUrl = env.NEXT_PUBLIC_BASE_URL;
 
+// Regenerate at most hourly instead of querying the whole catalogue per request (BPERF-001).
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const [cocktails, ingredients] = await Promise.all([
         prisma.cocktail.findMany({ select: { id: true, updatedAt: true } }),
@@ -34,12 +37,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             lastModified: new Date(),
             changeFrequency: "monthly",
             priority: 0.6,
-        },
-        {
-            url: `${baseUrl}/makeable`,
-            lastModified: new Date(),
-            changeFrequency: "weekly",
-            priority: 0.7,
         },
         {
             url: `${baseUrl}/privacy-policy`,

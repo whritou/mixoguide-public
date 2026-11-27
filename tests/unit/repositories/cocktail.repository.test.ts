@@ -7,6 +7,7 @@ const {
     mockConvertUnit,
     mockFindFulfillingIngredient,
     mockGetDerivableAmount,
+    mockGetIngredientCatalog,
 } = vi.hoisted(() => {
     const mockCocktail = {
         findMany: vi.fn(),
@@ -27,7 +28,9 @@ const {
         mockPrisma: {
             cocktail: mockCocktail,
             ingredient: mockIngredient,
+            $queryRaw: vi.fn(),
         },
+        mockGetIngredientCatalog: vi.fn(),
         mockConvertUnit: vi.fn((amount: number, from: string, to: string) => from === to ? amount : null),
         mockFindFulfillingIngredient: vi.fn(() => null),
         mockGetDerivableAmount: vi.fn(),
@@ -39,6 +42,7 @@ vi.mock('@/lib/derivations/derivation-cache', () => ({
     convertUnit: mockConvertUnit,
     findFulfillingIngredient: mockFindFulfillingIngredient,
     getDerivableAmount: mockGetDerivableAmount,
+    getIngredientCatalog: mockGetIngredientCatalog,
 }))
 
 import { cocktailRepository } from '@/repositories/cocktail.repository'
@@ -89,10 +93,24 @@ function ingredientRow(
     }
 }
 
+/**
+ * The SQL coverage query ($queryRaw) is not executed in unit tests: by default it
+ * returns every cocktail currently served by `mockCocktail.findMany` as a
+ * candidate with an existence-based missing count of 0.
+ */
+function candidatesFromFindMany() {
+    mockPrisma.$queryRaw.mockImplementation(async () => {
+        const rows = (await mockCocktail.findMany.getMockImplementation()?.({})) ?? []
+        return (rows as Array<{ id: string }>).map((r) => ({ id: r.id, missing: 0 }))
+    })
+}
+
 describe('CocktailRepository.findMakeable', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         mockIngredient.findMany.mockResolvedValue([])
+        mockGetIngredientCatalog.mockResolvedValue({ byId: new Map(), nonBlockingIds: [] })
+        candidatesFromFindMany()
     })
 
     it('does not count garnishes or null-amount ingredients as missing', async () => {
@@ -173,6 +191,7 @@ describe('CocktailRepository.findMakeable', () => {
 
     it('loads ingredient type metadata needed by the non-blocking rule', async () => {
         mockCocktail.findMany.mockResolvedValue([])
+        mockPrisma.$queryRaw.mockResolvedValue([{ id: 'x', missing: 0 }])
 
         await cocktailRepository.findMakeable(['gin'])
 
@@ -190,6 +209,93 @@ describe('CocktailRepository.findMakeable', () => {
                 },
             }),
         }))
+    })
+})
+
+describe('CocktailRepository.findMakeable — SQL coverage (DB-003)', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        mockGetIngredientCatalog.mockResolvedValue({
+            byId: new Map([['gin', { id: 'gin', name: 'Gin', isAlcoholic: true, type: null, subType: null }]]),
+            nonBlockingIds: ['lemon-peel'],
+        })
+    })
+
+    it('skips the database entirely for an empty pantry', async () => {
+        expect(await cocktailRepository.findMakeable([])).toEqual([])
+        expect(mockPrisma.$queryRaw).not.toHaveBeenCalled()
+    })
+
+    it('passes direct + derivable ingredient ids, garnish ids and maxMissing as bound parameters', async () => {
+        mockPrisma.$queryRaw.mockResolvedValue([])
+        const derivations = new Map([
+            ['lime-juice', [{ baseIngredientId: 'lime', yieldAmount: 3, yieldUnit: 'cl', requiresTool: null }]],
+        ])
+
+        await cocktailRepository.findMakeable(['lime', 'gin'], 2, derivations as never)
+
+        const sql = mockPrisma.$queryRaw.mock.calls[0][0] as { strings: string[]; values: unknown[] }
+        expect(sql.strings.join('?')).toMatch(/GROUP BY ci\.cocktail_id/)
+        expect(sql.values).toEqual([
+            ['lime', 'gin', 'lime-juice'],
+            ['lime', 'gin', 'lime-juice'],
+            ['lemon-peel'],
+            2,
+        ])
+        expect(mockCocktail.findMany).not.toHaveBeenCalled()
+    })
+
+    it('hydrates candidates level by level and stops once the top results are known', async () => {
+        mockPrisma.$queryRaw.mockResolvedValue([
+            { id: 'a', missing: 0 },
+            { id: 'b', missing: 0 },
+            { id: 'c', missing: 1 },
+        ])
+        mockCocktail.findMany.mockImplementation(async (args: { where: { id: { in: string[] } } }) =>
+            args.where.id.in.map((id) => cocktailRow(id, [ingredientRow('gin', 'Gin', 5, 'cl', 'Spirit')])),
+        )
+
+        const result = await cocktailRepository.findMakeable(['gin'], 3, new Map(), 2)
+
+        expect(mockCocktail.findMany).toHaveBeenCalledTimes(1)
+        expect(mockCocktail.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { id: { in: ['a', 'b'] } } }))
+        expect(result.map((r) => r.id)).toEqual(['a', 'b'])
+    })
+
+    it('keeps evaluating the next level when quantities make level-0 candidates miss', async () => {
+        mockPrisma.$queryRaw.mockResolvedValue([
+            { id: 'low-stock', missing: 0 },
+            { id: 'other', missing: 1 },
+        ])
+        mockCocktail.findMany.mockImplementation(async (args: { where: { id: { in: string[] } } }) =>
+            args.where.id.in.map((id) => cocktailRow(id, id === 'low-stock'
+                ? [ingredientRow('gin', 'Gin', 5, 'cl', 'Spirit'), ingredientRow('lime', 'Lime Juice', 2, 'cl', 'Juice')]
+                : [ingredientRow('lime', 'Lime Juice', 2, 'cl', 'Juice'), ingredientRow('vermouth', 'Vermouth', 3, 'cl', 'Wine')])),
+        )
+
+        const result = await cocktailRepository.findMakeable(
+            ['gin', 'lime'], 3, new Map(), 1,
+            // Not enough gin: 'low-stock' is missing 1 once quantities are checked.
+            new Map([['gin', { quantity: 1, unit: 'cl' }], ['lime', { quantity: 10, unit: 'cl' }]]),
+        )
+
+        // Both levels hydrated; results are deterministic (missing count, then name).
+        expect(mockCocktail.findMany).toHaveBeenCalledTimes(2)
+        expect(result.map((r) => [r.id, r.missingCount])).toEqual([['low-stock', 1]])
+    })
+
+    it('orders ties deterministically by name', async () => {
+        mockPrisma.$queryRaw.mockResolvedValue([
+            { id: 'z', missing: 0 },
+            { id: 'a', missing: 0 },
+        ])
+        mockCocktail.findMany.mockImplementation(async (args: { where: { id: { in: string[] } } }) =>
+            args.where.id.in.map((id) => cocktailRow(id, [ingredientRow('gin', 'Gin', 5, 'cl', 'Spirit')])),
+        )
+
+        const result = await cocktailRepository.findMakeable(['gin'])
+
+        expect(result.map((r) => r.id)).toEqual(['a', 'z'])
     })
 })
 

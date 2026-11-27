@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db/prisma'
 import { BaseRepository, RepositoryConfig, toDelegate } from './base.repository'
 import { QueryBuilder } from '@/lib/query/QueryBuilder'
-import { getDerivationMap, convertUnit } from '@/lib/derivations/derivation-cache'
+import { getDerivationMap, convertUnit, type DerivationMap } from '@/lib/derivations/derivation-cache'
 import { isNonBlockingCocktailIngredient } from '@/utils/cocktailIngredientImportance'
 import { resolveIngredientUnitFallback } from '@/utils/ingredientUnitFallback'
 import { Prisma, type UserPantryItem, type MeasureUnit } from '@prisma/client'
@@ -118,6 +118,110 @@ export interface PantryUpsertData {
     note?:             string | null
 }
 
+export type PantryUsage = {
+    ingredientId: string
+    amount: number | null
+    unit: string | null
+    optional?: boolean
+    ingredient?: {
+        name?: string | null
+        isAlcoholic?: boolean | null
+        type?: { name?: string | null } | null
+        subType?: { name?: string | null } | null
+    } | null
+}
+
+type PantryLockRow = {
+    id: string
+    ingredientId: string
+    quantity: number | null
+    unitLeft: string | null
+    isInfinite: boolean
+}
+
+/**
+ * Pure planning step of the pantry decrement: walks every usage against an
+ * in-memory snapshot of the (locked) pantry rows, falling back to derivation
+ * base ingredients, and returns the total amount to remove per pantry row.
+ */
+export function planPantryDecrements(
+    rows: PantryLockRow[],
+    usages: PantryUsage[],
+    derivationMap: DerivationMap,
+): Array<{ id: string; delta: number }> {
+    const snapshot = rows.map((r) => ({ ...r, original: r.quantity ?? 0, quantity: r.quantity ?? 0 }))
+    const pantryByIngredientId = new Map(snapshot.map((i) => [i.ingredientId, i]))
+
+    for (const usage of usages) {
+        if (isNonBlockingCocktailIngredient(usage) || !usage.unit) continue
+
+        let remainingAmount = usage.amount
+        if (remainingAmount == null || remainingAmount <= 0) continue
+
+        const conversionContext = {
+            ingredientName: usage.ingredient?.name,
+            typeName: usage.ingredient?.type?.name,
+            subTypeName: usage.ingredient?.subType?.name,
+            isAlcoholic: usage.ingredient?.isAlcoholic,
+        }
+
+        let pantryItem = pantryByIngredientId.get(usage.ingredientId)
+        if (pantryItem?.isInfinite) continue
+
+        if (pantryItem) {
+            const pantryUnit = pantryItem.unitLeft as string
+            const neededInPantryUnit = convertUnit(remainingAmount, usage.unit, pantryUnit, conversionContext)
+
+            if (neededInPantryUnit !== null && neededInPantryUnit > 0) {
+                const currentQty = pantryItem.quantity
+                const deducted = Math.min(neededInPantryUnit, currentQty)
+
+                if (deducted > 0) {
+                    pantryItem.quantity = roundPantryQty(Math.max(0, currentQty - deducted), pantryUnit)
+                }
+
+                if (deducted + 1e-6 >= neededInPantryUnit) continue
+
+                const fulfilledRatio = neededInPantryUnit > 0 ? deducted / neededInPantryUnit : 0
+                remainingAmount = +(remainingAmount * (1 - fulfilledRatio)).toFixed(4)
+            }
+        }
+
+        if (remainingAmount <= 0) continue
+
+        const derivations = derivationMap.get(usage.ingredientId)
+        if (!derivations) continue
+
+        for (const d of derivations) {
+            pantryItem = pantryByIngredientId.get(d.baseIngredientId)
+            if (!pantryItem) continue
+            if (pantryItem.isInfinite) { remainingAmount = 0; break }
+
+            if (d.yieldAmount <= 0) continue
+            const remainingInYieldUnit = convertUnit(remainingAmount, usage.unit, d.yieldUnit, conversionContext)
+            if (remainingInYieldUnit === null || remainingInYieldUnit <= 0) continue
+
+            const baseUnitsNeeded = remainingInYieldUnit / d.yieldAmount
+            if (baseUnitsNeeded <= 0) continue
+
+            const currentQty   = pantryItem.quantity
+            const pantryUnit   = pantryItem.unitLeft as string
+            const deductedBase = Math.min(baseUnitsNeeded, currentQty)
+            if (deductedBase <= 0) continue
+
+            pantryItem.quantity = roundPantryQty(Math.max(0, currentQty - deductedBase), pantryUnit)
+
+            const fulfilledRatio = baseUnitsNeeded > 0 ? deductedBase / baseUnitsNeeded : 0
+            remainingAmount = +(remainingAmount * (1 - fulfilledRatio)).toFixed(4)
+            if (remainingAmount <= 1e-4) break
+        }
+    }
+
+    return snapshot
+        .filter((i) => !i.isInfinite && i.original - i.quantity > 1e-9)
+        .map((i) => ({ id: i.id, delta: +(i.original - i.quantity).toFixed(6) }))
+}
+
 class PantryRepository extends BaseRepository<
     UserPantryItem,
     Prisma.UserPantryItemUncheckedCreateInput,
@@ -202,115 +306,73 @@ class PantryRepository extends BaseRepository<
     }
 
     /**
-     * Decrement pantry quantities after completing a cocktail.
-     * Uses a Prisma transaction with serializable isolation to prevent race conditions
-     * when two cocktails are completed concurrently.
+     * Decrement pantry quantities after completing ONE cocktail.
+     * See {@link decrementForCocktails}.
      */
     async decrementForCocktail(
         userId: string,
-        ingredients: Array<{
-            ingredientId: string
-            amount: number | null
-            unit: string | null
-            optional?: boolean
-            ingredient?: {
-                name?: string | null
-                isAlcoholic?: boolean | null
-                type?: { name?: string | null } | null
-                subType?: { name?: string | null } | null
-            } | null
-        }>,
+        ingredients: PantryUsage[],
+        tx?: Prisma.TransactionClient,
     ) {
+        return this.decrementForCocktails(userId, [ingredients], tx)
+    }
+
+    /**
+     * Decrement pantry quantities for one or more cocktails in a single pass
+     * (DB-001 / DB-012).
+     *
+     * Concurrency: the user's in-pantry rows are locked with `SELECT … FOR UPDATE`
+     * inside the transaction, so two concurrent decrements for the same user are
+     * serialised (READ COMMITTED + row locks — no SERIALIZABLE isolation needed).
+     * The resulting deltas are then applied with a single *relative* UPDATE
+     * (`quantity = quantity - delta`, clamped at 0), so even a writer that does not
+     * take the lock cannot cause a lost deduction.
+     *
+     * When `tx` is omitted a dedicated transaction is opened; pass the caller's
+     * transaction client to make the decrement atomic with other writes.
+     */
+    async decrementForCocktails(
+        userId: string,
+        cocktails: PantryUsage[][],
+        tx?: Prisma.TransactionClient,
+    ): Promise<void> {
+        const usages = cocktails.flat()
+        if (usages.length === 0) return
+
+        if (!tx) {
+            await prisma.$transaction((innerTx) => this.decrementForCocktails(userId, cocktails, innerTx))
+            return
+        }
+
         const derivationMap = await getDerivationMap()
 
-        await prisma.$transaction(async (tx) => {
-            const client = tx as unknown as typeof prisma
-            const allPantryItems = (await client.userPantryItem.findMany({
-                where:  { userId, isInPantry: true },
-                select: { id: true, ingredientId: true, quantity: true, unitLeft: true, isInfinite: true },
-            })) as { id: string; ingredientId: string; quantity: number | null; unitLeft: string | null; isInfinite: boolean }[]
-            if (allPantryItems.length === 0) return
+        const lockedRows = await tx.$queryRaw<PantryLockRow[]>`
+            SELECT id, ingredient_id AS "ingredientId", quantity, unit_left::text AS "unitLeft", is_infinite AS "isInfinite"
+              FROM user_pantry_items
+             WHERE user_id = ${userId} AND is_in_pantry = true
+             ORDER BY id
+               FOR UPDATE
+        `
+        if (lockedRows.length === 0) return
 
-            // One row per ingredient guaranteed by unique constraint.
-            const pantryByIngredientId = new Map(allPantryItems.map(i => [i.ingredientId, i]))
+        const plan = planPantryDecrements(lockedRows, usages, derivationMap)
+        if (plan.length === 0) return
 
-            for (const usage of ingredients) {
-                if (isNonBlockingCocktailIngredient(usage) || !usage.unit) continue
-
-                let remainingAmount = usage.amount
-                if (remainingAmount == null) continue
-                if (remainingAmount <= 0) continue
-
-                let pantryItem = pantryByIngredientId.get(usage.ingredientId)
-
-                if (pantryItem?.isInfinite) continue
-
-                if (pantryItem) {
-                    const pantryUnit = pantryItem.unitLeft as string
-                    const neededInPantryUnit = convertUnit(remainingAmount, usage.unit, pantryUnit, {
-                        ingredientName: usage.ingredient?.name,
-                        typeName: usage.ingredient?.type?.name,
-                        subTypeName: usage.ingredient?.subType?.name,
-                        isAlcoholic: usage.ingredient?.isAlcoholic,
-                    })
-
-                    if (neededInPantryUnit !== null && neededInPantryUnit > 0) {
-                        const currentQty = pantryItem.quantity ?? 0
-                        const deducted = Math.min(neededInPantryUnit, currentQty)
-
-                        if (deducted > 0) {
-                            const rawQty = Math.max(0, currentQty - deducted)
-                            const newQty = roundPantryQty(rawQty, pantryUnit)
-                            await client.userPantryItem.update({ where: { id: pantryItem.id }, data: { quantity: newQty } })
-                            pantryItem.quantity = newQty
-                        }
-
-                        if (deducted + 1e-6 >= neededInPantryUnit) continue
-
-                        const fulfilledRatio = neededInPantryUnit > 0 ? deducted / neededInPantryUnit : 0
-                        remainingAmount = +(remainingAmount * (1 - fulfilledRatio)).toFixed(4)
-                    }
-                }
-
-                if (remainingAmount <= 0) continue
-
-                const derivations = derivationMap.get(usage.ingredientId)
-                if (!derivations) continue
-
-                for (const d of derivations) {
-                    pantryItem = pantryByIngredientId.get(d.baseIngredientId)
-                    if (!pantryItem) continue
-                    if (pantryItem.isInfinite) { remainingAmount = 0; break }
-
-                    if (d.yieldAmount <= 0) continue
-                    const remainingInYieldUnit = convertUnit(remainingAmount, usage.unit, d.yieldUnit, {
-                        ingredientName: usage.ingredient?.name,
-                        typeName: usage.ingredient?.type?.name,
-                        subTypeName: usage.ingredient?.subType?.name,
-                        isAlcoholic: usage.ingredient?.isAlcoholic,
-                    })
-                    if (remainingInYieldUnit === null || remainingInYieldUnit <= 0) continue
-
-                    const baseUnitsNeeded = remainingInYieldUnit / d.yieldAmount
-                    if (baseUnitsNeeded <= 0) continue
-
-                    const currentQty = pantryItem.quantity ?? 0
-                    const pantryUnit       = pantryItem.unitLeft as string
-                    const deductedBase = Math.min(baseUnitsNeeded, currentQty)
-                    if (deductedBase <= 0) continue
-
-                    const rawQty           = Math.max(0, currentQty - deductedBase)
-                    const newQty           = roundPantryQty(rawQty, pantryUnit)
-
-                    await client.userPantryItem.update({ where: { id: pantryItem.id }, data: { quantity: newQty } })
-                    pantryItem.quantity = newQty
-
-                    const fulfilledRatio = baseUnitsNeeded > 0 ? deductedBase / baseUnitsNeeded : 0
-                    remainingAmount = +(remainingAmount * (1 - fulfilledRatio)).toFixed(4)
-                    if (remainingAmount <= 1e-4) break
-                }
-            }
-        })
+        const ids    = plan.map((p) => p.id)
+        const deltas = plan.map((p) => p.delta)
+        await tx.$executeRaw`
+            UPDATE user_pantry_items AS p
+               SET quantity = CASE
+                       WHEN p.unit_left = 'pcs'
+                           THEN floor(round(GREATEST(0, p.quantity - v.delta)::numeric, 6) / 0.5) * 0.5
+                       ELSE round(GREATEST(0, p.quantity - v.delta)::numeric, 2)
+                   END::double precision,
+                   updated_at = NOW()
+              FROM (SELECT unnest(${ids}::text[]) AS id, unnest(${deltas}::double precision[]) AS delta) AS v
+             WHERE p.id = v.id
+               AND p.user_id = ${userId}
+               AND p.is_infinite = false
+        `
     }
 
     async getStats(userId: string) {

@@ -1,6 +1,6 @@
-﻿'use client'
+'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Check, ChevronsUpDown, Search, X } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { toast } from 'sonner'
@@ -52,6 +52,8 @@ export default function AddPantryItemDialog({
     const searchInputRef = useRef<HTMLInputElement | null>(null)
 
     const [comboOpen, setComboOpen] = useState(false)
+    const fid = useId()
+    const listboxId = `${fid}-ingredients`
     const [search, setSearch] = useState('')
     const [ingredientId, setIngredientId] = useState('')
     const [qty, setQty] = useState('')
@@ -195,37 +197,40 @@ export default function AddPantryItemDialog({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="w-full max-w-lg bg-canvas rounded-2xl shadow-2xl flex flex-col max-h-[90vh] p-0 border-0 gap-0 overflow-hidden [&>button]:hidden">
+            <DialogContent
+                showCloseButton={false}
+                aria-describedby={undefined}
+                className="w-full max-w-lg sm:max-w-lg bg-canvas rounded-2xl shadow-2xl flex flex-col max-h-[90vh] p-0 border-0 gap-0 overflow-hidden"
+            >
                 <div className="flex items-center justify-between px-6 py-5 border-b border-line">
-                    <DialogTitle className="font-headline text-xl text-fg">Add to pantry</DialogTitle>
+                    <DialogTitle className="font-headline text-xl font-normal leading-normal text-fg">Add to pantry</DialogTitle>
                     <button
                         type="button"
                         onClick={close}
                         aria-label="Close add to pantry dialog"
                         className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-line transition-colors"
                     >
-                        <X size={16} className="text-fg-muted" />
+                        <X size={16} className="text-fg-muted" aria-hidden="true" />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-y-auto">
                     <div className="px-6 py-5 space-y-5">
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
-                                Ingredient *
-                            </label>
+                            <span id={`${fid}-ing-label`} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                                Ingredient <span aria-hidden="true">*</span><span className="sr-only">(required)</span>
+                            </span>
                             <div className="space-y-2">
                                 {!comboOpen ? (
                                     <button
                                         type="button"
-                                        role="combobox"
-                                        aria-controls="ingredient-listbox"
                                         aria-expanded={comboOpen}
+                                        aria-labelledby={`${fid}-ing-label ${fid}-ing-value`}
                                         onClick={() => setComboOpen(true)}
-                                        className="flex w-full items-center justify-between rounded-xl border border-line-control bg-surface px-4 py-2.5 text-left text-sm font-body text-fg transition-colors hover:border-brand-soft/50 focus:outline-none focus:ring-1 focus:ring-ring"
+                                        className="flex w-full items-center justify-between rounded-xl border border-line-control bg-surface px-4 py-2.5 text-left text-sm font-body text-fg transition-colors hover:border-brand-soft focus:outline-none focus:ring-1 focus:ring-ring"
                                     >
                                         {selectedIng ? (
-                                            <span className="flex items-center gap-2">
+                                            <span id={`${fid}-ing-value`} className="flex items-center gap-2">
                                                 {selectedIng.name}
                                                 {selectedIng.isAlcoholic && (
                                                     <span className="rounded-full bg-brand-soft/15 px-1.5 py-0.5 text-[10px] font-label uppercase tracking-wider text-brand">
@@ -234,16 +239,18 @@ export default function AddPantryItemDialog({
                                                 )}
                                             </span>
                                         ) : (
-                                            <span className="text-fg-muted">Search ingredient...</span>
+                                            <span id={`${fid}-ing-value`} className="text-fg-muted">Search ingredient...</span>
                                         )}
-                                        <ChevronsUpDown size={14} className="shrink-0 text-fg-muted" />
+                                        <ChevronsUpDown size={14} aria-hidden="true" className="shrink-0 text-fg-muted" />
                                     </button>
                                 ) : (
                                     <div className="flex items-center gap-2 rounded-xl border border-line-control bg-surface px-4 focus-within:ring-1 focus-within:ring-ring">
-                                        <Search size={14} className="shrink-0 text-fg-muted pointer-events-none" />
+                                        <Search size={14} aria-hidden="true" className="shrink-0 text-fg-muted pointer-events-none" />
                                         <input
                                             ref={searchInputRef}
-                                            type="text"
+                                            type="search"
+                                            aria-label="Search ingredients"
+                                            aria-controls={listboxId}
                                             value={search}
                                             onChange={e => setSearch(e.target.value)}
                                             placeholder="Search by name..."
@@ -260,20 +267,21 @@ export default function AddPantryItemDialog({
                                                 }
                                             }}
                                             aria-label={search ? 'Clear ingredient search' : 'Close ingredient search'}
-                                            className="shrink-0 text-fg-muted hover:text-fg-secondary"
+                                            className="shrink-0 inline-flex items-center justify-center min-h-6 min-w-6 p-1 rounded-full text-fg-muted hover:text-fg-secondary"
                                         >
-                                            <X size={14} />
+                                            <X size={14} aria-hidden="true" />
                                         </button>
                                     </div>
                                 )}
 
                                 {comboOpen && (
-                                    <div id="ingredient-listbox" className="max-h-56 overflow-y-auto rounded-xl border border-line bg-surface shadow-sm">
+                                    <div id={listboxId} role="group" aria-label="Ingredient results" className="max-h-56 overflow-y-auto rounded-xl border border-line bg-surface shadow-sm">
                                         {filteredIngredients.length > 0 ? (
                                             filteredIngredients.map(ing => (
                                                 <button
                                                     key={ing.id}
                                                     type="button"
+                                                    aria-pressed={ingredientId === ing.id}
                                                     onClick={() => selectIngredient(ing)}
                                                     className={clsx(
                                                         'flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm font-body transition-colors',
@@ -290,6 +298,7 @@ export default function AddPantryItemDialog({
                                                     )}
                                                     <Check
                                                         size={14}
+                                                        aria-hidden="true"
                                                         className={clsx(
                                                             'shrink-0 text-brand-soft-strong',
                                                             ingredientId === ing.id ? 'opacity-100' : 'opacity-0'
@@ -307,10 +316,11 @@ export default function AddPantryItemDialog({
 
                         <div className="grid grid-cols-5 gap-3">
                             <div className="col-span-3">
-                                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                                <label htmlFor={`${fid}-qty`} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                     Quantity
                                 </label>
                                 <input
+                                    id={`${fid}-qty`}
                                     type="number"
                                     value={qty}
                                     onChange={e => setQty(e.target.value)}
@@ -321,10 +331,11 @@ export default function AddPantryItemDialog({
                                 />
                             </div>
                             <div className="col-span-2">
-                                <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                                <label htmlFor={`${fid}-unit`} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                     Unit
                                 </label>
                                 <select
+                                    id={`${fid}-unit`}
                                     value={unit}
                                     onChange={e => setUnit(e.target.value)}
                                     className="w-full px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm font-body text-fg focus:outline-none focus:ring-1 focus:ring-ring"
@@ -335,11 +346,12 @@ export default function AddPantryItemDialog({
                         </div>
 
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                            <label htmlFor={`${fid}-expiry`} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 Expiration date
-                                <span className="ml-1 text-fg-muted/60 normal-case font-body tracking-normal">(optional)</span>
+                                <span className="ml-1 text-fg-muted normal-case font-body tracking-normal">(optional)</span>
                             </label>
                             <input
+                                id={`${fid}-expiry`}
                                 type="date"
                                 value={expiryDate}
                                 onChange={e => setExpiryDate(e.target.value)}
@@ -349,10 +361,10 @@ export default function AddPantryItemDialog({
                         </div>
 
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                            <span id={`${fid}-dest`} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 Add to
-                            </label>
-                            <div className="flex rounded-xl border border-line overflow-hidden">
+                            </span>
+                            <div role="group" aria-labelledby={`${fid}-dest`} className="flex rounded-xl border border-line overflow-hidden">
                                 {([
                                     { value: 'pantry' as Destination, label: 'Pantry', sub: 'Available in your bar' },
                                     { value: 'shopping' as Destination, label: 'Shopping list', sub: 'Buy it later' },
@@ -360,6 +372,7 @@ export default function AddPantryItemDialog({
                                     <button
                                         key={value}
                                         type="button"
+                                        aria-pressed={destination === value}
                                         onClick={() => setDestination(value)}
                                         className={clsx(
                                             'flex-1 px-4 py-3 text-left transition-colors',
@@ -383,10 +396,12 @@ export default function AddPantryItemDialog({
                             {SWITCHES.map(({ key, label, sub }) => (
                                 <div key={key} className="flex items-center justify-between px-4 py-3 bg-surface">
                                     <div>
-                                        <p className="text-sm font-body text-fg leading-none mb-0.5">{label}</p>
-                                        <p className="text-xs text-fg-muted">{sub}</p>
+                                        <p id={`${fid}-${key}-label`} className="text-sm font-body text-fg leading-none mb-0.5">{label}</p>
+                                        <p id={`${fid}-${key}-desc`} className="text-xs text-fg-muted">{sub}</p>
                                     </div>
                                     <Switch
+                                        aria-labelledby={`${fid}-${key}-label`}
+                                        aria-describedby={`${fid}-${key}-desc`}
                                         checked={switches[key]}
                                         onCheckedChange={v => setSwitch(key, v)}
                                     />
@@ -395,11 +410,12 @@ export default function AddPantryItemDialog({
                         </div>
 
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                            <label htmlFor={`${fid}-note`} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 Note
-                                <span className="ml-1 text-fg-muted/60 normal-case font-body tracking-normal">(optional)</span>
+                                <span className="ml-1 text-fg-muted normal-case font-body tracking-normal">(optional)</span>
                             </label>
                             <textarea
+                                id={`${fid}-note`}
                                 value={note}
                                 onChange={e => setNote(e.target.value)}
                                 placeholder="e.g. Premium brand, opened Jan 2025, low stock..."
@@ -417,7 +433,7 @@ export default function AddPantryItemDialog({
                         <button
                             type="button"
                             onClick={close}
-                            className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full bg-line/60 text-fg-secondary hover:bg-line transition-colors"
+                            className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full bg-line text-fg-secondary hover:bg-line transition-colors"
                         >
                             Cancel
                         </button>

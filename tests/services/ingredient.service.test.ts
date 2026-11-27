@@ -1,10 +1,10 @@
-﻿/**
+/**
  * Ingredient service tests. Prisma is mocked because the thin repository lives inside the service.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { Prisma } from '@prisma/client'
-import { NotFoundError } from '@/utils/errors'
+import { ConflictError, NotFoundError } from '@/utils/errors'
 
 const { mockPrisma } = vi.hoisted(() => ({
     mockPrisma: {
@@ -16,10 +16,16 @@ const { mockPrisma } = vi.hoisted(() => ({
             update:     vi.fn(),
             delete:     vi.fn(),
         },
+        cocktailIngredient: { count: vi.fn() },
+        userPantryItem:     { count: vi.fn() },
     },
+}))
+const { mockBumpCatalogVersion } = vi.hoisted(() => ({
+    mockBumpCatalogVersion: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@/lib/db/prisma', () => ({ prisma: mockPrisma }))
+vi.mock('@/lib/cache/makeable-cache', () => ({ bumpCatalogVersion: mockBumpCatalogVersion }))
 
 import { ingredientService } from '@/services/ingredient.service'
 
@@ -150,7 +156,34 @@ describe('IngredientService.update', () => {
 })
 
 describe('IngredientService.delete', () => {
-    beforeEach(() => { vi.clearAllMocks() })
+    beforeEach(() => {
+        vi.clearAllMocks()
+        mockPrisma.cocktailIngredient.count.mockResolvedValue(0)
+        mockPrisma.userPantryItem.count.mockResolvedValue(0)
+    })
+
+    it('refuses to delete an ingredient still used by recipes or pantries (409 with counts)', async () => {
+        mockPrisma.cocktailIngredient.count.mockResolvedValue(3)
+        mockPrisma.userPantryItem.count.mockResolvedValue(12)
+
+        const promise = ingredientService.delete(ING_ID)
+        await expect(promise).rejects.toThrow(ConflictError)
+        await expect(promise).rejects.toThrow(/3 cocktail recipe\(s\) and 12 pantry item\(s\)/)
+        expect(mockPrisma.ingredient.delete).not.toHaveBeenCalled()
+    })
+
+    it('maps a racing FK RESTRICT violation (P2003) to ConflictError', async () => {
+        mockPrisma.ingredient.delete.mockRejectedValue(
+            new Prisma.PrismaClientKnownRequestError('fk', { code: 'P2003', clientVersion: 'test' }),
+        )
+        await expect(ingredientService.delete(ING_ID)).rejects.toThrow(ConflictError)
+    })
+
+    it('bumps the makeable catalog version after a successful delete', async () => {
+        mockPrisma.ingredient.delete.mockResolvedValue({ id: ING_ID })
+        await ingredientService.delete(ING_ID)
+        expect(mockBumpCatalogVersion).toHaveBeenCalled()
+    })
 
     it('resolves without error when ingredient is deleted', async () => {
         mockPrisma.ingredient.delete.mockResolvedValue({ id: ING_ID })

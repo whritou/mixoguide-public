@@ -32,16 +32,26 @@ export const relativeCallbackUrlSchema = z.preprocess(
     z.string().startsWith("/")
 )
 
+/**
+ * bcrypt only uses the first 72 bytes of its input, so longer passwords would
+ * silently be truncated. Limit by UTF-8 byte length, not characters (SEC-018).
+ */
+export const passwordSchema = z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .refine((value) => new TextEncoder().encode(value).length <= 72, "Password must be at most 72 bytes")
+
 export const loginSchema = z.object({
     email: emailSchema,
-    password: z.string().min(1, "Password required"),
+    password: z.string().min(1, "Password required").max(200),
 })
 
 // Public sign-up: must never accept role or other privileged User fields.
 export const publicRegisterSchema = z.object({
     email: emailSchema,
     name: nameSchema,
-    password: z.string().min(8, "Password must be at least 8 characters").max(100).optional(),
+    // Required: password-less self-registration let anyone squat an email address (SEC-008).
+    password: passwordSchema,
 })
 
 export type PublicRegisterInput = z.infer<typeof publicRegisterSchema>
@@ -49,8 +59,8 @@ export type PublicRegisterInput = z.infer<typeof publicRegisterSchema>
 export const resetPasswordSchema = z
     .object({
         token: z.string().min(1, "Token required"),
-        password: z.string().min(8, "Password must be at least 8 characters").max(100),
-        passwordConfirm: z.string().min(8).max(100),
+        password: passwordSchema,
+        passwordConfirm: z.string().min(8).max(200),
     })
     .refine((data) => data.password === data.passwordConfirm, {
         message: "Passwords do not match",
@@ -60,8 +70,8 @@ export const resetPasswordSchema = z
 export const changePasswordSchema = z
     .object({
         currentPassword: z.string().min(1, "Current password is required"),
-        newPassword: z.string().min(8, "Password must be at least 8 characters").max(100),
-        confirmPassword: z.string().min(8).max(100),
+        newPassword: passwordSchema,
+        confirmPassword: z.string().min(8).max(200),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
         message: "Passwords do not match",

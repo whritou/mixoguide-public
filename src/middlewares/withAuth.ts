@@ -51,14 +51,17 @@ export function withUser(handler: AuthenticatedHandler, options: RouteOptions = 
     })
 }
 
+/** Rate limit applied to unauthenticated routes unless the route opts into another one (SEC-012). */
+const DEFAULT_PUBLIC_RATE_LIMIT: RateLimitAction = 'public-read'
+
 /**
- * Wraps a public route handler with shared error handling and optional IP-based
- * rate limiting. Public mutation routes that need CSRF protection should call
- * validateCsrf(req) explicitly inside their handler.
+ * Wraps a public route handler with shared error handling and IP-based rate
+ * limiting (`public-read` by default). Unsafe methods are CSRF-checked.
  */
 export function withPublic(handler: PublicHandler, options: RouteOptions = {}) {
     return withErrorHandler(async (req: NextRequest, context: RouteContext) => {
-        if (options.rateLimit) await rateLimit(options.rateLimit, req)
+        validateCsrf(req)
+        await rateLimit(options.rateLimit ?? DEFAULT_PUBLIC_RATE_LIMIT, req)
         return handler(req, context)
     })
 }
@@ -75,7 +78,8 @@ type OptionalAuthHandler = (
  */
 export function withOptionalUser(handler: OptionalAuthHandler, options: RouteOptions = {}) {
     return withErrorHandler(async (req: NextRequest, context: RouteContext) => {
-        if (options.rateLimit) await rateLimit(options.rateLimit, req)
+        validateCsrf(req)
+        await rateLimit(options.rateLimit ?? DEFAULT_PUBLIC_RATE_LIMIT, req)
         const session = await requireUser()
         return handler(req, context, session ?? null)
     })

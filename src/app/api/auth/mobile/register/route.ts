@@ -1,16 +1,33 @@
 import { NextRequest } from 'next/server'
 
 import { userService } from '@/services/user.service'
+import { authService } from '@/services/auth.service'
+import { mailService } from '@/services/mail.service'
 import { publicRegisterSchema } from '@/validations/auth.validation'
 import { ApiResponse } from '@/utils/apiResponse'
 import { withErrorHandler } from '@/middlewares/withErrorHandler'
-import { checkRateLimit, getIp } from '@/lib/rateLimit'
-import { authService } from '@/services/auth.service'
+import { enforceCredentialPolicy } from '@/lib/auth/credentialPolicy'
+
+const ACCEPTED = { message: 'Account created. Please verify your email before signing in.' }
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
-    await checkRateLimit('register', getIp(req.headers))
+    const body = await req.json().catch(() => ({})) as Record<string, unknown>
+    await enforceCredentialPolicy(req, {
+        channel: 'mobile',
+        action: 'mobile-register',
+        turnstileToken: body.turnstileToken,
+        turnstileAction: 'signup',
+    })
 
-    const data = publicRegisterSchema.parse(await req.json())
+    const data = publicRegisterSchema.parse(body)
+
+    // Uniform response for existing emails; no user id is returned (SEC-008).
+    const existing = await userService.findByEmail(data.email)
+    if (existing) {
+        await mailService.sendAccountExistsEmail(existing.email).catch((error: unknown) =>
+            console.error('[MobileRegister] account-exists notice failed', error))
+        return ApiResponse.created(ACCEPTED)
+    }
 
     const user = await userService.create({
         email: data.email,
@@ -19,17 +36,8 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
         role: 'USER',
     })
 
-    // Send email verification (re-use existing flow)
-    const token = await authService.createEmailToken(user.email)
-    // The email link points to the web verify endpoint which handles the token.
-    // After verification the user can log in from the mobile app.
-    const verifyLink = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/verify-email?token=${token}&callbackUrl=/`
+    const token = await authService.createEmailToken(user.email, 'verify')
+    await mailService.sendVerificationEmail(user.email, token, '/')
 
-    const { sendVerificationEmail } = await import('@/utils/mail')
-    await sendVerificationEmail(user.email, verifyLink)
-
-    return ApiResponse.created({
-        message: 'Account created. Please verify your email before signing in.',
-        userId: user.id,
-    })
+    return ApiResponse.created(ACCEPTED)
 })

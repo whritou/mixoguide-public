@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, type MouseEvent } from 'react'
 import Image from 'next/image'
@@ -57,7 +57,7 @@ export default function UpcomingCollectionCard({ item, now, onUpdate }: Upcoming
         <article
             className="group relative min-h-[112px] overflow-hidden rounded-2xl border border-fg/40 bg-surface-inverse cursor-pointer"
         >
-            <Link href="/planner?view=collections" className="absolute inset-0 z-10" aria-label="View planned collections" />
+            <Link href="/planner?view=collections" className="absolute inset-0 z-10" aria-label={`View ${item.title} in your planner`} />
             <div className="absolute inset-y-0 right-0 w-[42%] overflow-hidden">
                 <Image
                     src={heroImage}
@@ -72,7 +72,7 @@ export default function UpcomingCollectionCard({ item, now, onUpdate }: Upcoming
             <div className="relative z-10 flex h-full flex-col justify-between p-5 pr-[44%]">
                 <div className="flex items-start justify-between gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-fg-on-inverse/10 px-2.5 py-1 text-[10px] font-label uppercase tracking-widest text-fg-on-inverse backdrop-blur-sm">
-                        <span className="h-1.5 w-1.5 rounded-full bg-brand-soft" />
+                        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-brand-soft" />
                         Event
                     </span>
                     {overdue && (
@@ -87,14 +87,14 @@ export default function UpcomingCollectionCard({ item, now, onUpdate }: Upcoming
                         {item.title}
                     </h3>
                     <p className="mt-1 flex items-center gap-1.5 text-xs text-fg-on-inverse/90">
-                        <CalendarDays size={12} />
+                        <CalendarDays size={12} aria-hidden="true" />
                         {formatMonthDay(plannedDate)}
                         {showPlannedTime && ` at ${formattedTime}`}
                         {' - '}
                         {relativeDateLabel(plannedDate, now, { eventStyle: true })}
                     </p>
                     <p className="mt-1 flex items-center gap-1.5 text-[11px] text-fg-on-inverse/85">
-                        <Users size={11} />
+                        <Users size={11} aria-hidden="true" />
                         {item.servings} servings - {item.cocktails.length} cocktails
                     </p>
                 </div>
@@ -105,9 +105,9 @@ export default function UpcomingCollectionCard({ item, now, onUpdate }: Upcoming
                 onClick={openConfirm}
                 disabled={removing}
                 className="absolute right-2 top-2 z-30 rounded-full bg-fg-on-image/12 p-1.5 text-fg-on-image/85 backdrop-blur-sm transition-colors hover:bg-danger-bg hover:text-danger disabled:opacity-50"
-                aria-label="Remove from planner"
+                aria-label={`Remove ${item.title} from planner`}
             >
-                {removing ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                {removing ? <Loader2 size={14} aria-hidden="true" className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={14} aria-hidden="true" />}
             </button>
 
             {confirmRemove && (

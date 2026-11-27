@@ -1,20 +1,28 @@
-
-import { Geist, Geist_Mono, Noto_Serif, Manrope } from "next/font/google";
+import { Geist_Mono, Noto_Serif, Manrope } from "next/font/google";
 import "./globals.css";
 import type { Metadata } from "next";
-import AuthProvider from "@/components/AuthProvider";
 import { QueryProvider } from "@/providers/query-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { env } from "@/lib/env";
 import Script from "next/script";
 
-const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
+// Geist Sans was never applied (the body font resolves from :root, where
+// globals.css maps --font-geist-sans to system-ui), so it is no longer loaded.
+// Geist Mono is still referenced by `font-mono` utilities (meta labels, step
+// numbers) but is never above-the-fold LCP text, so it is not preloaded.
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+  variable: "--font-geist-mono",
+});
+// Headlines use only the regular weight (Tailwind preflight resets h1–h6 to
+// inherit and no `font-headline` usage sets a heavier weight), in roman + italic.
 const notoSerif = Noto_Serif({
   subsets: ["latin"],
   display: "swap",
-  weight: ["400", "700"],
+  weight: ["400"],
   style: ["normal", "italic"],
   variable: "--font-noto-serif",
 });
@@ -85,12 +93,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         url: `${siteUrl}/ingredients`,
         description: 'Explore our complete ingredient library. Search spirits, mixers, bitters, and garnishes to discover what cocktails you can make.',
       },
-      {
-        '@type': 'WebPage',
-        name: 'Makeable Cocktails',
-        url: `${siteUrl}/makeable`,
-        description: 'See every cocktail you can make right now based on what\'s in your pantry.',
-      },
     ],
   }
 
@@ -118,23 +120,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       />
     </head>
 
-    <body
-      className={`
-        ${geistSans.variable}
-        ${geistMono.variable}
-        ${notoSerif.variable}
-        ${manrope.variable}
-        antialiased
-      `}
+    <body className={`${geistMono.variable} antialiased`}>
+    <a
+      href="#main"
+      className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-full focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:text-fg focus:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-    <AuthProvider>
-      <ThemeProvider>
-        <QueryProvider>
-          {children}
-          <Toaster />
-        </QueryProvider>
-      </ThemeProvider>
-    </AuthProvider>
+      Skip to content
+    </a>
+    {/*
+      The session provider lives in each top-level layout (via AppShell / the
+      admin layout) instead of here: guarded layouts pass the server session so
+      there is no client /api/auth/session round-trip or signed-out flicker,
+      while public layouts stay static (calling getServerSession here would make
+      every route dynamic).
+    */}
+    <ThemeProvider>
+      <QueryProvider>
+        {children}
+        <Toaster />
+      </QueryProvider>
+    </ThemeProvider>
     </body>
     </html>
   );

@@ -28,8 +28,7 @@ export function FileField({ field, control, disabled }: FileFieldProps) {
                   {field.label}
                   {field.required && <span className="text-destructive ml-1">*</span>}
                 </FormLabel>
-                <FormControl>
-                  <div className="space-y-2">
+                <div className="space-y-2">
                     {field.type === "image" && (formField.value || preview) && (
                         <div className="relative w-40 h-40 border rounded-md overflow-hidden">
                           <Image src={preview || formField.value} alt={field.label} fill className="object-cover" />
@@ -43,11 +42,14 @@ export function FileField({ field, control, disabled }: FileFieldProps) {
                                 setPreview(null)
                               }}
                               disabled={disabled || field.readOnly}
+                              aria-label={`Remove ${field.label}`}
                           >
-                            <X className="h-4 w-4" />
+                            <X className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </div>
                     )}
+                    {/* A11Y-006: FormControl wraps the file input itself. */}
+                    <FormControl>
                     <Input
                         type="file"
                         accept={field.accept}
@@ -68,8 +70,8 @@ export function FileField({ field, control, disabled }: FileFieldProps) {
                         disabled={disabled || field.readOnly}
                         className="cursor-pointer"
                     />
+                    </FormControl>
                   </div>
-                </FormControl>
                 {field.description && <FormDescription>{field.description}</FormDescription>}
                 <FormMessage />
               </FormItem>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import type { FieldValues } from "react-hook-form";
@@ -45,6 +45,7 @@ export function GenericView<
     data,
     title,
     description,
+    titleAs = "h1",
     actions,
     isLoading,
     layout = "default",
@@ -64,7 +65,7 @@ export function GenericView<
     }
 
     if (value === null || value === undefined) {
-      return <p className="text-sm font-body text-fg-muted/60 italic">Not defined</p>;
+      return <p className="text-sm font-body text-fg-muted italic">Not defined</p>;
     }
 
     switch (field.type) {
@@ -122,7 +123,7 @@ export function GenericView<
               />
             </div>
         ) : (
-            <p className="text-sm font-body text-fg-muted/60 italic">No image</p>
+            <p className="text-sm font-body text-fg-muted italic">No image</p>
         );
       case "file":
         return value ? (
@@ -130,7 +131,7 @@ export function GenericView<
               {typeof value === "string" ? value : "Uploaded file"}
             </p>
         ) : (
-            <p className="text-sm font-body text-fg-muted/60 italic">No file</p>
+            <p className="text-sm font-body text-fg-muted italic">No file</p>
         );
       case "tags":
         return (
@@ -169,7 +170,7 @@ export function GenericView<
           {(title || description) && (
               <CardHeader className="border-b border-line pb-5">
                 {title && (
-                    <CardTitle className="font-headline text-fg text-lg md:text-2xl">{title}</CardTitle>
+                    <CardTitle as={titleAs} className="font-headline text-fg text-lg md:text-2xl">{title}</CardTitle>
                 )}
                 {description && <CardDescription className="text-fg-muted font-body text-sm">{description}</CardDescription>}
               </CardHeader>
@@ -178,7 +179,7 @@ export function GenericView<
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-24">
               {/* Left column */}
               <div>
-                <h3 className="text-xs font-label uppercase tracking-widest text-fg-muted mb-4">Informations</h3>
+                <h2 className="text-xs font-label uppercase tracking-widest text-fg-muted mb-4">Information</h2>
                 <div className="space-y-5">
                   {customLayout.leftColumn.map((fieldName) => {
                     const field = fields.find((f) => f.name === fieldName);
@@ -198,7 +199,7 @@ export function GenericView<
 
               {customLayout.rightColumn === "image" && imageField && (
                   <div>
-                    <h3 className="text-xs font-label uppercase tracking-widest text-fg-muted mb-4">{imageField.label}</h3>
+                    <h2 className="text-xs font-label uppercase tracking-widest text-fg-muted mb-4">{imageField.label}</h2>
                     <div className="relative aspect-square max-w-[300px] border border-line rounded-xl overflow-hidden">
                         <Image
                             src={(data[imageField.name] as string) || "/placeholder.svg?height=300&width=300"}
@@ -224,7 +225,7 @@ export function GenericView<
       <Card className="bg-canvas border-line shadow-sm">
         {(title || description) && (
             <CardHeader className="border-b border-line pb-5">
-              {title && <CardTitle className="font-headline text-fg text-lg">{title}</CardTitle>}
+              {title && <CardTitle as={titleAs} className="font-headline text-fg text-lg">{title}</CardTitle>}
               {description && <CardDescription className="text-fg-muted font-body text-sm">{description}</CardDescription>}
             </CardHeader>
         )}

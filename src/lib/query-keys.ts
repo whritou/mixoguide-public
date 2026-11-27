@@ -5,6 +5,7 @@ export const queryKeys = {
         all:     ['cocktails'] as const,
         lists:   () => [...queryKeys.cocktails.all, 'list'] as const,
         list:    (params: ListParams) => [...queryKeys.cocktails.lists(), params] as const,
+        infinite: (params: ListParams) => [...queryKeys.cocktails.lists(), 'infinite', params] as const,
         details: () => [...queryKeys.cocktails.all, 'detail'] as const,
         detail:  (id: string) => [...queryKeys.cocktails.details(), id] as const,
     },
@@ -12,6 +13,7 @@ export const queryKeys = {
         all:     ['ingredients'] as const,
         lists:   () => [...queryKeys.ingredients.all, 'list'] as const,
         list:    (params: ListParams) => [...queryKeys.ingredients.lists(), params] as const,
+        infinite: (params: ListParams) => [...queryKeys.ingredients.lists(), 'infinite', params] as const,
         details: () => [...queryKeys.ingredients.all, 'detail'] as const,
         detail:  (id: string) => [...queryKeys.ingredients.details(), id] as const,
     },
@@ -20,6 +22,8 @@ export const queryKeys = {
         lists:  () => [...queryKeys.ratings.all, 'list'] as const,
         list:   (params: ListParams) => [...queryKeys.ratings.lists(), params] as const,
         detail: (id: string) => [...queryKeys.ratings.all, 'detail', id] as const,
+        /** Aggregate { avg, count } for one cocktail. */
+        stats:  (cocktailId: string) => [...queryKeys.ratings.all, 'stats', cocktailId] as const,
     },
     pantry: {
         all:  ['pantry'] as const,
@@ -44,6 +48,8 @@ export const queryKeys = {
         byUser: (userId: string) => [...queryKeys.plannedCocktails.all, 'user', userId] as const,
         detail: (id: string) => [...queryKeys.plannedCocktails.all, 'detail', id] as const,
         exists: (cocktailId: string) => [...queryKeys.plannedCocktails.all, 'exists', cocktailId] as const,
+        /** Current user's plan state ({ exists, plannedCocktailId, status, plannedFor }) for one cocktail. */
+        state:  (cocktailId: string) => [...queryKeys.plannedCocktails.all, 'state', cocktailId] as const,
     },
     smartCollections: {
         all:    ['smart-collections'] as const,
@@ -102,5 +108,15 @@ export const queryKeys = {
     demoBottles: ['demo-bottles'] as const,
     rsvps: {
         mine: ['rsvps', 'mine'] as const,
+    },
+    profile: {
+        all: ['profile'] as const,
+        me:  () => [...queryKeys.profile.all, 'me'] as const,
+    },
+    suggestions: {
+        all:    ['suggestions'] as const,
+        lists:  () => [...queryKeys.suggestions.all, 'list'] as const,
+        list:   (params: ListParams) => [...queryKeys.suggestions.lists(), params] as const,
+        detail: (id: string) => [...queryKeys.suggestions.all, 'detail', id] as const,
     },
 } as const

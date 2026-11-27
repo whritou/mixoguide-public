@@ -1,6 +1,6 @@
 'use client'
 
-import { useReducer, type ComponentType, type KeyboardEvent, type MouseEvent } from 'react'
+import { useReducer, type ComponentType, type MouseEvent } from 'react'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import {
@@ -225,21 +225,13 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
         openDetails()
     }
 
-    const handleCardKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-        if (e.target !== e.currentTarget) return
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            openDetails()
-        }
-    }
-
     return (
+        // A11Y-014: the card is no longer a role="button" wrapping other buttons.
+        // The title is the real (keyboard/AT) "open details" control; the
+        // container click is only a mouse convenience and ignores inner controls.
         <div
-            role="button"
-            tabIndex={0}
             onClick={handleCardClick}
-            onKeyDown={handleCardKeyDown}
-            className="group bg-surface rounded-2xl overflow-hidden flex flex-col shadow-xs hover:shadow-md transition-all duration-300 border border-line-strong/50 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="group bg-surface rounded-2xl overflow-hidden flex flex-col shadow-xs hover:shadow-md transition-all duration-300 border border-line-strong/50 cursor-pointer has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring"
         >
 
             {/* ───── Hero: thumbnails + corner actions ───── */}
@@ -247,7 +239,7 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                 {item.cocktails.length > 0 ? (
                     <>
                         <div className={`absolute inset-0 z-0 flex ${isDone ? 'opacity-60' : ''}`}>
-                            {item.cocktails.slice(0, 4).map((c, idx) => (
+                            {item.cocktails.slice(0, 4).map((c) => (
                                 <div key={c.id} className="relative z-0 flex-1 overflow-hidden">
                                     <Image
                                         src={c.cocktail?.imageUrl ?? '/placeholder.svg'}
@@ -303,7 +295,7 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                         onClick={(e) => { e.stopPropagation(); dispatch({ type: 'SET', key: 'confirmRemove', value: true }) }}
                         title="Delete event"
                         aria-label="Delete event"
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-surface/85 backdrop-blur-sm shadow-sm hover:bg-danger-bg text-fg-muted hover:text-danger transition-all"
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 backdrop-blur-sm shadow-sm hover:bg-danger-bg text-fg-muted hover:text-danger transition-all"
                     >
                         <Trash2 size={13} />
                     </button>
@@ -317,7 +309,15 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                 <div className="space-y-1.5">
                     <div className="flex items-start justify-between gap-2">
                         <h3 className="font-headline italic text-xl text-fg leading-tight line-clamp-2">
-                            {item.title}
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); openDetails() }}
+                                aria-haspopup="dialog"
+                                className="text-left rounded-sm hover:underline underline-offset-4 decoration-1 focus:outline-none focus-visible:underline"
+                            >
+                                {item.title}
+                                <span className="sr-only"> — view details</span>
+                            </button>
                         </h3>
                         {isDone ? (
                             <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-widest px-2 py-0.5 rounded-full bg-brand/10 text-brand">
@@ -361,8 +361,8 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                             </span>
                         ))}
                         {item.occasions.length > 2 && (
-                            <span className="text-[10px] font-label uppercase tracking-widest px-2 py-0.5 rounded-full bg-line/60 text-fg-muted">
-                                +{item.occasions.length - 2}
+                            <span className="text-[10px] font-label uppercase tracking-widest px-2 py-0.5 rounded-full bg-line text-fg-muted">
+                                +{item.occasions.length - 2}<span className="sr-only"> more occasions</span>
                             </span>
                         )}
                     </div>
@@ -389,9 +389,9 @@ export default function PlannedCollectionCard({ item, now, onUpdate }: Props) {
                             <span /> // spacer so "View details" stays right-aligned
                         )}
 
-                        <span className="inline-flex items-center gap-0.5 text-[10px] font-label uppercase tracking-widest text-fg-muted group-hover:text-brand group-hover:underline underline-offset-4 transition-colors">
+                        <span aria-hidden="true" className="inline-flex items-center gap-0.5 text-[10px] font-label uppercase tracking-widest text-fg-muted group-hover:text-brand group-hover:underline underline-offset-4 transition-colors">
                             View details
-                            <ChevronRight size={11} className="transition-transform group-hover:translate-x-0.5" />
+                            <ChevronRight size={11} className="transition-transform motion-reduce:transition-none group-hover:translate-x-0.5" />
                         </span>
                     </div>
                 )}

@@ -1,5 +1,6 @@
 import { pantryRepository, type PantryUpsertData } from '@/repositories/pantry.repository'
 import { prisma } from '@/lib/db/prisma'
+import { withSerializableRetry } from '@/lib/db/transaction'
 import { invalidateMakeableCache } from '@/lib/cache/makeable-cache'
 import { convertUnit } from '@/utils/unitConversion'
 import { resolveIngredientUnitFallback } from '@/utils/ingredientUnitFallback'
@@ -81,134 +82,156 @@ class PantryService {
      *  - Only pantry quantity is used as source of truth for grocery calculations.
      */
     async upsert(userId: string, ingredientId: string, data: PantryUpsertData) {
-        const item = await prisma.$transaction(async (tx) => {
-            const existing = await pantryRepository.findByUserAndIngredient(userId, ingredientId, tx)
-            const requestedUnit = data.unitLeft as MeasureUnit | undefined
-            let conversionContext: UnitConversionContext | undefined
-            const ensureConversionContext = async () => {
-                if (!conversionContext) {
-                    conversionContext = await this.getIngredientConversionContext(ingredientId, tx)
-                }
-                return conversionContext
-            }
-
-            if (!existing) {
-                const unitLeft = requestedUnit ?? await this.resolveFallbackUnit(ingredientId, tx)
-                return pantryRepository.createItem(userId, ingredientId, {
-                    quantity:         data.isInPantry       === true ? (data.quantity ?? 0) : 0,
-                    shoppingQuantity: data.isInShoppingList === true ? (data.shoppingQuantity ?? data.quantity ?? 0) : 0,
-                    unitLeft,
-                    isInPantry:       data.isInPantry       ?? false,
-                    isInShoppingList: data.isInShoppingList ?? false,
-                    favorite:         data.favorite,
-                    isEssential:      data.isEssential,
-                    isInfinite:       data.isInfinite,
-                    expirationDate:   data.expirationDate,
-                    note:             data.note,
-                }, tx)
-            }
-
-            const existingUnit = (existing.unitLeft ?? requestedUnit ?? await this.resolveFallbackUnit(ingredientId, tx)) as MeasureUnit
-            const update: Prisma.UserPantryItemUncheckedUpdateInput = {
-                unitLeft:         existingUnit,
-                favorite:         data.favorite         !== undefined ? data.favorite         : existing.favorite,
-                isEssential:      data.isEssential      !== undefined ? data.isEssential      : existing.isEssential,
-                isInfinite:       data.isInfinite       !== undefined ? data.isInfinite       : existing.isInfinite,
-                expirationDate:   data.expirationDate   !== undefined
-                    ? (data.expirationDate ? new Date(data.expirationDate) : null)
-                    : existing.expirationDate,
-                note:             data.note !== undefined ? data.note : existing.note,
-            }
-
-            if (data.isInPantry === true) {
-                const incoming = data.quantity ?? 0
-                const convertedIncoming = requestedUnit && requestedUnit !== existingUnit && incoming > 0
-                    ? convertOrThrow(
-                        incoming,
-                        requestedUnit,
-                        existingUnit,
-                        'pantry quantity',
-                        await ensureConversionContext(),
-                    )
-                    : incoming
-
-                update.quantity   = existing.quantity + convertedIncoming
-                update.isInPantry = true
-
-                if (data.isInShoppingList === false) {
-                    update.shoppingQuantity = 0
-                    update.isInShoppingList = false
-                }
-            }
-
-            if (data.isInShoppingList === true) {
-                const incoming = data.shoppingQuantity ?? data.quantity ?? 0
-                const convertedIncoming = requestedUnit && requestedUnit !== existingUnit && incoming > 0
-                    ? convertOrThrow(
-                        incoming,
-                        requestedUnit,
-                        existingUnit,
-                        'shopping quantity',
-                        await ensureConversionContext(),
-                    )
-                    : incoming
-
-                update.shoppingQuantity = (existing.shoppingQuantity ?? 0) + convertedIncoming
-                update.isInShoppingList = true
-            }
-
-            return pantryRepository.update(existing.id, update, tx)
-        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
-
+        const item = await withSerializableRetry(
+            (tx) => this.upsertInTx(tx, userId, ingredientId, data),
+            // P2002: a concurrent request inserted the row first — retry as an update.
+            { retryOnCodes: ['P2002'] },
+        )
         await invalidateMakeableCache(userId)
         return item
     }
 
-    async moveToPantry(userId: string, ingredientId: string, amount: number, unitLeft?: MeasureUnit) {
-        const existing = await pantryRepository.findByUserAndIngredient(userId, ingredientId)
-        if (!existing) throw new NotFoundError()
-
-        const previousUnit = (existing.unitLeft ?? unitLeft ?? await this.resolveFallbackUnit(ingredientId)) as MeasureUnit
-        const targetUnit = (unitLeft ?? existing.unitLeft ?? previousUnit) as MeasureUnit
-
-        let currentPantryQty = existing.quantity ?? 0
-        let currentShoppingQty = existing.shoppingQuantity ?? 0
-
-        if (targetUnit !== previousUnit) {
-            const conversionContext = await this.getIngredientConversionContext(ingredientId)
-            if (currentPantryQty > 0) {
-                currentPantryQty = convertOrThrow(
-                    currentPantryQty,
-                    previousUnit,
-                    targetUnit,
-                    'pantry quantity',
-                    conversionContext,
-                )
+    /**
+     * Upsert logic run inside the caller's SERIALIZABLE transaction. Callers must
+     * retry on P2034 (see `withSerializableRetry`).
+     */
+    private async upsertInTx(
+        tx: Prisma.TransactionClient,
+        userId: string,
+        ingredientId: string,
+        data: PantryUpsertData,
+    ) {
+        const existing = await pantryRepository.findByUserAndIngredient(userId, ingredientId, tx)
+        const requestedUnit = data.unitLeft as MeasureUnit | undefined
+        let conversionContext: UnitConversionContext | undefined
+        const ensureConversionContext = async () => {
+            if (!conversionContext) {
+                conversionContext = await this.getIngredientConversionContext(ingredientId, tx)
             }
-            if (currentShoppingQty > 0) {
-                currentShoppingQty = convertOrThrow(
-                    currentShoppingQty,
-                    previousUnit,
-                    targetUnit,
-                    'shopping quantity',
-                    conversionContext,
+            return conversionContext
+        }
+
+        if (!existing) {
+            const unitLeft = requestedUnit ?? await this.resolveFallbackUnit(ingredientId, tx)
+            return pantryRepository.createItem(userId, ingredientId, {
+                quantity:         data.isInPantry       === true ? (data.quantity ?? 0) : 0,
+                shoppingQuantity: data.isInShoppingList === true ? (data.shoppingQuantity ?? data.quantity ?? 0) : 0,
+                unitLeft,
+                isInPantry:       data.isInPantry       ?? false,
+                isInShoppingList: data.isInShoppingList ?? false,
+                favorite:         data.favorite,
+                isEssential:      data.isEssential,
+                isInfinite:       data.isInfinite,
+                expirationDate:   data.expirationDate,
+                note:             data.note,
+            }, tx)
+        }
+
+        const existingUnit = (existing.unitLeft ?? requestedUnit ?? await this.resolveFallbackUnit(ingredientId, tx)) as MeasureUnit
+        const update: Prisma.UserPantryItemUncheckedUpdateInput = {
+            unitLeft:         existingUnit,
+            favorite:         data.favorite         !== undefined ? data.favorite         : existing.favorite,
+            isEssential:      data.isEssential      !== undefined ? data.isEssential      : existing.isEssential,
+            isInfinite:       data.isInfinite       !== undefined ? data.isInfinite       : existing.isInfinite,
+            expirationDate:   data.expirationDate   !== undefined
+                ? (data.expirationDate ? new Date(data.expirationDate) : null)
+                : existing.expirationDate,
+            note:             data.note !== undefined ? data.note : existing.note,
+        }
+
+        if (data.isInPantry === true) {
+            const incoming = data.quantity ?? 0
+            const convertedIncoming = requestedUnit && requestedUnit !== existingUnit && incoming > 0
+                ? convertOrThrow(
+                    incoming,
+                    requestedUnit,
+                    existingUnit,
+                    'pantry quantity',
+                    await ensureConversionContext(),
                 )
+                : incoming
+
+            update.quantity   = existing.quantity + convertedIncoming
+            update.isInPantry = true
+
+            if (data.isInShoppingList === false) {
+                update.shoppingQuantity = 0
+                update.isInShoppingList = false
             }
         }
 
-        const newPantryQty = currentPantryQty + amount
+        if (data.isInShoppingList === true) {
+            const incoming = data.shoppingQuantity ?? data.quantity ?? 0
+            const convertedIncoming = requestedUnit && requestedUnit !== existingUnit && incoming > 0
+                ? convertOrThrow(
+                    incoming,
+                    requestedUnit,
+                    existingUnit,
+                    'shopping quantity',
+                    await ensureConversionContext(),
+                )
+                : incoming
 
-        const remainingShopping = Math.max(
-            0,
-            currentShoppingQty - amount
-        )
+            update.shoppingQuantity = (existing.shoppingQuantity ?? 0) + convertedIncoming
+            update.isInShoppingList = true
+        }
 
-        const item = await pantryRepository.update(existing.id, {
-            quantity: newPantryQty,
-            shoppingQuantity: remainingShopping,
-            unitLeft: targetUnit,
-            isInPantry: true,
-            isInShoppingList: remainingShopping > 0,
+        return pantryRepository.update(existing.id, update, tx)
+    }
+
+    /**
+     * Move a quantity from the shopping list into the pantry.
+     * Race-safe (DB-008): the row is locked with SELECT … FOR UPDATE inside the
+     * transaction, so concurrent moves / decrements cannot lose updates.
+     */
+    async moveToPantry(userId: string, ingredientId: string, amount: number, unitLeft?: MeasureUnit) {
+        const item = await prisma.$transaction(async (tx) => {
+            await tx.$queryRaw`
+                SELECT id FROM user_pantry_items
+                 WHERE user_id = ${userId} AND ingredient_id = ${ingredientId}
+                   FOR UPDATE
+            `
+            const existing = await pantryRepository.findByUserAndIngredient(userId, ingredientId, tx)
+            if (!existing) throw new NotFoundError()
+
+            const previousUnit = (existing.unitLeft ?? unitLeft ?? await this.resolveFallbackUnit(ingredientId, tx)) as MeasureUnit
+            const targetUnit = (unitLeft ?? existing.unitLeft ?? previousUnit) as MeasureUnit
+
+            let currentPantryQty = existing.quantity ?? 0
+            let currentShoppingQty = existing.shoppingQuantity ?? 0
+
+            if (targetUnit !== previousUnit) {
+                const conversionContext = await this.getIngredientConversionContext(ingredientId, tx)
+                if (currentPantryQty > 0) {
+                    currentPantryQty = convertOrThrow(
+                        currentPantryQty,
+                        previousUnit,
+                        targetUnit,
+                        'pantry quantity',
+                        conversionContext,
+                    )
+                }
+                if (currentShoppingQty > 0) {
+                    currentShoppingQty = convertOrThrow(
+                        currentShoppingQty,
+                        previousUnit,
+                        targetUnit,
+                        'shopping quantity',
+                        conversionContext,
+                    )
+                }
+            }
+
+            const newPantryQty = Math.max(0, currentPantryQty + amount)
+            const remainingShopping = Math.max(0, currentShoppingQty - amount)
+
+            return pantryRepository.update(existing.id, {
+                quantity: newPantryQty,
+                shoppingQuantity: remainingShopping,
+                unitLeft: targetUnit,
+                isInPantry: true,
+                isInShoppingList: remainingShopping > 0,
+            }, tx)
         })
         await invalidateMakeableCache(userId)
         return item
@@ -240,32 +263,38 @@ class PantryService {
             shoppingQuantity: number;
             ingredientId: string; destination: 'shopping' | 'pantry'; quantity: number; unit: string }[],
     ) {
-        let addedToShopping = 0
-        let addedToPantry   = 0
+        if (items.length === 0) return { addedToShopping: 0, addedToPantry: 0 }
 
-        for (const ing of items) {
-            if (ing.destination === 'shopping') {
-                await this.upsert(userId, ing.ingredientId, {
-                    quantity:         ing.quantity,
-                    shoppingQuantity: ing.shoppingQuantity,
-                    unitLeft:         ing.unit,
-                    isInPantry:       false,
-                    isInShoppingList: true,
-                })
-                addedToShopping++
-            } else {
-                await this.upsert(userId, ing.ingredientId, {
-                    quantity:         ing.quantity,
-                    unitLeft:         ing.unit,
-                    isInPantry:       true,
-                    isInShoppingList: false,
-                })
-                addedToPantry++
+        // DB-012: one transaction for the whole batch (instead of one per item)
+        // and a single cache invalidation.
+        const counts = await withSerializableRetry(async (tx) => {
+            let addedToShopping = 0
+            let addedToPantry   = 0
+            for (const ing of items) {
+                if (ing.destination === 'shopping') {
+                    await this.upsertInTx(tx, userId, ing.ingredientId, {
+                        quantity:         ing.quantity,
+                        shoppingQuantity: ing.shoppingQuantity,
+                        unitLeft:         ing.unit,
+                        isInPantry:       false,
+                        isInShoppingList: true,
+                    })
+                    addedToShopping++
+                } else {
+                    await this.upsertInTx(tx, userId, ing.ingredientId, {
+                        quantity:         ing.quantity,
+                        unitLeft:         ing.unit,
+                        isInPantry:       true,
+                        isInShoppingList: false,
+                    })
+                    addedToPantry++
+                }
             }
-        }
+            return { addedToShopping, addedToPantry }
+        }, { retryOnCodes: ['P2002'] })
 
         await invalidateMakeableCache(userId)
-        return { addedToShopping, addedToPantry }
+        return counts
     }
 
     async importDemoBar(userId: string, ingredientIds: string[]): Promise<{ imported: number }> {

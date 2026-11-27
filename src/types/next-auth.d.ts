@@ -15,5 +15,7 @@ declare module "next-auth/jwt" {
         role: "ADMIN" | "USER";
         image?: string | null;
         accessTokenExpires?: number;
+        /** User.sessionVersion at sign-in; a mismatch revokes the session. */
+        sv?: number;
     }
 }

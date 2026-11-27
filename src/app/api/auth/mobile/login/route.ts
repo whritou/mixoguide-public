@@ -5,14 +5,22 @@ import { mobileAuthService } from '@/services/mobile-auth.service'
 import { loginSchema } from '@/validations/auth.validation'
 import { ApiResponse } from '@/utils/apiResponse'
 import { withErrorHandler } from '@/middlewares/withErrorHandler'
-import { checkRateLimit, getIp } from '@/lib/rateLimit'
 import { UnauthorizedError, ForbiddenError } from '@/utils/errors'
+import { enforceCredentialPolicy } from '@/lib/auth/credentialPolicy'
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
-    await checkRateLimit('signin', getIp(req.headers))
+    const body = await req.json().catch(() => ({})) as Record<string, unknown>
+    const { email, password } = loginSchema.parse(body)
 
-    const { email, password } = loginSchema.parse(await req.json())
-    const deviceId = req.headers.get('x-device-id') ?? 'unknown'
+    await enforceCredentialPolicy(req, {
+        channel: 'mobile',
+        action: 'signin',
+        email,
+        turnstileToken: body.turnstileToken,
+        turnstileAction: 'signin',
+    })
+
+    const deviceId = (req.headers.get('x-device-id') ?? 'unknown').slice(0, 200)
 
     const user = await userService.verifyPassword(email, password)
     if (!user) throw new UnauthorizedError('Invalid credentials')

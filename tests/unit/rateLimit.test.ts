@@ -3,7 +3,7 @@ import { TooManyRequestsError } from '@/utils/errors'
 
 const { mockGetRedis, mockEnv } = vi.hoisted(() => ({
     mockGetRedis: vi.fn(async (): Promise<unknown> => null),
-    mockEnv: { NODE_ENV: 'test', TRUSTED_PROXY: undefined as undefined | string },
+    mockEnv: { NODE_ENV: 'test', TRUSTED_PROXY: undefined as undefined | string, REDIS_PASSWORD: undefined as undefined | string },
 }))
 
 vi.mock('@/lib/redis', () => ({ getRedis: mockGetRedis }))
@@ -11,7 +11,15 @@ vi.mock('@/lib/env', () => ({ env: mockEnv, requireEnv: (_: string, v: string) =
 
 import { nextRequest } from '../factories/auth'
 
-import { checkRateLimit, getIp, rateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rateLimit'
+import {
+    __memStoreSize,
+    __resetMemStore,
+    checkRateLimit,
+    getIp,
+    MEM_STORE_MAX_ENTRIES,
+    rateLimit,
+    RATE_LIMIT_CONFIGS,
+} from '@/lib/rateLimit'
 
 describe('checkRateLimit', () => {
     beforeEach(() => {
@@ -128,5 +136,75 @@ describe('checkRateLimit', () => {
         expect(getIp(new Headers({
             'x-forwarded-for': '198.51.100.8',
         }))).toBe('unknown')
+    })
+})
+
+describe('in-memory fallback store', () => {
+    beforeEach(() => {
+        vi.useRealTimers()
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+        mockGetRedis.mockResolvedValue(null)
+        __resetMemStore()
+    })
+
+    it('sweeps expired entries once the sweep interval has elapsed', async () => {
+        vi.useFakeTimers()
+        vi.setSystemTime(new Date('2026-04-26T00:00:00.000Z'))
+
+        for (let i = 0; i < 50; i++) await checkRateLimit('rating', `sweep-${i}`)
+        expect(__memStoreSize()).toBe(50)
+
+        // rating window is 60 s; advance past both window and sweep interval.
+        vi.advanceTimersByTime(61_000)
+        await checkRateLimit('rating', 'sweep-new')
+
+        expect(__memStoreSize()).toBe(1)
+    })
+
+    it('caps the store size and evicts the oldest keys first', async () => {
+        for (let i = 0; i < MEM_STORE_MAX_ENTRIES + 25; i++) {
+            await checkRateLimit('public-read', `cap-${i}`)
+        }
+
+        expect(__memStoreSize()).toBe(MEM_STORE_MAX_ENTRIES)
+
+        // The newest key is still tracked (counts toward its limit)...
+        const newest = `cap-${MEM_STORE_MAX_ENTRIES + 24}`
+        for (let i = 1; i < RATE_LIMIT_CONFIGS['public-read'].maxRequests; i++) {
+            await checkRateLimit('public-read', newest)
+        }
+        await expect(checkRateLimit('public-read', newest)).rejects.toBeInstanceOf(TooManyRequestsError)
+    })
+
+    it('logs the fallback at most once per minute, in every environment', async () => {
+        mockEnv.NODE_ENV = 'production'
+        mockEnv.REDIS_PASSWORD = 'configured'
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+        try {
+            await checkRateLimit('rating', 'log-1')
+            await checkRateLimit('rating', 'log-2')
+
+            const fallbackLogs = warn.mock.calls.filter(([line]) => String(line).includes('rateLimit.memory_fallback'))
+            expect(fallbackLogs).toHaveLength(1)
+            expect(JSON.parse(String(fallbackLogs[0][0]))).toMatchObject({
+                level: 'warn',
+                action: 'rating',
+                reason: 'redis_unavailable',
+            })
+        } finally {
+            mockEnv.NODE_ENV = 'test'
+            mockEnv.REDIS_PASSWORD = undefined
+        }
+    })
+
+    it('falls back to memory when a Redis command fails', async () => {
+        const redis = {
+            incr: vi.fn().mockRejectedValue(new Error('READONLY')),
+            expire: vi.fn(),
+        }
+        mockGetRedis.mockResolvedValueOnce(redis)
+
+        await expect(checkRateLimit('upload', 'redis-fail')).resolves.toBeUndefined()
+        expect(__memStoreSize()).toBe(1)
     })
 })

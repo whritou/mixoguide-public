@@ -1,4 +1,4 @@
-﻿import { AlertTriangle, Check, ChevronDown, ChevronUp, Package, Printer, ShoppingCart } from 'lucide-react'
+import { AlertTriangle, Check, ChevronDown, ChevronUp, Package, Printer, ShoppingCart } from 'lucide-react'
 import type { GroceryItem } from '@/utils/groceryCalculator'
 
 export type GroceryStatusCounts = {
@@ -44,7 +44,8 @@ export function CollectionGrocerySection({
                 <button
                     type="button"
                     onClick={onToggle}
-                    className="flex items-center gap-1 text-xs text-fg-muted hover:text-brand transition-colors"
+                    aria-expanded={open}
+                    className="flex min-h-6 items-center gap-1 text-xs text-fg-muted hover:text-brand transition-colors"
                 >
                     {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                     <ShoppingCart size={11} />

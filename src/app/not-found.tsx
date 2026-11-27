@@ -1,4 +1,4 @@
-﻿import Link from "next/link"
+import Link from "next/link"
 import { GlassWater } from "lucide-react"
 
 export const metadata = {

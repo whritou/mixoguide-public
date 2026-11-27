@@ -15,25 +15,51 @@ describeDb('DB integration: auth/session repositories', () => {
         await resetDatabase()
     })
 
-    it('creates, extends, and revokes refresh tokens', async () => {
+    it('creates, rotates, and revokes refresh tokens', async () => {
         const user = await createUser()
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
         const hashedToken = 'hashed-refresh-token-1'
 
         await refreshTokenRepository.create(user.id, hashedToken, 'device-a', expiresAt)
 
-        const validBeforeRevoke = await refreshTokenRepository.findValid(hashedToken)
-        expect(validBeforeRevoke?.userId).toBe(user.id)
+        const validBeforeRotate = await refreshTokenRepository.findValid(hashedToken)
+        expect(validBeforeRotate?.userId).toBe(user.id)
 
-        const nextExpiry = new Date(Date.now() + 2 * 60 * 60 * 1000)
-        await refreshTokenRepository.extendExpiry(hashedToken, 'device-b', nextExpiry)
+        const rotated = await refreshTokenRepository.rotate(hashedToken, 'hashed-refresh-token-1b', 'device-b', expiresAt)
+        expect(rotated).toEqual({ status: 'rotated', userId: user.id })
+        expect(await refreshTokenRepository.findValid(hashedToken)).toBeNull()
+        expect((await refreshTokenRepository.findValid('hashed-refresh-token-1b'))?.deviceId).toBe('device-b')
 
-        const afterExtend = await prisma.refreshToken.findFirst({ where: { hashedToken } })
-        expect(afterExtend?.deviceId).toBe('device-b')
+        await refreshTokenRepository.revoke('hashed-refresh-token-1b')
+        expect(await refreshTokenRepository.findValid('hashed-refresh-token-1b')).toBeNull()
+    })
 
-        await refreshTokenRepository.revoke(hashedToken)
-        const validAfterRevoke = await refreshTokenRepository.findValid(hashedToken)
-        expect(validAfterRevoke).toBeNull()
+    it('allows only one of two concurrent rotations of the same token', async () => {
+        const user = await createUser()
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
+        await refreshTokenRepository.create(user.id, 'race-token', 'device-a', expiresAt)
+
+        const results = await Promise.all([
+            refreshTokenRepository.rotate('race-token', 'race-next-1', 'device-a', expiresAt),
+            refreshTokenRepository.rotate('race-token', 'race-next-2', 'device-a', expiresAt),
+        ])
+        expect(results.filter((r) => r.status === 'rotated')).toHaveLength(1)
+    })
+
+    it('revokes the whole family when a long-revoked token is reused', async () => {
+        const user = await createUser()
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
+        await refreshTokenRepository.create(user.id, 'stolen-token', 'device-a', expiresAt)
+        await refreshTokenRepository.rotate('stolen-token', 'legit-next', 'device-a', expiresAt)
+        // Simulate the reuse happening well after the grace window.
+        await prisma.refreshToken.update({
+            where: { hashedToken: 'stolen-token' },
+            data: { revokedAt: new Date(Date.now() - 10 * 60 * 1000) },
+        })
+
+        const reuse = await refreshTokenRepository.rotate('stolen-token', 'attacker-next', 'device-x', expiresAt)
+        expect(reuse.status).toBe('reused')
+        expect(await refreshTokenRepository.findValid('legit-next')).toBeNull()
     })
 
     it('revokes all active refresh tokens for a user', async () => {

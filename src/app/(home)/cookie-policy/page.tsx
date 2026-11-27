@@ -1,4 +1,4 @@
-﻿import { Metadata } from "next";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
     title: "Cookie Policy | MixoGuide",
@@ -7,9 +7,9 @@ export const metadata: Metadata = {
 
 export default function CookiePolicyPage() {
     return (
-        <main className="bg-canvas text-fg min-h-screen my-12 md:px-12 py-16 max-w-4xl mx-auto">
+        <article className="bg-canvas text-fg min-h-screen my-12 md:px-12 py-16 max-w-4xl mx-auto">
             <h1 className="font-headline text-4xl italic text-brand mb-2">Cookie Policy</h1>
-            <p className="text-sm text-fg/50 font-body mb-12">Last updated: April 5, 2026</p>
+            <p className="text-sm text-fg-muted font-body mb-12">Last updated: April 5, 2026</p>
 
             <Section title="1. What Are Cookies?">
                 <p>
@@ -126,7 +126,7 @@ export default function CookiePolicyPage() {
                     <a href="mailto:contact@mixoguide.com" className="text-brand-soft-strong hover:underline">contact@mixoguide.com</a>.
                 </p>
             </Section>
-        </main>
+        </article>
     );
 }
 
@@ -134,7 +134,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     return (
         <section className="mb-10">
             <h2 className="font-headline text-xl text-brand mb-4 pb-2 border-b border-fg/10">{title}</h2>
-            <div className="text-fg/80 font-body leading-relaxed space-y-2">{children}</div>
+            <div className="text-fg-secondary font-body leading-relaxed space-y-2">{children}</div>
         </section>
     );
 }

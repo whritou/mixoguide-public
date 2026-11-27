@@ -83,10 +83,11 @@ describe('mobile Google ID-token login route', () => {
 
         expect(response.status).toBe(200)
         expect(mockVerifyGoogleIdToken).toHaveBeenCalledWith('google.jwt')
+        // The raw ID token is never handed to persistence (SEC-003).
         expect(mockGetOrCreateGoogleUser).toHaveBeenCalledWith(
             expect.objectContaining({ sub: 'google-sub-1' }),
-            { id_token: 'google.jwt' }
         )
+        expect(JSON.stringify(mockGetOrCreateGoogleUser.mock.calls)).not.toContain('google.jwt')
         expect(mockCreateRefreshToken).toHaveBeenCalledWith('user-1', 'device-1')
         expect(body.data).toMatchObject({
             accessToken: 'mobile-access',

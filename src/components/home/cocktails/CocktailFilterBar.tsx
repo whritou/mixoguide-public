@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -99,6 +99,8 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
     const pill = (label: string, key: FilterPanelKey, count = 0, forceActive = false) => (
         <button
             key={key}
+            type="button"
+            aria-expanded={openPanel === key}
             onClick={() => toggle(key)}
             className={clsx(
                 'hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-label border transition-colors whitespace-nowrap',
@@ -113,7 +115,7 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                     {count}
                 </span>
             )}
-            <ChevronDown size={13} className={clsx('transition-transform', openPanel === key ? 'rotate-180' : '')} />
+            <ChevronDown size={13} aria-hidden="true" className={clsx('transition-transform', openPanel === key ? 'rotate-180' : '')} />
         </button>
     )
 
@@ -122,8 +124,10 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
             <div ref={barRef} className="sticky top-0 md:top-[64px] z-[100] bg-canvas/95 backdrop-blur-md border-b border-line">
             <div className="px-4 md:px-12 py-3 flex items-center gap-2 md:flex-wrap">
                 <div className="relative flex-1 md:flex-none">
-                    <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
+                    <Search size={13} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
                     <input
+                        type="search"
+                        aria-label="Search cocktails"
                         placeholder="Search cocktails..."
                         value={p.get('search') ?? ''}
                         onChange={e => filters.setDebounced('search', e.target.value || null)}
@@ -134,9 +138,9 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                             type="button"
                             onClick={() => filters.set('search', null)}
                             aria-label="Clear cocktail search"
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg-secondary"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center min-h-6 min-w-6 p-1.5 rounded-full text-fg-muted hover:text-fg-secondary"
                         >
-                            <X size={13} />
+                            <X size={13} aria-hidden="true" />
                         </button>
                     )}
                 </div>
@@ -155,14 +159,16 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                                 : 'border-line-strong bg-surface text-fg-muted hover:border-brand-soft hover:text-brand-soft-strong'
                         )}
                     >
-                        <Star size={14} fill={onlyFavorites ? 'currentColor' : 'none'} />
+                        <Star size={14} aria-hidden="true" fill={onlyFavorites ? 'currentColor' : 'none'} />
                     </button>
                 )}
 
-                <div className="hidden md:block w-px h-5 bg-line flex-shrink-0" />
+                <div aria-hidden="true" className="hidden md:block w-px h-5 bg-line flex-shrink-0" />
 
                 {isAuthenticated && (
                     <button
+                        type="button"
+                        aria-pressed={onlyMakeable}
                         onClick={() => filters.set('onlyMakeable', onlyMakeable ? null : 'true')}
                         className={clsx(
                             'hidden md:flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-label border transition-colors whitespace-nowrap',
@@ -172,7 +178,7 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                         )}
                     >
                         Ready to mix
-                        <span className={clsx(
+                        <span aria-hidden="true" className={clsx(
                             'flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px]',
                             onlyMakeable ? 'bg-brand text-fg-on-brand' : 'bg-line text-fg-muted'
                         )}>
@@ -188,6 +194,8 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
 
                 <div className="relative hidden md:block" onClick={e => e.stopPropagation()}>
                     <button
+                        type="button"
+                        aria-expanded={showDifficultyMenu}
                         onClick={() => {
                             setShowDifficultyMenu(v => !v)
                             setShowAbvMenu(false)
@@ -202,11 +210,13 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                         )}
                     >
                         {difficultyLabel}
-                        <ChevronDown size={13} className={clsx('transition-transform', showDifficultyMenu ? 'rotate-180' : '')} />
+                        <ChevronDown size={13} aria-hidden="true" className={clsx('transition-transform', showDifficultyMenu ? 'rotate-180' : '')} />
                     </button>
                     {showDifficultyMenu && (
                         <div className="absolute left-0 top-full mt-1 z-[110] bg-surface rounded-xl shadow-lg border border-line py-1 min-w-[180px]">
                             <button
+                                type="button"
+                                aria-pressed={difficultyCount === 0}
                                 onClick={() => {
                                     filters.set('difficulty', null)
                                     setShowDifficultyMenu(false)
@@ -221,6 +231,8 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                             {COCKTAIL_DIFFICULTIES.map((d) => (
                                 <button
                                     key={d}
+                                    type="button"
+                                    aria-pressed={difficultyValues.length === 1 && difficultyValues[0] === d}
                                     onClick={() => {
                                         filters.set('difficulty', d)
                                         setShowDifficultyMenu(false)
@@ -241,6 +253,8 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
 
                 <div className="relative hidden md:block" onClick={e => e.stopPropagation()}>
                     <button
+                        type="button"
+                        aria-expanded={showAbvMenu}
                         onClick={() => {
                             setShowAbvMenu(v => !v)
                             setShowDifficultyMenu(false)
@@ -255,7 +269,7 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                         )}
                     >
                         {abvLabel}
-                        <ChevronDown size={13} className={clsx('transition-transform', showAbvMenu ? 'rotate-180' : '')} />
+                        <ChevronDown size={13} aria-hidden="true" className={clsx('transition-transform', showAbvMenu ? 'rotate-180' : '')} />
                     </button>
                     {showAbvMenu && (
                         <div className="absolute left-0 top-full mt-1 z-[110] bg-surface rounded-xl shadow-lg border border-line py-1 min-w-[180px]">
@@ -266,6 +280,8 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                             ].map(({ label, value }) => (
                                 <button
                                     key={value}
+                                    type="button"
+                                    aria-pressed={abvValue === value || (value === 'any' && !abvActive)}
                                     onClick={() => {
                                         filters.set('alcoholic', value === 'any' ? null : value)
                                         setShowAbvMenu(false)
@@ -286,6 +302,8 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
 
                 <div className="relative ml-auto flex-shrink-0 hidden md:block" onClick={e => e.stopPropagation()}>
                     <button
+                        type="button"
+                        aria-expanded={showSortMenu}
                         onClick={() => {
                             setShowSortMenu(v => !v)
                             setShowDifficultyMenu(false)
@@ -298,15 +316,17 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                         )}
                     >
                         <span className="font-normal text-fg-muted">Sort</span>
-                        <span>·</span>
+                        <span aria-hidden="true">·</span>
                         <span className="font-medium">{currentSort.label}</span>
-                        <ChevronDown size={13} className={clsx('transition-transform', showSortMenu ? 'rotate-180' : '')} />
+                        <ChevronDown size={13} aria-hidden="true" className={clsx('transition-transform', showSortMenu ? 'rotate-180' : '')} />
                     </button>
                     {showSortMenu && (
                         <div className="absolute right-0 top-full mt-1 z-[110] bg-surface rounded-xl shadow-lg border border-line py-1 min-w-[200px]">
                             {SORT_OPTIONS.map(opt => (
                                 <button
                                     key={opt.label}
+                                    type="button"
+                                    aria-pressed={currentSort.label === opt.label}
                                     onClick={() => setSort(opt.sortBy, opt.sortOrder)}
                                     className={clsx(
                                         'w-full text-left px-4 py-2 text-sm hover:bg-surface-hover-alt',
@@ -336,7 +356,7 @@ export function CocktailFilterBar({ filters, isAuthenticated, ingredientOpts }: 
                     aria-label="Open cocktail filters"
                     className="md:hidden fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+6.75rem)] z-[120] inline-flex items-center gap-2 px-4 py-3 rounded-full bg-surface-inverse text-fg-on-inverse inset-ring-1 inset-ring-fg/40 shadow-[0_10px_24px_rgba(27,28,26,0.28)]"
                 >
-                    <SlidersHorizontal size={15} />
+                    <SlidersHorizontal size={15} aria-hidden="true" />
                     <span className="font-label text-[11px] uppercase tracking-widest">Filters</span>
                     {totalActiveFilters > 0 && (
                         <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-fg-on-brand">

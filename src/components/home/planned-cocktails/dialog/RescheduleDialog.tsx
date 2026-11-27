@@ -1,11 +1,11 @@
-﻿'use client'
+'use client'
 
-import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useId, useState } from 'react'
 import { toast } from 'sonner'
 import { X, Minus, Plus, CalendarDays } from 'lucide-react'
 import { usePlannedCocktailMutations } from '@/hooks/mutations/use-planned-cocktail-mutations'
 import type { PlannedCocktail } from '@/types/models/planned-cocktail'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
 interface Props {
     item:          PlannedCocktail
@@ -17,18 +17,13 @@ interface Props {
 export default function RescheduleDialog({ item, open, onOpenChange, onRescheduled }: Props) {
     const today = new Date().toISOString().split('T')[0]
     const { update } = usePlannedCocktailMutations()
-    const [mounted, setMounted] = useState(false)
+    const dateId = useId()
+    const servingsId = useId()
 
     const initialDate = item.plannedFor.split('T')[0]
     const [date,       setDate]       = useState(initialDate)
     const [quantity,   setQuantity]   = useState(item.quantity)
     const [submitting, setSubmitting] = useState(false)
-
-    useEffect(() => {
-        setMounted(true)
-    }, [])
-
-    if (!open || !mounted) return null
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -53,25 +48,27 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
         }
     }
 
-    return createPortal(
-        <div
-            className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-overlay/67 backdrop-blur-sm"
-            style={{ zIndex: 9999 }}
-        >
-            <div className="w-full max-w-sm bg-canvas rounded-2xl shadow-2xl flex flex-col">
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent
+                showCloseButton={false}
+                overlayClassName="z-[9999] backdrop-blur-sm"
+                className="z-[9999] w-full max-w-sm sm:max-w-sm bg-canvas rounded-2xl shadow-2xl flex flex-col gap-0 p-0 border-0"
+            >
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-line">
                     <div className="flex items-center gap-2">
-                        <CalendarDays size={18} className="text-brand-soft" />
-                        <h2 className="font-headline text-xl text-fg">Reschedule</h2>
+                        <CalendarDays size={18} className="text-brand-soft-strong" aria-hidden="true" />
+                        <DialogTitle className="font-headline text-xl font-normal leading-normal text-fg">Reschedule</DialogTitle>
                     </div>
                     <button
+                        type="button"
                         onClick={() => onOpenChange(false)}
                         aria-label="Close"
                         className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-line transition-colors"
                     >
-                        <X size={16} className="text-fg-muted" />
+                        <X size={16} className="text-fg-muted" aria-hidden="true" />
                     </button>
                 </div>
 
@@ -79,32 +76,34 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
                 <form onSubmit={handleSubmit} className="flex flex-col">
                     <div className="px-6 py-5 space-y-5">
 
-                        <p className="text-sm text-fg-muted">
+                        <DialogDescription className="text-sm text-fg-muted">
                             When do you want to make{' '}
                             <span className="font-medium text-fg">{item.cocktail?.name ?? 'this cocktail'}</span>?
-                        </p>
+                        </DialogDescription>
 
                         {/* Date */}
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                            <label htmlFor={dateId} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 New date *
                             </label>
                             <input
+                                id={dateId}
                                 type="date"
+                                required
                                 value={date}
                                 min={today}
                                 onChange={e => setDate(e.target.value)}
                                 className="w-full px-4 py-2.5 rounded-xl bg-surface border border-line-control text-sm text-fg
-                                           focus:outline-none focus:ring-1 focus:ring-ring"
+                                           focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             />
                         </div>
 
                         {/* Servings */}
                         <div>
-                            <label className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
+                            <span id={servingsId} className="block text-xs font-label uppercase tracking-widest text-fg-muted mb-1.5">
                                 Servings
-                            </label>
-                            <div className="flex items-center gap-3">
+                            </span>
+                            <div role="group" aria-labelledby={servingsId} className="flex items-center gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
@@ -113,9 +112,9 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
                                     className="w-9 h-9 flex items-center justify-center rounded-full bg-surface border border-line-strong
                                                hover:bg-line transition-colors text-fg-secondary disabled:opacity-40"
                                 >
-                                    <Minus size={14} />
+                                    <Minus size={14} aria-hidden="true" />
                                 </button>
-                                <span className="w-8 text-center text-sm font-medium text-fg">
+                                <span aria-live="polite" className="w-8 text-center text-sm font-medium text-fg">
                                     {quantity}
                                 </span>
                                 <button
@@ -126,7 +125,7 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
                                     className="w-9 h-9 flex items-center justify-center rounded-full bg-surface border border-line-strong
                                                hover:bg-line transition-colors text-fg-secondary disabled:opacity-40"
                                 >
-                                    <Plus size={14} />
+                                    <Plus size={14} aria-hidden="true" />
                                 </button>
                             </div>
                         </div>
@@ -138,7 +137,7 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
                             type="button"
                             onClick={() => onOpenChange(false)}
                             className="flex-1 py-2.5 text-xs font-label uppercase tracking-widest rounded-full
-                                       bg-line/60 text-fg-secondary hover:bg-line transition-colors"
+                                       bg-line text-fg-secondary hover:bg-line-strong transition-colors"
                         >
                             Cancel
                         </button>
@@ -153,8 +152,7 @@ export default function RescheduleDialog({ item, open, onOpenChange, onReschedul
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>,
-        document.body,
+            </DialogContent>
+        </Dialog>
     )
 }

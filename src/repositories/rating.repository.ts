@@ -3,8 +3,6 @@ import { Prisma } from '@prisma/client'
 import { BaseRepository, RepositoryConfig, toDelegate } from './base.repository'
 import type { Rating } from '@prisma/client'
 
-type TxClient = typeof prisma
-
 class RatingRepository extends BaseRepository<
     Rating,
     Prisma.RatingUncheckedCreateInput,
@@ -99,10 +97,14 @@ class RatingRepository extends BaseRepository<
         create: Prisma.RatingUncheckedCreateInput,
         update: Prisma.RatingUncheckedUpdateInput,
     ): Promise<Rating> {
+        const cocktailId = String(create.cocktailId)
         return prisma.$transaction(async (tx) => {
-            const client = tx as unknown as TxClient
-            const rating = await client.rating.upsert({ where, create, update })
-            await this.refreshCocktailStats(rating.cocktailId, client)
+            // Lock the cocktail BEFORE touching ratings: inserting a rating takes a
+            // FOR KEY SHARE lock on the cocktail (FK check); locking afterwards made
+            // two concurrent raters deadlock on each other's shares.
+            await this.lockCocktail(cocktailId, tx)
+            const rating = await tx.rating.upsert({ where, create, update })
+            await this.refreshCocktailStats(rating.cocktailId, tx)
             return rating
         })
     }
@@ -117,37 +119,49 @@ class RatingRepository extends BaseRepository<
         })
         if (!existing) return false
 
-        return prisma.$transaction(async (tx) => {
-            const client = tx as unknown as TxClient
-            try {
-                await client.rating.delete({ where: { id } })
-                await this.refreshCocktailStats(existing.cocktailId, client)
+        try {
+            return await prisma.$transaction(async (tx) => {
+                await this.lockCocktail(existing.cocktailId, tx)
+                await tx.rating.delete({ where: { id } })
+                await this.refreshCocktailStats(existing.cocktailId, tx)
                 return true
-            } catch {
-                return false
-            }
-        })
+            })
+        } catch (err) {
+            // Only "already deleted" maps to false; anything else is a real failure.
+            if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') return false
+            throw err
+        }
     }
 
     // ─── PRIVATE ──────────────────────────────────────────────────────────────
 
     /**
-     * Recompute avg/count for a cocktail inside the current transaction.
-     * Uses raw SQL so this works before `prisma generate` is re-run after schema changes.
+     * Serialise rating writes per cocktail (DB-006). FOR NO KEY UPDATE does not
+     * conflict with the FOR KEY SHARE lock our own rating insert takes through the
+     * foreign key, but does conflict with other writers' NO KEY UPDATE, so
+     * concurrent raters of the same cocktail queue here instead of deadlocking.
      */
-    private async refreshCocktailStats(cocktailId: string, tx: TxClient) {
-        const result = await tx.rating.aggregate({
-            where:  { cocktailId },
-            _avg:   { rating: true },
-            _count: { rating: true },
-        })
+    private async lockCocktail(cocktailId: string, tx: Prisma.TransactionClient) {
+        await tx.$queryRaw`SELECT id FROM cocktails WHERE id = ${cocktailId} FOR NO KEY UPDATE`
+    }
 
-        // Raw update so we don't require the Prisma client to know about the new columns
+    /**
+     * Recompute avg/count for a cocktail inside the current transaction, after
+     * {@link lockCocktail}. READ COMMITTED takes a new snapshot per statement, so
+     * this single UPDATE sees every rating committed before the lock was granted
+     * plus this transaction's own write: the last writer stores the right aggregate.
+     */
+    private async refreshCocktailStats(cocktailId: string, tx: Prisma.TransactionClient) {
         await tx.$executeRaw`
-            UPDATE cocktails
-               SET avg_rating   = ${result._avg.rating},
-                   rating_count = ${result._count.rating}
-             WHERE id = ${cocktailId}
+            UPDATE cocktails AS c
+               SET avg_rating   = s.avg,
+                   rating_count = s.cnt
+              FROM (
+                    SELECT avg(rating)::double precision AS avg, count(*)::int AS cnt
+                      FROM ratings
+                     WHERE cocktail_id = ${cocktailId}
+                   ) AS s
+             WHERE c.id = ${cocktailId}
         `
     }
 }

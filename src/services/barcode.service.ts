@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db/prisma'
-import { ValidationError } from '@/utils/errors'
+import { ValidationError, ForbiddenError } from '@/utils/errors'
 
 const OFF_BASE = 'https://world.openfoodfacts.org/api/v2/product'
 const OFF_FIELDS = 'product_name,product_name_en,brands,quantity,categories_tags,image_front_small_url'
@@ -222,13 +222,29 @@ class BarcodeService {
         return { barcode: trimmed, ingredient: null, candidates, product, source: 'off' }
     }
 
-    async confirmMapping(barcode: string, ingredientId: string) {
+    /**
+     * Record which ingredient a barcode corresponds to. The mapping is shared by
+     * every user, so regular users may only fill an *unmapped* barcode; changing an
+     * existing mapping requires an admin (SEC-007).
+     */
+    async confirmMapping(barcode: string, ingredientId: string, actor: { isAdmin: boolean }) {
         const trimmed = barcode.trim()
         if (!/^\d{6,14}$/.test(trimmed)) {
             throw new ValidationError('Invalid barcode format')
         }
         const exists = await prisma.ingredient.findUnique({ where: { id: ingredientId }, select: { id: true } })
         if (!exists) throw new ValidationError('Ingredient not found')
+
+        const current = await prisma.ingredientBarcode.findUnique({
+            where: { barcode: trimmed },
+            select: { ingredientId: true },
+        })
+        if (current?.ingredientId && current.ingredientId !== ingredientId && !actor.isAdmin) {
+            throw new ForbiddenError('This barcode is already mapped. Use “Suggest a change” to report a wrong match.')
+        }
+        if (current?.ingredientId === ingredientId) {
+            return prisma.ingredientBarcode.findUnique({ where: { barcode: trimmed } })
+        }
 
         return prisma.ingredientBarcode.upsert({
             where:  { barcode: trimmed },

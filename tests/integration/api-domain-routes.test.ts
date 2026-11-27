@@ -63,6 +63,7 @@ const {
     },
     mockPrisma: {
         $queryRaw: vi.fn(),
+        user: { findUnique: vi.fn() },
     },
     mockRateLimit: vi.fn(),
     mockRatingService: {
@@ -133,6 +134,8 @@ vi.mock('cloudinary', () => ({
 
 import { POST as registerDevice, DELETE as unregisterDevice } from '@/app/api/devices/route'
 import { GET as healthCheck } from '@/app/api/health/route'
+import { GET as healthLive } from '@/app/api/health/live/route'
+import { GET as healthReady } from '@/app/api/health/ready/route'
 import { GET as listIngredients } from '@/app/api/ingredients/route'
 import { GET as readInvite } from '@/app/api/invite/[token]/route'
 import { POST as createInviteRsvp } from '@/app/api/invite/[token]/rsvp/route'
@@ -164,6 +167,7 @@ beforeEach(() => {
     mockCheckRateLimit.mockResolvedValue(undefined)
 
     mockPrisma.$queryRaw.mockResolvedValue([{}])
+    mockPrisma.user.findUnique.mockResolvedValue({ emailVerified: new Date('2026-01-01T00:00:00.000Z'), name: 'Host' })
 
     mockDeviceRepository.upsert.mockResolvedValue({ id: 'device-1' })
     mockDeviceRepository.deleteByToken.mockResolvedValue({ count: 1 })
@@ -231,6 +235,23 @@ describe('health + device routes', () => {
         const response = await healthCheck()
 
         expect(response.status).toBe(503)
+    })
+
+    it('liveness always returns 200 without touching the DB', async () => {
+        mockPrisma.$queryRaw.mockClear()
+
+        const response = await healthLive()
+
+        expect(response.status).toBe(200)
+        expect(mockPrisma.$queryRaw).not.toHaveBeenCalled()
+    })
+
+    it('readiness reports db ok and redis skipped when Redis is not configured', async () => {
+        const response = await healthReady()
+        const body = await jsonBody<{ status: string; db: string; redis: string }>(response)
+
+        expect(response.status).toBe(200)
+        expect(body).toEqual({ status: 'ok', db: 'ok', redis: 'skipped' })
     })
 
     it('registers a device for the authenticated user', async () => {
@@ -361,6 +382,7 @@ describe('invite/share/upload and priority coverage routes', () => {
             nextRequest({
                 method: 'POST',
                 path: '/api/invite/token-1/rsvp',
+                headers: csrfHeaders(),
                 body: {
                     name: 'Ada',
                     status: 'going',
@@ -438,9 +460,50 @@ describe('invite/share/upload and priority coverage routes', () => {
         expect(response.status).toBe(400)
     })
 
+    it('rejects an upload whose bytes are not an image even if the MIME type says so', async () => {
+        const form = new FormData()
+        form.set('file', new File(['<?php echo 1; ?>'.padEnd(32, ' ')], 'avatar.png', { type: 'image/png' }))
+        const response = await uploadAvatar(
+            new NextRequest('http://localhost:3000/api/upload', { method: 'POST', headers: csrfHeaders(), body: form }),
+            routeContext(),
+        )
+        expect(response.status).toBe(400)
+    })
+
+    it('refuses to send invites from an unverified account', async () => {
+        mockPrisma.user.findUnique.mockResolvedValueOnce({ emailVerified: null, name: 'Host' })
+        const response = await sendCollectionInvite(
+            nextRequest({
+                method: 'POST',
+                path: '/api/planned-collections/collection-1/invite',
+                headers: csrfHeaders(),
+                body: { email: 'guest@example.com' },
+            }),
+            routeContext({ id: 'collection-1' }),
+        )
+        expect(response.status).toBe(403)
+        expect(mockMailService.sendCollectionInvite).not.toHaveBeenCalled()
+    })
+
+    it('rejects a cross-site anonymous RSVP (CSRF)', async () => {
+        const response = await createInviteRsvp(
+            nextRequest({
+                method: 'POST',
+                path: '/api/invite/token-1/rsvp',
+                headers: csrfHeaders('https://evil.example'),
+                body: { name: 'Ada', status: 'going', guestCount: 1 },
+            }),
+            routeContext({ token: 'token-1' }),
+        )
+        expect(response.status).toBe(403)
+        expect(mockPlannedCollectionService.addRsvp).not.toHaveBeenCalled()
+    })
+
     it('uploads avatar when file is valid', async () => {
         const form = new FormData()
-        form.set('file', new File(['fake-image'], 'avatar.png', { type: 'image/png' }))
+        // Real PNG signature: the route sniffs magic bytes instead of trusting the MIME type.
+        const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0x0d, 0x49, 0x48, 0x44, 0x52])
+        form.set('file', new File([png], 'avatar.png', { type: 'image/png' }))
 
         const request = new NextRequest('http://localhost:3000/api/upload', {
             method: 'POST',
@@ -520,7 +583,7 @@ describe('invite/share/upload and priority coverage routes', () => {
 
 describe('makeable preview route', () => {
     const post = (body: unknown) => previewMakeable(
-        nextRequest({ method: 'POST', path: '/api/cocktails/makeable-preview', body }),
+        nextRequest({ method: 'POST', path: '/api/cocktails/makeable-preview', headers: csrfHeaders(), body }),
         routeContext(),
     )
 

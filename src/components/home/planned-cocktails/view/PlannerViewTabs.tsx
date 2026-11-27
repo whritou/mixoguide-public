@@ -40,6 +40,7 @@ export default function PlannerViewTabs({
                         <Link
                             key={tab.key}
                             href={tab.href}
+                            aria-current={isActive ? 'page' : undefined}
                             className={`
                                 px-2 sm:px-5 py-2 text-xs font-label uppercase tracking-widest rounded-full transition-all duration-200
                                 flex items-center gap-2 whitespace-nowrap shrink-0

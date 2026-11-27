@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Loader from '@/components/ui/Loader';
 import PantryTableRow from './PantryTableRow';
@@ -93,8 +93,9 @@ export function PantryTable({
                     {' · '}
                     {pageSize} per page
                 </div>
-                <div className="flex items-center gap-2">
+                <nav aria-label="Pantry pagination" className="flex items-center gap-2">
                     <button
+                        type="button"
                         onClick={onFirst}
                         disabled={!canPrev || isFetching}
                         className="px-3 py-2 rounded-full border border-line-strong text-xs text-fg-secondary hover:bg-canvas-hover-alt transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -102,6 +103,7 @@ export function PantryTable({
                         First
                     </button>
                     <button
+                        type="button"
                         onClick={onPrev}
                         disabled={!canPrev || isFetching}
                         className="px-3 py-2 rounded-full border border-line-strong text-xs text-fg-secondary hover:bg-canvas-hover-alt transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -109,6 +111,7 @@ export function PantryTable({
                         Previous
                     </button>
                     <button
+                        type="button"
                         onClick={onNext}
                         disabled={!canNext || isFetching}
                         className="px-3 py-2 rounded-full border border-line-strong text-xs text-fg-secondary hover:bg-canvas-hover-alt transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -116,6 +119,7 @@ export function PantryTable({
                         Next
                     </button>
                     <button
+                        type="button"
                         onClick={onLast}
                         disabled={!canNext || isFetching}
                         className="px-3 py-2 rounded-full border border-line-strong text-xs text-fg-secondary hover:bg-canvas-hover-alt transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -127,7 +131,7 @@ export function PantryTable({
                             <Loader variant="spinner" />
                         </div>
                     )}
-                </div>
+                </nav>
             </div>
         </>
     );

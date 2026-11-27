@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useRef } from 'react'
 import { Camera } from 'lucide-react'
@@ -41,34 +41,35 @@ export function ProfileHeader({ profile, onUpdate }: ProfileHeaderProps) {
         <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6">
             <div className="relative">
                 <Avatar className="w-24 h-24 ring-2 ring-line-strong/40">
-                    <AvatarImage src={profile.image ?? ''} />
+                    <AvatarImage src={profile.image ?? ''} alt="" />
                     <AvatarFallback className="bg-brand text-fg-on-brand text-3xl font-headline">
                         {profile.name?.[0]?.toUpperCase() ?? '?'}
                     </AvatarFallback>
                 </Avatar>
                 <button
+                    type="button"
                     onClick={() => fileRef.current?.click()}
                     disabled={uploading}
                     className="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-br from-brand-gradient-from to-brand-gradient-to
-                               rounded-full flex items-center justify-center shadow hover:scale-105 transition-transform
+                               rounded-full flex items-center justify-center shadow motion-safe:hover:scale-105 transition-transform
                                disabled:opacity-60"
                     aria-label="Change avatar"
                 >
-                    <Camera size={14} className="text-fg-on-brand" />
+                    <Camera size={14} aria-hidden="true" className="text-fg-on-brand" />
                 </button>
-                <input ref={fileRef} type="file" accept="image/*" onChange={handleAvatar} className="hidden" />
+                <input ref={fileRef} type="file" accept="image/*" onChange={handleAvatar} className="hidden" tabIndex={-1} aria-hidden="true" />
             </div>
 
             <div className="text-center sm:text-left">
                 <h1 className="font-headline text-3xl text-fg">{profile.name ?? 'Your Profile'}</h1>
-                <p className="text-sm text-fg-secondary/70 font-body">{profile.email}</p>
+                <p className="text-sm text-fg-muted font-body">{profile.email}</p>
                 <div className="flex items-center gap-2 mt-1 justify-center sm:justify-start">
                     {profile.role === 'ADMIN' && (
                         <span className="text-xs font-label uppercase tracking-widest bg-brand text-fg-on-brand px-2 py-0.5 rounded-full">
                             Admin
                         </span>
                     )}
-                    <span className="text-xs text-fg/40 font-body">Member since {joinYear}</span>
+                    <span className="text-xs text-fg-muted font-body">Member since {joinYear}</span>
                 </div>
             </div>
         </div>

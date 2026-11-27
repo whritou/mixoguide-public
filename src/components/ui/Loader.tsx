@@ -1,6 +1,6 @@
-﻿'use client'
+'use client'
 
-import { motion } from 'motion/react'
+import { cn } from '@/lib/utils'
 
 type LoaderVariant = 'page' | 'card' | 'inline' | 'spinner'
 
@@ -9,21 +9,22 @@ interface LoaderProps {
     label?: string
 }
 
+/*
+ * Pure-CSS loader (PERF-004: no JS animation library in the shared bundle).
+ * Keyframes live in globals.css; every animation stops under
+ * prefers-reduced-motion (motion-reduce:animate-none + the global rule).
+ * Each variant is a polite live region with a text alternative (A11Y-019).
+ */
+
 /* ── Three staggered bouncing dots ───────────────────────── */
 function Dots() {
     return (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" aria-hidden="true">
             {[0, 1, 2].map((i) => (
-                <motion.span
+                <span
                     key={i}
-                    className="block h-2 w-2 rounded-full bg-brand-soft"
-                    animate={{ y: [0, -7, 0], opacity: [0.4, 1, 0.4] }}
-                    transition={{
-                        duration: 0.9,
-                        repeat: Infinity,
-                        delay: i * 0.18,
-                        ease: 'easeInOut',
-                    }}
+                    className="block h-2 w-2 rounded-full bg-brand-soft animate-[mg-loader-bounce_0.9s_ease-in-out_infinite] motion-reduce:animate-none"
+                    style={{ animationDelay: `${i * 0.18}s` }}
                 />
             ))}
         </div>
@@ -32,21 +33,8 @@ function Dots() {
 
 function Shaker() {
     return (
-        <div className="flex flex-col items-center justify-center gap-3">
-            <motion.div
-                className="relative h-28 w-16 flex items-center justify-center"
-                animate={{
-                    rotate: [-18, 18],
-                    x: [-6, 6],
-                    y: [-1, 1],
-                }}
-                transition={{
-                    duration: 0.45,
-                    repeat: Infinity,
-                    repeatType: 'mirror',
-                    ease: 'easeInOut',
-                }}
-            >
+        <div className="flex flex-col items-center justify-center gap-3" aria-hidden="true">
+            <div className="relative h-28 w-16 flex items-center justify-center animate-[mg-shake_0.45s_ease-in-out_infinite_alternate] motion-reduce:animate-none">
                 {/* Small tin (Top) */}
                 <div
                     className="absolute top-0 h-14 w-11 bg-gradient-to-r from-[#ab8764] via-[#e6c8a8] to-[#ab8764] z-0"
@@ -56,7 +44,7 @@ function Shaker() {
                         // Slightly narrower (w-11) allows it to rotate without clipping
                         // the edges of the bottom tin (w-12)
                         transform: 'rotate(-6deg) translateY(0px) translateX(-1px)',
-                        transformOrigin: 'bottom center'
+                        transformOrigin: 'bottom center',
                     }}
                 />
 
@@ -67,42 +55,40 @@ function Shaker() {
                         clipPath: 'polygon(0% 0%, 100% 0%, 80% 100%, 20% 100%)',
                     }}
                 >
-                    {/* Darker seal line for better contrast */}
                     {/* Inner rim depth */}
                     <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-overlay/27 to-transparent" />
                 </div>
-            </motion.div>
+            </div>
 
-            <motion.p
-                className="text-sm font-medium text-muted-foreground"
-                animate={{ opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 1, repeat: Infinity }}
-            >
-                Shaking page content !
-            </motion.p>
+            <p className="text-sm font-medium text-muted-foreground animate-pulse motion-reduce:animate-none">
+                Shaking page content!
+            </p>
         </div>
-    );
+    )
 }
 
 /* ── Thin spinning ring ───────────────────────────────────── */
 function Ring({ size = 24 }: { size?: number }) {
     return (
-        <motion.span
-            className="block rounded-full border-2 border-line border-t-brand-soft"
+        <span
+            aria-hidden="true"
+            className="block rounded-full border-2 border-line border-t-brand-soft animate-spin [animation-duration:0.8s] motion-reduce:animate-none"
             style={{ width: size, height: size }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
         />
     )
 }
 
+const fadeIn = 'animate-in fade-in-0 duration-200 motion-reduce:animate-none'
+
 export default function Loader({ variant = 'page', label }: LoaderProps) {
-    /* Inline: tiny single dot pulse, no wrapper */
+    const srText = label ?? 'Loading…'
+
+    /* Inline: tiny ring + text, no wrapper */
     if (variant === 'inline') {
         return (
-            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Ring size={12} />
-                {label ?? 'Loading…'}
+                {srText}
             </span>
         )
     }
@@ -110,50 +96,46 @@ export default function Loader({ variant = 'page', label }: LoaderProps) {
     /* Spinner: small centered ring, no extra padding */
     if (variant === 'spinner') {
         return (
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center justify-center"
-            >
+            <div role="status" aria-live="polite" className={cn('flex items-center justify-center', fadeIn)}>
                 <Ring size={32} />
-            </motion.div>
+                <span className="sr-only">{srText}</span>
+            </div>
         )
     }
 
     /* Card: modest vertical padding, inside a card */
     if (variant === 'card') {
         return (
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col items-center justify-center gap-3 py-12"
+            <div
+                role="status"
+                aria-live="polite"
+                className={cn('flex flex-col items-center justify-center gap-3 py-12', fadeIn)}
             >
                 <Dots />
-                {label && <p className="text-sm text-muted-foreground">{label}</p>}
-            </motion.div>
+                {label ? (
+                    <p className="text-sm text-muted-foreground">{label}</p>
+                ) : (
+                    <span className="sr-only">{srText}</span>
+                )}
+            </div>
         )
     }
 
     /* Page (default): large centred area, fades in */
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.25 }}
-            className="col-span-full flex flex-col items-center justify-center gap-3 py-24"
+        <div
+            role="status"
+            aria-live="polite"
+            className={cn('col-span-full flex flex-col items-center justify-center gap-3 py-24', fadeIn)}
         >
             <Shaker />
-            {label && (
-                <motion.p
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15, duration: 0.25 }}
-                    className="text-sm text-muted-foreground"
-                >
+            {label ? (
+                <p className="text-sm text-muted-foreground animate-in fade-in-0 slide-in-from-bottom-1 delay-150 duration-200 motion-reduce:animate-none">
                     {label}
-                </motion.p>
+                </p>
+            ) : (
+                <span className="sr-only">{srText}</span>
             )}
-        </motion.div>
+        </div>
     )
 }

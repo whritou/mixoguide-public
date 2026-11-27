@@ -1,26 +1,13 @@
-﻿"use client"
+"use client"
 
-import { useEffect, useState } from "react"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { MessageSquarePlus, Clock, CheckCircle2, XCircle } from "lucide-react"
 import { DataTable } from "@/components/data-table/data-table"
 import { createColumns } from "@/components/data-table/columns"
-
-type SuggestionStatus = "PENDING" | "ACCEPTED" | "DECLINED"
-type SuggestionType   = "NEW_COCKTAIL" | "NEW_INGREDIENT" | "MODIFY_COCKTAIL" | "MODIFY_INGREDIENT"
-
-interface Suggestion {
-    id:          string
-    type:        SuggestionType
-    status:      SuggestionStatus
-    title:       string
-    content:     string
-    targetName?: string | null
-    adminNote?:  string | null
-    createdAt:   string
-    user:        { id: string; name?: string | null; email: string }
-}
+import { useSuggestionsQuery } from "@/hooks/queries/use-suggestions"
+import { useSuggestionMutations } from "@/hooks/mutations/use-suggestion-mutations"
+import type { Suggestion, SuggestionStatus, SuggestionType } from "@/lib/api/suggestions.api"
 
 const TYPE_LABELS: Record<SuggestionType, string> = {
     NEW_COCKTAIL:      "New cocktail",
@@ -44,17 +31,6 @@ const TABS: { value: Tab; label: string; icon: React.ElementType }[] = [
     { value: "ALL",      label: "All",      icon: MessageSquarePlus },
 ]
 
-async function fetchSuggestions(status: Tab, search: string, page: number, limit: number) {
-    const params = new URLSearchParams()
-    if (status !== "ALL") params.set("filters", JSON.stringify({ status }))
-    if (search) params.set("search", search)
-    params.set("page",  String(page))
-    params.set("limit", String(limit))
-    const res = await fetch(`/api/suggestions?${params.toString()}`)
-    if (!res.ok) throw new Error("Failed to fetch suggestions")
-    return res.json()
-}
-
 export default function SuggestionsPage() {
     const router       = useRouter()
     const pathname     = usePathname()
@@ -65,20 +41,10 @@ export default function SuggestionsPage() {
     const page      = Number(searchParams.get("page")  || "1")
     const limit     = Number(searchParams.get("limit") || "20")
 
-    const [suggestions, setSuggestions] = useState<Suggestion[]>([])
-    const [total,       setTotal]       = useState(0)
-    const [loading,     setLoading]     = useState(true)
-
-    useEffect(() => {
-        setLoading(true)
-        fetchSuggestions(activeTab, search, page, limit)
-            .then(json => {
-                setSuggestions(json.data ?? [])
-                setTotal(json.meta?.total ?? 0)
-            })
-            .catch(() => toast.error("Could not load suggestions"))
-            .finally(() => setLoading(false))
-    }, [activeTab, search, page, limit])
+    const { data, isLoading: loading, isError } = useSuggestionsQuery({ status: activeTab, search, page, limit })
+    const suggestions = data?.items ?? []
+    const total       = data?.total ?? 0
+    const { remove } = useSuggestionMutations()
 
     const setParam = (key: string, value: string) => {
         const p = new URLSearchParams(searchParams.toString())
@@ -89,9 +55,7 @@ export default function SuggestionsPage() {
 
     const handleDelete = async (id: string) => {
         try {
-            const res = await fetch(`/api/suggestions/${id}`, { method: "DELETE" })
-            if (!res.ok) throw new Error()
-            setSuggestions(prev => prev.filter(s => s.id !== id))
+            await remove.mutateAsync(id)
             toast.success("Suggestion deleted")
         } catch {
             toast.error("Could not delete suggestion")
@@ -199,7 +163,11 @@ export default function SuggestionsPage() {
                 }}
             />
 
-            {!loading && suggestions.length === 0 && (
+            {isError && (
+                <p role="alert" className="text-center mt-8 text-danger">Could not load suggestions.</p>
+            )}
+
+            {!loading && !isError && suggestions.length === 0 && (
                 <div className="text-center mt-8 p-8 border border-dashed rounded-xl border-line">
                     <MessageSquarePlus size={32} className="mx-auto mb-3 text-brand-soft/50" />
                     <p className="text-fg-muted">No suggestions found.</p>
